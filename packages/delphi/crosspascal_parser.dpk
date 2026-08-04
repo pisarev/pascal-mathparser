@@ -1,0 +1,86 @@
+﻿{ ************************************************************************** }
+{                                                                            }
+{ crosspascal_parser - the parser core                                       }
+{                                                                            }
+{ Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
+{                                                                            }
+{ ************************************************************************** }
+
+package crosspascal_parser;
+
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE RELEASE}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcl;
+
+contains
+  BaseTypes in '..\..\src\BaseTypes.pas',
+  BlobManager in '..\..\src\BlobManager.pas',
+  Cache in '..\..\src\Cache.pas',
+  CalcUtils in '..\..\src\CalcUtils.pas',
+  Calculator in '..\..\src\Calculator.pas',
+  Connector in '..\..\src\Connector.pas',
+  EventUtils in '..\..\src\EventUtils.pas',
+  ExactTimer in '..\..\src\ExactTimer.pas',
+  FastList in '..\..\src\FastList.pas',
+  FileUtils in '..\..\src\FileUtils.pas',
+  FlagCache in '..\..\src\FlagCache.pas',
+  FlexibleList in '..\..\src\FlexibleList.pas',
+  ItemCache in '..\..\src\ItemCache.pas',
+  MemoryUtils in '..\..\src\MemoryUtils.pas',
+  Notifier in '..\..\src\Notifier.pas',
+  NumberConsts in '..\..\src\NumberConsts.pas',
+  NumberUtils in '..\..\src\NumberUtils.pas',
+  ParseCache in '..\..\src\ParseCache.pas',
+  ParseCommon in '..\..\src\ParseCommon.pas',
+  ParseConsts in '..\..\src\ParseConsts.pas',
+  ParseErrors in '..\..\src\ParseErrors.pas',
+  ParseManager in '..\..\src\ParseManager.pas',
+  ParseMessages in '..\..\src\ParseMessages.pas',
+  ParseMethod in '..\..\src\ParseMethod.pas',
+  ParseTypes in '..\..\src\ParseTypes.pas',
+  ParseUtils in '..\..\src\ParseUtils.pas',
+  ParseValidator in '..\..\src\ParseValidator.pas',
+  ParseValueList in '..\..\src\ParseValueList.pas',
+  Parser in '..\..\src\Parser.pas',
+  ScriptFormat in '..\..\src\ScriptFormat.pas',
+  SearchUtils in '..\..\src\SearchUtils.pas',
+  SyncThread in '..\..\src\SyncThread.pas',
+  TextBuilder in '..\..\src\TextBuilder.pas',
+  TextConsts in '..\..\src\TextConsts.pas',
+  TextTypes in '..\..\src\TextTypes.pas',
+  TextUtils in '..\..\src\TextUtils.pas',
+  Thread in '..\..\src\Thread.pas',
+  ThreadUtils in '..\..\src\ThreadUtils.pas',
+  ValueConsts in '..\..\src\ValueConsts.pas',
+  ValueErrors in '..\..\src\ValueErrors.pas',
+  ValueTypes in '..\..\src\ValueTypes.pas',
+  ValueUtils in '..\..\src\ValueUtils.pas',
+  VariableUtils in '..\..\src\VariableUtils.pas',
+  ZUtils in '..\..\src\ZUtils.pas';
+
+end.

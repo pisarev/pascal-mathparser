@@ -1,0 +1,15 @@
+*.dcu
+*.ppu
+*.o
+*.a
+*.exe
+*.dll
+*.local
+*.identcache
+*.dsk
+*.res
+out/
+lib/
+bin/
+__history/
+__recovery/

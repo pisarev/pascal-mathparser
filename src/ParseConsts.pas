@@ -1,0 +1,428 @@
+﻿{ ************************************************************************** }
+{                                                                            }
+{ ParseConsts                                                                }
+{                                                                            }
+{ Copyright © 2006 Yuriy Pisarev (ypisareff@outlook.com)                     }
+{                                                                            }
+{ ************************************************************************** }
+
+unit ParseConsts;
+
+{$B-}
+{$IFDEF FPC}
+  {$MODE DELPHI}
+{$ENDIF}
+
+interface
+
+uses
+  {$IFDEF FPC}
+  SysUtils, ParseTypes, TextConsts, TextTypes, ValueTypes;
+  {$ELSE}
+  {$IFDEF DELPHI_XE7}
+  System.SysUtils, ParseTypes, TextConsts, TextTypes, ValueTypes;
+  {$ELSE}
+  SysUtils, ParseTypes, TextConsts, TextTypes, ValueTypes;
+  {$ENDIF}
+  {$ENDIF}
+
+type
+  TTextOperator = (toNegative, toPositive);
+  TParameterOperator = (poComma, poSemicolon);
+  TBracketKind = (bkParenthesis, bkBracket, bkBrace);
+
+const
+  NumberCode = Ord(icNumber);
+  FunctionCode = Ord(icFunction);
+  StringCode = Ord(icString);
+  ScriptCode = Ord(icScript);
+  ParameterCode = Ord(icParameter);
+
+  FRedirectCode = 1;
+  TRedirectCode = 2;
+
+  TOperatorArray: array[TTextOperator] of string = (Minus, Plus);
+  POperatorArray: array[TParameterOperator] of string = (Comma, Semicolon);
+  BracketArray: array[TBracketKind] of TBracket = (LParenthesis + RParenthesis, LBracket + RBracket, LBrace + RBrace);
+  ParameterPrefix = '#';
+  DelimiterArray = Blanks + [Comma, Semicolon, Plus, Minus, LParenthesis, RParenthesis, LBracket, RBracket, LBrace, RBrace, Quote, DoubleQuote];
+
+  InternalFunctionName = LBrace;
+  MinusFunctionName = Minus;
+  PlusFunctionName = Plus;
+
+  VoidFunctionName = 'Void';
+  NewFunctionName = 'New';
+  NewParameterMinCount = 2;
+  NewParameterMaxCount = 3;
+  DeleteFunctionName = 'Delete';
+  DeleteParameterCount = 1;
+  FindFunctionName = 'Find';
+  FindParameterCount = 1;
+  GetFunctionName = 'Get';
+  GetParameterCount = 1;
+  SetFunctionName = 'Set';
+  SetParameterCount = 2;
+  ScriptFunctionName = 'Script';
+  ScriptParameterMinCount = 1;
+  ScriptParameterMaxCount = MaxInt;
+  ExecuteFunctionName = 'Execute';
+  ExecuteParameterCount = 2;
+  ForFunctionName = 'For';
+  ForParameterCount = 4;
+  RepeatFunctionName = 'Repeat';
+  RepeatParameterCount = 2;
+  WhileFunctionName = 'While';
+  WhileParameterCount = 2;
+  MultiplyFunctionName = '*';
+  DivideFunctionName = '/';
+  SuccFunctionName = 'Succ';
+  PredFunctionName = 'Pred';
+  NotFunctionName: array[0..1] of string = ('not', '!');
+  AndFunctionName: array[0..1] of string = ('and', '&&');
+  OrFunctionName: array[0..1] of string = ('or', '||');
+  OrReturnType: array[0..1] of TValueType = (vtUnknown, vtUnknown);
+  OrPriority: array[0..1] of TFunctionPriority = (fpLower, fpNormal);
+  OrCoverage: array[0..1] of TPriorityCoverage = (pcLocal, pcLocal);
+  XorFunctionName: array[0..1] of string = ('xor', '^');
+  ShiftLeftFunctionName: array[0..1] of string = ('shl', '<<');
+  ShiftRightFunctionName: array[0..1] of string = ('shr', '>>');
+  BitwiseNotFunctionName = '~';
+  BitwiseAndFunctionName = '&';
+  BitwiseOrFunctionName = '|';
+  BitwiseXorFunctionName = 'bxor';
+  TryExceptFunctionName = 'TryExcept';
+  TryExceptParameterCount = 2;
+  TryFinallyFunctionName = 'TryFinally';
+  TryFinallyParameterCount = 2;
+  SameValueFunctionName = 'SameValue';
+  SameValueParameterMinCount = 2;
+  SameValueParameterMaxCount = 3;
+  IsZeroFunctionName = 'IsZero';
+  IsZeroParameterMinCount = 1;
+  IsZeroParameterMaxCount = 2;
+  IfFunctionName = 'If';
+  ExitFunctionName = 'Exit';
+  IfParameterMinCount = 2;
+  IfParameterMaxCount = 3;
+  IfThenFunctionName = 'IfThen';
+  IfThenParameterCount = 3;
+  EnsureRangeFunctionName = 'EnsureRange';
+  EnsureRangeParameterCount = 3;
+  StrToIntFunctionName = 'StrToInt';
+  StrToIntParameterCount = 1;
+  StrToIntDefFunctionName = 'StrToIntDef';
+  StrToIntDefParameterCount = 2;
+  StrToFloatFunctionName = 'StrToFloat';
+  StrToFloatParameterCount = 1;
+  StrToFloatDefFunctionName = 'StrToFloatDef';
+  StrToFloatDefParameterCount = 2;
+  ParseFunctionName = 'Parse';
+  ParseParameterCount = 1;
+  DerivFunctionName = 'Deriv';
+  DerivParameterMinCount = 2;
+  DerivParameterMaxCount = 3;
+  FalseFunctionName = 'False';
+  TrueFunctionName = 'True';
+  EqualFunctionName = '=';
+  NotEqualFunctionName = '<>';
+  AboveFunctionName = '>';
+  BelowFunctionName = '<';
+  AboveOrEqualFunctionName = '>=';
+  BelowOrEqualFunctionName = '<=';
+  GetEpsilonFunctionName = 'GetEpsilon';
+  SetEpsilonFunctionName = 'SetEpsilon';
+  SetEpsilonParameterCount = 1;
+  SetDecimalSeparatorFunctionName = 'SetDecimalSeparator';
+  SetDecimalSeparatorParameterCount = 1;
+  IntegerDivideFunctionName = 'div';
+  ReminderFunctionName = 'mod';
+  DegreeFunctionName = 'degree';
+  FactorialFunctionName = 'Factorial';
+  FactorialParameterCount = 1;
+  SqrFunctionName = 'Sqr';
+  SqrtFunctionName = 'Sqrt';
+  IntFunctionName = 'Int';
+  RoundFunctionName = 'Round';
+  RoundToFunctionName = 'RoundTo';
+  RoundToParameterCount = 2;
+  TruncFunctionName = 'Trunc';
+  AbsFunctionName = 'Abs';
+  FracFunctionName = 'Frac';
+  LnFunctionName = 'Ln';
+  LgFunctionName = 'Lg';
+  LogFunctionName = 'Log';
+  ExpFunctionName = 'Exp';
+  RandomFunctionName = 'Random';
+  SinFunctionName = 'Sin';
+  ArcSinFunctionName = 'ArcSin';
+  SinHFunctionName = 'Sinh';
+  ArcSinHFunctionName = 'ArcSinh';
+  CosFunctionName = 'Cos';
+  ArcCosFunctionName = 'ArcCos';
+  CosHFunctionName = 'Cosh';
+  ArcCosHFunctionName = 'ArcCosh';
+  TanFunctionName = 'Tan';
+  ArcTanFunctionName = 'ArcTan';
+  TanHFunctionName = 'Tanh';
+  ArcTanHFunctionName = 'ArcTanh';
+  CoTanFunctionName = 'Cotan';
+  ArcCoTanFunctionName = 'ArcCotan';
+  CoTanHFunctionName = 'Cotanh';
+  ArcCoTanHFunctionName = 'ArcCotanh';
+  SecFunctionName = 'Sec';
+  ArcSecFunctionName = 'ArcSec';
+  SecHFunctionName = 'Sech';
+  ArcSecHFunctionName = 'ArcSech';
+  CscFunctionName = 'Csc';
+  ArcCscFunctionName = 'ArcCsc';
+  CscHFunctionName = 'Csch';
+  ArcCscHFunctionName = 'ArcCsch';
+  ArcTan2FunctionName = 'ArcTan2';
+  ArcTan2ParameterCount = 2;
+  HypotFunctionName = 'Hypot';
+  HypotParameterCount = 2;
+  RadToDegFunctionName = 'RadToDeg';
+  RadToGradFunctionName = 'RadToGrad';
+  RadToCycleFunctionName = 'RadToCycle';
+  DegToRadFunctionName = 'DegToRad';
+  DegToGradFunctionName = 'DegToGrad';
+  DegToCycleFunctionName = 'DegToCycle';
+  GradToRadFunctionName = 'GradToRad';
+  GradToDegFunctionName = 'GradToDeg';
+  GradToCycleFunctionName = 'GradToCycle';
+  CycleToRadFunctionName = 'CycleToRad';
+  CycleToDegFunctionName = 'CycleToDeg';
+  CycleToGradFunctionName = 'CycleToGrad';
+  LnXP1FunctionName = 'LnXP1';
+  Log10FunctionName = 'Log10';
+  Log2FunctionName = 'Log2';
+  IntPowerFunctionName = 'IntPower';
+  IntPowerParameterCount = 2;
+  PowerFunctionName = '**';
+  RootFunctionName = '//';
+  LdexpFunctionName = 'Ldexp';
+  LdexpParameterCount = 2;
+  CeilFunctionName = 'Ceil';
+  FloorFunctionName = 'Floor';
+  PolyFunctionName = 'Poly';
+  PolyParameterCount = 2;
+  MeanFunctionName = 'Mean';
+  MeanParameterCount = 1;
+  SumFunctionName = 'Sum';
+  SumParameterCount = 1;
+  SumIntFunctionName = 'SumInt';
+  SumIntParameterCount = 1;
+  SumOfSquaresFunctionName = 'SumOfSquares';
+  SumOfSquaresParameterCount = 1;
+  MinValueFunctionName = 'MinValue';
+  MinValueParameterCount = 1;
+  MinIntValueFunctionName = 'MinIntValue';
+  MinIntValueParameterCount = 1;
+  MinFunctionName = 'Min';
+  ParameterMinCount = 2;
+  MaxValueFunctionName = 'MaxValue';
+  MaxValueParameterCount = 1;
+  MaxIntValueFunctionName = 'MaxIntValue';
+  MaxIntValueParameterCount = 1;
+  MaxFunctionName = 'Max';
+  ParameterMaxCount = 2;
+  StdDevFunctionName = 'StdDev';
+  StdDevParameterCount = 1;
+  PopnStdDevFunctionName = 'PopnStdDev';
+  PopnStdDevParameterCount = 1;
+  VarianceFunctionName = 'Variance';
+  VarianceParameterCount = 1;
+  PopnVarianceFunctionName = 'PopnVariance';
+  PopnVarianceParameterCount = 1;
+  TotalVarianceFunctionName = 'TotalVariance';
+  TotalVarianceParameterCount = 1;
+  NormFunctionName = 'Norm';
+  NormParameterCount = 1;
+  RandGFunctionName = 'RandG';
+  RandGParameterCount = 2;
+  RandomRangeFunctionName = 'RandomRange';
+  RandomRangeParameterCount = 2;
+  RandomFromFunctionName = 'RandomFrom';
+  RandomFromParameterCount = 1;
+
+  DateTimeFunctionName = 'DateTime';
+  DateFunctionName = 'Date';
+  TimeFunctionName = 'Time';
+  YearFunctionName = 'Year';
+  MonthFunctionName = 'Month';
+  DayFunctionName = 'Day';
+  DayOfWeekFunctionName = 'DayOfWeek';
+  HourFunctionName = 'Hour';
+  MinuteFunctionName = 'Minute';
+  SecondFunctionName = 'Second';
+  MilliSecondFunctionName = 'MilliSecond';
+  GetYearFunctionName = 'GetYear';
+  GetYearParameterCount = 1;
+  GetMonthFunctionName = 'GetMonth';
+  GetMonthParameterCount = 1;
+  GetDayFunctionName = 'GetDay';
+  GetDayParameterCount = 1;
+  GetDayOfWeekFunctionName = 'GetDayOfWeek';
+  GetDayOfWeekParameterCount = 1;
+  GetHourFunctionName = 'GetHour';
+  GetHourParameterCount = 1;
+  GetMinuteFunctionName = 'GetMinute';
+  GetMinuteParameterCount = 1;
+  GetSecondFunctionName = 'GetSecond';
+  GetSecondParameterCount = 1;
+  GetMilliSecondFunctionName = 'GetMilliSecond';
+  GetMilliSecondParameterCount = 1;
+  EncodeDateTimeFunctionName = 'EncodeDateTime';
+  EncodeDateTimeParameterCount = 7;
+  EncodeDateFunctionName = 'EncodeDate';
+  EncodeDateParameterCount = 3;
+  EncodeTimeFunctionName = 'EncodeTime';
+  EncodeTimeParameterCount = 4;
+  StrToDateTimeFunctionName = 'StrToDateTime';
+  StrToDateTimeParameterCount = 1;
+  StrToDateFunctionName = 'StrToDate';
+  StrToDateParameterCount = 1;
+  StrToTimeFunctionName = 'StrToTime';
+  StrToTimeParameterCount = 1;
+  DateOfFunctionName = 'DateOf';
+  TimeOfFunctionName = 'TimeOf';
+  YearOfFunctionName = 'YearOf';
+  MonthOfFunctionName = 'MonthOf';
+  WeekOfFunctionName = 'WeekOf';
+  DayOfFunctionName = 'DayOf';
+  HourOfFunctionName = 'HourOf';
+  MinuteOfFunctionName = 'MinuteOf';
+  SecondOfFunctionName = 'SecondOf';
+  MilliSecondOfFunctionName = 'MilliSecondOf';
+  YearsBetweenFunctionName = 'YearsBetween';
+  YearsBetweenParameterCount = 2;
+  MonthsBetweenFunctionName = 'MonthsBetween';
+  MonthsBetweenParameterCount = 2;
+  WeeksBetweenFunctionName = 'WeeksBetween';
+  WeeksBetweenParameterCount = 2;
+  DaysBetweenFunctionName = 'DaysBetween';
+  DaysBetweenParameterCount = 2;
+  HoursBetweenFunctionName = 'HoursBetween';
+  HoursBetweenParameterCount = 2;
+  MinutesBetweenFunctionName = 'MinutesBetween';
+  MinutesBetweenParameterCount = 2;
+  SecondsBetweenFunctionName = 'SecondsBetween';
+  SecondsBetweenParameterCount = 2;
+  MilliSecondsBetweenFunctionName = 'MilliSecondsBetween';
+  MilliSecondsBetweenParameterCount = 2;
+  MonthOfTheYearFunctionName = 'MonthOfTheYear';
+  WeekOfTheYearFunctionName = 'WeekOfTheYear';
+  DayOfTheYearFunctionName = 'DayOfTheYear';
+  HourOfTheYearFunctionName = 'HourOfTheYear';
+  MinuteOfTheYearFunctionName = 'MinuteOfTheYear';
+  SecondOfTheYearFunctionName = 'SecondOfTheYear';
+  MilliSecondOfTheYearFunctionName = 'MilliSecondOfTheYear';
+  WeekOfTheMonthFunctionName = 'WeekOfTheMonth';
+  DayOfTheMonthFunctionName = 'DayOfTheMonth';
+  HourOfTheMonthFunctionName = 'HourOfTheMonth';
+  MinuteOfTheMonthFunctionName = 'MinuteOfTheMonth';
+  SecondOfTheMonthFunctionName = 'SecondOfTheMonth';
+  MilliSecondOfTheMonthFunctionName = 'MilliSecondOfTheMonth';
+  DayOfTheWeekFunctionName = 'DayOfTheWeek';
+  HourOfTheWeekFunctionName = 'HourOfTheWeek';
+  MinuteOfTheWeekFunctionName = 'MinuteOfTheWeek';
+  SecondOfTheWeekFunctionName = 'SecondOfTheWeek';
+  MilliSecondOfTheWeekFunctionName = 'MilliSecondOfTheWeek';
+  HourOfTheDayFunctionName = 'HourOfTheDay';
+  MinuteOfTheDayFunctionName = 'MinuteOfTheDay';
+  SecondOfTheDayFunctionName = 'SecondOfTheDay';
+  MilliSecondOfTheDayFunctionName = 'MilliSecondOfTheDay';
+  MinuteOfTheHourFunctionName = 'MinuteOfTheHour';
+  SecondOfTheHourFunctionName = 'SecondOfTheHour';
+  MilliSecondOfTheHourFunctionName = 'MilliSecondOfTheHour';
+  SecondOfTheMinuteFunctionName = 'SecondOfTheMinute';
+  MilliSecondOfTheMinuteFunctionName = 'MilliSecondOfTheMinute';
+  MilliSecondOfTheSecondFunctionName = 'MilliSecondOfTheSecond';
+  CompareDateTimeFunctionName = 'CompareDateTime';
+  CompareDateTimeParameterCount = 2;
+  SameDateTimeFunctionName = 'SameDateTime';
+  SameDateTimeParameterCount = 2;
+  CompareDateFunctionName = 'CompareDate';
+  CompareDateParameterCount = 2;
+  SameDateFunctionName = 'SameDate';
+  SameDateParameterCount = 2;
+  CompareTimeFunctionName = 'CompareTime';
+  CompareTimeParameterCount = 2;
+  SameTimeFunctionName = 'SameTime';
+  SameTimeParameterCount = 2;
+  GetTickCountFunctionName = 'GetTickCount';
+  MondayConstantName = 'Monday';
+  TuesdayConstantName = 'Tuesday';
+  WednesdayConstantName = 'Wednesday';
+  ThursdayConstantName = 'Thursday';
+  FridayConstantName = 'Friday';
+  SaturdayConstantName = 'Saturday';
+  SundayConstantName = 'Sunday';
+  JanuaryConstantName = 'January';
+  FebruaryConstantName = 'February';
+  MarchConstantName = 'March';
+  AprilConstantName = 'April';
+  MayConstantName = 'May';
+  JuneConstantName = 'June';
+  JulyConstantName = 'July';
+  AugustConstantName = 'August';
+  SeptemberConstantName = 'September';
+  OctoberConstantName = 'October';
+  NovemberConstantName = 'November';
+  DecemberConstantName = 'December';
+  LessThanValueConstantName = 'LessThanValue';
+  EqualsValueConstantName = 'EqualsValue';
+  GreaterThanValueConstantName = 'GreaterThanValue';
+  PiConstantName = 'Pi';
+  KilobyteConstantName = 'Kilobyte';
+  MegabyteConstantName = 'Megabyte';
+  GigabyteConstantName = 'Gigabyte';
+  TerabyteConstantName = 'Terabyte';
+  PetabyteConstantName = 'Petabyte';
+  MinShortintConstantName = 'MinShortint';
+  MaxShortintConstantName = 'MaxShortint';
+  MinByteConstantName = 'MinByte';
+  MaxByteConstantName = 'MaxByte';
+  MinSmallintConstantName = 'MinSmallint';
+  MaxSmallintConstantName = 'MaxSmallint';
+  MinWordConstantName = 'MinWord';
+  MaxWordConstantName = 'MaxWord';
+  MinIntegerConstantName = 'MinInteger';
+  MaxIntegerConstantName = 'MaxInteger';
+  MinNativeIntConstantName = 'MinNativeInt';
+  MaxNativeIntConstantName = 'MaxNativeInt';
+  MinLongWordConstantName = 'MinLongWord';
+  MaxLongWordConstantName = 'MaxLongWord';
+  MinInt64ConstantName = 'MinInt64';
+  MaxInt64ConstantName = 'MaxInt64';
+  MinSingleConstantName = 'MinSingle';
+  MaxSingleConstantName = 'MaxSingle';
+  MinDoubleConstantName = 'MinDouble';
+  MaxDoubleConstantName = 'MaxDouble';
+  TinyConstantName = 'Tiny';
+  HugeConstantName = 'Huge';
+
+  ShortintTypeName = 'Shortint';
+  ByteTypeName = 'Byte';
+  SmallintTypeName = 'Smallint';
+  WordTypeName = 'Word';
+  IntegerTypeName = 'Integer';
+  LongWordTypeName = 'LongWord';
+  NativeIntTypeName = 'NativeInt';
+  NativeUIntTypeName = 'NativeUInt';
+  Int64TypeName = 'Int64';
+  SingleTypeName = 'Single';
+  DoubleTypeName = 'Double';
+  ExtendedTypeName = 'Extended';
+  StringTypeName = 'String';
+
+var
+  LockText: string;
+
+implementation
+
+initialization
+  LockText := DoubleQuote;
+
+end.

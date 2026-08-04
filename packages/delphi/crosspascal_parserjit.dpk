@@ -1,0 +1,48 @@
+﻿{ ************************************************************************** }
+{                                                                            }
+{ crosspascal_parserjit - the accelerator                                    }
+{                                                                            }
+{ Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
+{                                                                            }
+{ ************************************************************************** }
+
+package crosspascal_parserjit;
+
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE RELEASE}
+{$RUNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcl,
+  crosspascal_parser;
+
+contains
+  ParseJit.CodeGen in '..\..\jit\ParseJit.CodeGen.pas',
+  ParseJit.Decoder in '..\..\jit\ParseJit.Decoder.pas',
+  ParseJit.Executor in '..\..\jit\ParseJit.Executor.pas',
+  ParseJit.Memory in '..\..\jit\ParseJit.Memory.pas',
+  ParseJit.Parser in '..\..\jit\ParseJit.Parser.pas';
+
+end.

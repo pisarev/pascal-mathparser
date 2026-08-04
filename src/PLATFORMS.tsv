@@ -1,0 +1,9 @@
+#	Modules of the library that do not build everywhere.
+#
+#	Read by compile_all.ps1 and compile_all_linux.sh: what is listed here is not
+#	counted as breakage, everything else has to build with every compiler.
+#
+#	Columns: module <TAB> where it builds <TAB> why
+#	Values of the second column: windows | delphi | fpc | never
+
+WinMem	fpc	a MODE directive in the header, which Delphi does not understand

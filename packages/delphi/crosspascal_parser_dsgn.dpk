@@ -1,0 +1,46 @@
+﻿{ ************************************************************************** }
+{                                                                            }
+{ crosspascal_parser_dsgn - the component palette                            }
+{                                                                            }
+{ Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
+{                                                                            }
+{ ************************************************************************** }
+
+package crosspascal_parser_dsgn;
+
+{$ALIGN 8}
+{$ASSERTIONS ON}
+{$BOOLEVAL OFF}
+{$DEBUGINFO OFF}
+{$EXTENDEDSYNTAX ON}
+{$IMPORTEDDATA ON}
+{$IOCHECKS ON}
+{$LOCALSYMBOLS OFF}
+{$LONGSTRINGS ON}
+{$OPENSTRINGS ON}
+{$OPTIMIZATION ON}
+{$OVERFLOWCHECKS OFF}
+{$RANGECHECKS OFF}
+{$REFERENCEINFO OFF}
+{$SAFEDIVIDE OFF}
+{$STACKFRAMES OFF}
+{$TYPEDADDRESS OFF}
+{$VARSTRINGCHECKS ON}
+{$WRITEABLECONST OFF}
+{$MINENUMSIZE 1}
+{$IMAGEBASE $400000}
+{$DEFINE RELEASE}
+{$DESIGNONLY}
+{$IMPLICITBUILD OFF}
+
+requires
+  rtl,
+  vcl,
+  designide,
+  crosspascal_parser,
+  crosspascal_parserjit;
+
+contains
+  CrossPascalReg in 'CrossPascalReg.pas';
+
+end.
