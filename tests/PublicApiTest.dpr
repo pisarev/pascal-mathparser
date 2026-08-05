@@ -79,14 +79,11 @@ begin
     Check('registration was accepted',
       P.AddFunction('discount', Handle, fkMethod, MakeFunctionMethod(Pricing.Discount, 2, pkValue), False));
     Check('the handle was filled in', Handle <> 0, Format('  handle=%d', [Handle]));
-
     P.AddVariable('rate', Rate);
     Rate := 20;
     CheckDouble('the function is called with both arguments', P.AsDouble('discount(1000, rate)'), 800);
-
     Rate := 50;
     CheckDouble('the variable is read at evaluation, not at registration', P.AsDouble('discount(1000, rate)'), 500);
-
     CheckDouble('it composes with the built-ins', P.AsDouble('discount(1000, rate) / 2 + 1'), 251);
   finally
     Pricing.Free;
@@ -126,14 +123,12 @@ begin
     P.AddVariable('x', X);
     P.AddVariable('n', N);
     P.AddVariable('flag', Flag);
-
     X := 2.5;
     N := 4;
     Flag := True;
     CheckDouble('a Double is read live', P.AsDouble('x * 2'), 5);
     CheckDouble('an Integer is read live', P.AsDouble('n + 1'), 5);
     Check('a Boolean is read live', P.AsBoolean('flag'));
-
     X := 10;
     N := 40;
     Flag := False;
@@ -158,12 +153,10 @@ begin
     CheckDouble('the registered spelling works', P.AsDouble('Rate + 1'), 4);
     CheckDouble('lower case reaches the same variable', P.AsDouble('rate + 1'), 4);
     CheckDouble('upper case reaches the same variable', P.AsDouble('RATE + 1'), 4);
-
     { Case does not separate two names, so the second registration is refused
       rather than shadowing the first. The README used to claim the opposite. }
     Check('a name differing only in case cannot be registered twice', not P.AddVariable('rate', Other));
     CheckDouble('the first variable is untouched', P.AsDouble('rate'), 3);
-
     CheckDouble('a built-in answers in lower case', P.AsDouble('sin(0)'), 0);
     CheckDouble('and in mixed case', P.AsDouble('Sin(0)'), 0);
   finally
@@ -186,7 +179,6 @@ begin
       on E: Exception do Failed := True;
     end;
     Check('an unregistered function raises', Failed);
-
     Failed := False;
     try
       P.AsDouble('nosuchvariable + 1');

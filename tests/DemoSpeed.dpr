@@ -39,7 +39,6 @@ begin
     P.AddVariable('Y', YVariable);
     P.StringToScript(Formula, Script);
     P.OptimizeScript(Script);
-
     Compiled := P.CompileScript(Script);
     try
       if not Compiled.Ready then
@@ -50,15 +49,12 @@ begin
       A := GetDouble(P.ExecuteScript(Script)^);
       B := Compiled.Execute;
       CheckDouble('demo: ' + Formula, B, A, 1E-9);
-
       T0 := Now64;
       for I := 1 to Count do P.ExecuteScript(Script);
       TInterp := Elapsed(T0);
-
       T0 := Now64;
       for I := 1 to Count do Compiled.Execute;
       TNative := Elapsed(T0);
-
       Writeln(Format('%-28s interp %8.1f ns   native %6.1f ns   speedup %6.2fx',
         [Formula, TInterp / Count * 1E9, TNative / Count * 1E9, TInterp / TNative]));
       Flush(Output);

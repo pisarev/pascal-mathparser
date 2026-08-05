@@ -38,6 +38,9 @@ type
     FBuffer: PByte;
     FSize: NativeInt;
     FCapacity: NativeInt;
+    FOverflow: Boolean;
+    FDescribed: Boolean;
+    FCodeSize: NativeInt;
     FCode: TJitFunction;
     FReady: Boolean;
     FReason: string;
@@ -86,8 +89,10 @@ type
     function Execute: Double; virtual;
     property Ready: Boolean read FReady;
     property Reason: string read FReason;
+    property Address: PByte read FBuffer;
     property CodeSize: NativeInt read FSize;
     property Decoder: TJitDecoder read FDecoder;
+    class var TestCapacity: NativeInt;
   end;
 
 implementation
@@ -273,6 +278,8 @@ procedure TJitCode.Release;
 begin
   if Assigned(FBuffer) then
   begin
+    if FDescribed then ForgetCode(FBuffer, FCodeSize);
+    FDescribed := False;
     FreeCode(FBuffer, FCapacity);
     FBuffer := nil;
   end;
@@ -293,7 +300,11 @@ var
 begin
   for I := Low(Bytes) to High(Bytes) do
   begin
-    if FSize >= FCapacity then Exit;
+    if FSize >= FCapacity then
+    begin
+      FOverflow := True;
+      Exit;
+    end;
     FBuffer[FSize] := Bytes[I];
     Inc(FSize);
   end;
@@ -303,7 +314,11 @@ procedure TJitCode.EmitInt32(const Value: Integer);
 var
   P: PInteger;
 begin
-  if FSize + SizeOf(Integer) > FCapacity then Exit;
+  if FSize + SizeOf(Integer) > FCapacity then
+  begin
+    FOverflow := True;
+    Exit;
+  end;
   P := PInteger(FBuffer + FSize);
   P^ := Value;
   Inc(FSize, SizeOf(Integer));
@@ -313,7 +328,11 @@ procedure TJitCode.EmitInt64(const Value: Int64);
 var
   P: PInt64;
 begin
-  if FSize + SizeOf(Int64) > FCapacity then Exit;
+  if FSize + SizeOf(Int64) > FCapacity then
+  begin
+    FOverflow := True;
+    Exit;
+  end;
   P := PInt64(FBuffer + FSize);
   P^ := Value;
   Inc(FSize, SizeOf(Int64));
@@ -339,7 +358,11 @@ function TJitCode.EmitLoadVariable(const Address: Pointer; const AValueType: TVa
 begin
   Result := True;
   case AValueType of
-    ValueTypes.vtDouble, ValueTypes.vtExtended: EmitLoadMemory(Address);
+    ValueTypes.vtDouble: EmitLoadMemory(Address);
+    ValueTypes.vtExtended:
+      if SizeOf(Extended) = SizeOf(Double) then EmitLoadMemory(Address)
+      else
+        Result := False;
     ValueTypes.vtSingle:
       begin
         Emit([$48, $B8]);
@@ -445,8 +468,9 @@ begin
   if AFunction.Method.Variable.VariableType = ParseTypes.vtValue then
     Boxed := AFunction.Method.Variable.Variable
   else
-    if AFunction.Method.Variable.VariableRef.ValueType in [ValueTypes.vtDouble, ValueTypes.vtExtended] then
-      Direct := PDouble(AFunction.Method.Variable.VariableRef.Float64)
+    if (AFunction.Method.Variable.VariableRef.ValueType = ValueTypes.vtDouble) or
+      ((AFunction.Method.Variable.VariableRef.ValueType = ValueTypes.vtExtended) and (SizeOf(Extended) = SizeOf(Double))) then
+        Direct := PDouble(AFunction.Method.Variable.VariableRef.Float64)
   else
     Result := False;
   Result := Result and (Assigned(Boxed) or Assigned(Direct));
@@ -521,7 +545,6 @@ begin
     if not EmitParameterTerm(Index) then Exit(False);
     if Assigned(Direct) then
     begin
-
       Emit([$48, $B8]);
       EmitInt64(Int64(NativeInt(Direct)));
       Emit([$F2, $0F, $11, $00]);
@@ -604,7 +627,6 @@ begin
     Reject('parametric ' + Op.Name);
     Exit(False);
   end;
-
   while (Index < FDecoder.Count) and (FDecoder.Ops[Index].Code <> joParameterEnd) do
   begin
     if FDecoder.Ops[Index].Code = joTermBegin then
@@ -813,6 +835,7 @@ function TJitCode.Compile(const Script: TScript): Boolean;
 var
   Index: Integer;
   Prologue, Epilogue: Integer;
+  PrologBytes: Integer;
 begin
   Release;
   FReason := '';
@@ -822,26 +845,27 @@ begin
   {$ENDIF}
   FSlot := 0;
   FMaxSlot := 0;
+  FOverflow := False;
   if not FDecoder.Decode(Script) then
   begin
     FReason := FDecoder.Reason;
     Exit(False);
   end;
-
-  FCapacity := 4096 + FDecoder.Count * 64;
+  if TestCapacity > 0 then FCapacity := TestCapacity
+  else
+    FCapacity := 4096 + UnwindReserve + FDecoder.Count * 64;
   FBuffer := AllocCode(FCapacity);
   if not Assigned(FBuffer) then
   begin
     FReason := 'no executable memory';
     Exit(False);
   end;
-
   FFrame := 0;
   Epilogue := 0;
   Emit([$48, $81, $EC]);
   Prologue := FSize;
   EmitInt32(0);
-
+  PrologBytes := FSize;
   Index := 0;
   Result := EmitScript(Index);
   if Result then
@@ -850,10 +874,9 @@ begin
     Epilogue := FSize;
     EmitInt32(0);
     Emit([$C3]);
-    Result := FSize < FCapacity;
+    Result := not FOverflow;
     if not Result then FReason := 'code buffer overflow';
   end;
-
   if Result then
   begin
     FFrame := ShadowSize + (FMaxSlot + 1) * SlotSize + 8;
@@ -868,11 +891,17 @@ begin
       Result := False;
     end;
   end;
-
   if Result then
   begin
     PInteger(FBuffer + Prologue)^ := FFrame;
     PInteger(FBuffer + Epilogue)^ := FFrame;
+    FCodeSize := FSize;
+    FDescribed := DescribeCode(FBuffer, FCapacity, FCodeSize, FFrame, PrologBytes);
+    if not FDescribed then
+    begin
+      FReason := 'cannot describe stack frame';
+      Exit(False);
+    end;
     Result := ProtectCode(FBuffer, FCapacity);
     if Result then
     begin
@@ -882,7 +911,6 @@ begin
     else
       FReason := 'cannot protect code';
   end;
-
   if not Result then
   begin
     if FReason = '' then FReason := 'code generation failed';
@@ -896,5 +924,4 @@ begin
     raise Exception.Create('jit code is not ready: ' + FReason);
   Result := FCode();
 end;
-
 end.

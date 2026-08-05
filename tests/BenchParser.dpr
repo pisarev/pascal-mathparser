@@ -169,7 +169,6 @@ begin
     YVar := 2;
     P.AddVariable('x', XVar);
     P.AddVariable('y', YVar);
-
     Writeln('=== BASELINE: MathParser interpreter (', {$IFDEF CPUX64}'x64'{$ELSE}'x86'{$ENDIF}, ') ===');
     Writeln;
     Writeln('-- Running a prepared script (ExecuteScript) --');

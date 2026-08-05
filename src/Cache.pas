@@ -191,6 +191,11 @@ begin
             Message.LParam := NativeUInt(FVariable[I].Variable);
             TCustomParser(P).WindowMethod(Message);
             {$ELSE}
+            if GetWindowThreadProcessId(P.WindowHandle, nil) <> GetCurrentThreadId then
+            begin
+              FSmartCache := False;
+              Exit;
+            end;
             SendMessage(P.WindowHandle, WM_ADDVARIABLE, WPARAM(@Data), LPARAM(FVariable[I].Variable));
             {$ENDIF}
           end;
@@ -382,5 +387,4 @@ begin
     end;
   end;
 end;
-
 end.

@@ -59,10 +59,8 @@ const
   Underscore = '_';
   LineBreak = {$IFDEF UNIX}LF{$ELSE}CR + LF{$ENDIF};
   LB = LineBreak;
-
   Blanks = [CR, LF, Space, Chr(160)];
   Breaks = [CR, LF];
 
 implementation
-
 end.

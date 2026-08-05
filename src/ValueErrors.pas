@@ -38,5 +38,4 @@ function Error(const Message: string; const Arguments: array of const): Exceptio
 begin
   Result := EValueError.CreateFmt(Message, Arguments);
 end;
-
 end.

@@ -105,6 +105,8 @@ const
   TypeError = 'Type error';
   TextError = 'Expression expected: "%s"';
   SizeError = 'Incomplete expression';
+  LoopBreakError = 'Calculation stopped: "%s"';
+  LoopLimitError = 'Loop limit reached: "%s"';
 
 function MakeError(const AErrorType: TErrorType; const AErrorText: string): TError;
 function Error(const Message: string): Exception; overload;
@@ -161,5 +163,4 @@ function Error(const Text, Message: string; const Arguments: array of const): Ex
 begin
   Result := Error(EText(Text, Message, Arguments));
 end;
-
 end.

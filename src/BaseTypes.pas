@@ -25,5 +25,4 @@ type
 {$ENDIF}
 
 implementation
-
 end.

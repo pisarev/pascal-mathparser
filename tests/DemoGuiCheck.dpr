@@ -34,14 +34,12 @@ begin
     FParser.StringToScript('3 + 4');
     FYVariable := Convert(FParser.ExecuteScript^, vtInteger).Signed32;
     Writeln('X = ', FXVariable, ', Y = ', FYVariable);
-
     Formula := 'X * (2 + 2)';
     FRepeatCount := 10000000;
     FParser.StringToScript(Formula, Script);
     Writeln('Formula: "', FParser.ScriptToString(Script), '"');
     FParser.OptimizeScript(Script);
     Writeln('Optimal formula: "', FParser.ScriptToString(Script), '"');
-
     Compiled := FParser.CompileScript(Script);
     try
       TickCount := GetTickCount;
@@ -57,7 +55,6 @@ begin
       Writeln('Result: ', ValueToText(FParser.ExecuteScript(Script)^));
       Writeln('Execution time: ', Trunc(TickCount / 1000), ' seconds ', Round(Frac(TickCount / 1000) * 1000),
         ' milliseconds');
-
       { for comparison: the same count through the interpreter }
       TickCount := GetTickCount;
       for I := 1 to FRepeatCount do FParser.ExecuteScript(Script);

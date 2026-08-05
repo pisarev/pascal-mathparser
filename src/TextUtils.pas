@@ -1369,5 +1369,4 @@ finalization
   {$IFNDEF FPC}
   ReleaseDC(0, DC);
   {$ENDIF}
-
 end.

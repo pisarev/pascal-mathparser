@@ -73,5 +73,4 @@ procedure Leave(const Lock: PRTLCriticalSection);
 begin
   if Assigned(Lock) then LeaveCriticalSection(Lock^);
 end;
-
 end.

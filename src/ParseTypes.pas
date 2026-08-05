@@ -303,6 +303,10 @@ procedure WriteScript(var Target: TScript; const Source: TScript; const Paramete
 procedure WriteString(var Script: TScript; const S: string); overload;
 procedure WriteString(var Script: TScript; const Source: Pointer; const Count: NativeInt); overload;
 
+threadvar
+  ParseBreak: PBoolean;
+  ParseLoopLeft: NativeInt;
+
 implementation
 
 uses
@@ -605,5 +609,4 @@ begin
   AddNativeInt(Script, Count);
   AddMemory(Script, Source, Count);
 end;
-
 end.

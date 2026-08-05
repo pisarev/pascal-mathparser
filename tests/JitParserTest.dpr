@@ -11,6 +11,7 @@ program JitParserTest;
 {$B-}
 
 uses
+  Classes,
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
   SysUtils,
   Math,
@@ -70,6 +71,24 @@ begin
   Flush(Output);
 end;
 
+{
+  A machine-readable report, in the same format as JitBench: name, nanoseconds
+  before and after, number of repeats. The showcase page takes its numbers from
+  here rather than keeping a copy of its own: three copies from three different
+  runs once drifted apart, and all three were presented as current.
+}
+var
+  Rows: TStringList;
+
+procedure Report(const Name: string; const Base, Fast: Double; const Count: Integer);
+var
+  Plain: TFormatSettings;
+begin
+  if not Assigned(Rows) then Exit;
+  Plain := TFormatSettings.Invariant;
+  Rows.Add(Format('%s'#9'%.1f'#9'%.1f'#9'%d', [Name, Base, Fast, Count], Plain));
+end;
+
 procedure BenchLoop(const Formula: string; const Repeats, Iterations: Integer);
 var
   I: Integer;
@@ -94,6 +113,7 @@ begin
       ]
     )
   );
+  Report(Format('native/loop, %d iterations', [Iterations]), TBase / Repeats * 1E9, TJit / Repeats * 1E9, Repeats);
   Flush(Output);
 end;
 
@@ -108,7 +128,6 @@ begin
   SetLength(Inputs, Count);
   SetLength(Outputs, Count);
   for I := 0 to Count - 1 do Inputs[I] := (I + 1) * 0.001;
-
   T0 := Now64;
   for I := 0 to Count - 1 do
   begin
@@ -116,14 +135,13 @@ begin
     Outputs[I] := Base.AsDouble(Formula);
   end;
   TBase := Elapsed(T0);
-
   T0 := Now64;
   OK := Jit.ExecuteMany(Formula, XJit, Inputs, Outputs);
   TBulk := Elapsed(T0);
-
   Check('bulk executed', OK);
   Writeln(Format('%-24s base %8.1f ns   bulk %7.1f ns   speedup %6.2fx',
     ['bulk: ' + Formula, TBase / Count * 1E9, TBulk / Count * 1E9, TBase / TBulk]));
+  Report('bulk/' + Formula, TBase / Count * 1E9, TBulk / Count * 1E9, Count);
   Flush(Output);
 end;
 
@@ -151,13 +169,14 @@ end;
 
 procedure FuzzDiff(const Count: Integer);
 var
-  I, Compiled, Skipped, Errors: Integer;
+  I, Compiled, Declined, Raised, Errors: Integer;
   Formula: string;
   A, B: Double;
 begin
   RandSeed := 20260720;
   Compiled := 0;
-  Skipped := 0;
+  Declined := 0;
+  Raised := 0;
   Errors := 0;
   for I := 1 to Count do
   begin
@@ -168,7 +187,8 @@ begin
       A := Base.AsDouble(Formula);
       if Jit.CodeReason(Formula) <> '' then
       begin
-        Inc(Skipped);
+        { the accelerator declining a formula is ordinary, and not an error }
+        Inc(Declined);
         Continue;
       end;
       B := Jit.AsDouble(Formula);
@@ -182,10 +202,33 @@ begin
           Writeln(Format('  MISMATCH %s: base=%.17g jit=%.17g', [Formula, A, B]));
       end;
     except
-      on E: Exception do Inc(Skipped);
+      {
+        A throw is NOT a skip. It used to be counted together with the
+        accelerator's refusals, and in that common heap it meant nothing: a
+        formula the interpreter answers and the accelerator falls over on is a
+        disagreement, not a "we did not take it".
+      }
+      on E: Exception do
+      begin
+        Inc(Raised);
+        if Raised <= 5 then
+          Writeln(Format('  RAISED %s: %s', [Formula, E.Message]));
+      end;
     end;
   end;
-  Check(Format('fuzz diff: %d compiled, %d skipped, %d mismatches', [Compiled, Skipped, Errors]), Errors = 0);
+  Check(Format('fuzz diff: %d compiled, %d declined, %d raised, %d mismatches', [Compiled, Declined, Raised, Errors]), Errors = 0);
+  {
+    A floor under the number compiled. Without it the set is worth nothing: if
+    the accelerator stops taking formulas at all, Compiled becomes zero, there
+    are no disagreements to find, and the check stays green - reporting success
+    where nothing was checked.
+
+    Half, with a wide margin: today's run takes all three thousand out of three
+    thousand. The floor guards against a collapse, not against wobble.
+  }
+  Check(Format('at least half of the formulas reached machine code (%d of %d)', [Compiled, Count]),
+    Compiled * 2 >= Count);
+  Check(Format('nothing raised where the interpreter answered (%d)', [Raised]), Raised = 0);
 end;
 
 var
@@ -194,6 +237,7 @@ var
   I: Integer;
 
 begin
+  Rows := TStringList.Create;
   Base := TMathParser.Create(nil);
   Jit := TJitParser.Create(nil);
   try
@@ -201,7 +245,6 @@ begin
     XJit := 2.5;
     Base.AddVariable('x', XBase);
     Jit.AddVariable('x', XJit);
-
     BeginSection('J4: TJitParser gives the same answers');
     SameCase('x * 2 + 1');
     SameCase('x * x * x * 3 + x * x * 2 + x * 7 + 11');
@@ -213,15 +256,41 @@ begin
     SameCase('if(x > 0, x * 2, 0 - x)');
     SameCase('1 + 2 > 2');
     SameCase('2 ** 3');
-
     BeginSection('J4: bulk mode correctness');
     SetLength(Inputs, 5);
     SetLength(Outputs, 5);
     for I := 0 to 4 do Inputs[I] := I + 1;
     Check('bulk supported', Jit.ExecuteMany('x * 10 + 1', XJit, Inputs, Outputs));
     Check('bulk values', (Abs(Outputs[0] - 11) < 1E-9) and (Abs(Outputs[4] - 51) < 1E-9), Format('%.1f..%.1f', [Outputs[0], Outputs[4]]));
-    Check('bulk rejects unsupported', not Jit.ExecuteMany('mean(1, 2, x)', XJit, Inputs, Outputs));
+    {
+      This used to say "if you cannot, do not compute": a formula the
+      accelerator declines was not computed at all. That turned out to be
+      harmful - the ordinary parser evaluates it perfectly well, and the caller
+      was told "no" about a formula the very same parser answers on the next
+      line.
 
+      The new contract: True means "the answers are filled in", whatever
+      computed them. Both that and the agreement with the ordinary parser are
+      checked - a fallback that gives a DIFFERENT answer is worse than no
+      fallback at all.
+    }
+    Check('the accelerator does decline this one', Jit.CodeReason('mean(1, 2, x)') <> '', Jit.CodeReason('mean(1, 2, x)'));
+    Check('bulk computes it anyway', Jit.ExecuteMany('mean(1, 2, x)', XJit, Inputs, Outputs));
+    for I := 0 to 4 do
+    begin
+      XBase := Inputs[I];
+      Check(Format('bulk answer %d matches the ordinary parser', [I]), Abs(Outputs[I] - Base.AsDouble('mean(1, 2, x)')) < 1E-9,
+        Format('%.6f', [Outputs[I]]));
+    end;
+    {
+      A formula that does not parse at all, on the other hand, must be refused -
+      and must NOT leave the previous numbers in the answers: a calculation that
+      never happened, carrying somebody else's numbers, looks exactly like one
+      that did.
+    }
+    Check('bulk refuses a formula that does not parse', not Jit.ExecuteMany('mean(1, 2, ', XJit, Inputs, Outputs));
+    for I := 0 to 4 do
+      Check(Format('answer %d is not left over from before', [I]), IsNaN(Outputs[I]), Format('%.6f', [Outputs[I]]));
     BeginSection('J5: control flow and script variables');
     Base.AsDouble('new("k", 0)');
     Jit.AsDouble('new("k", 0)');
@@ -247,7 +316,6 @@ begin
       Jit.CodeReason('get("k")'),
       '"'
     );
-
     BeginSection('J5: unsigned and typed variables');
     Base.AddVariable('uw', UBase);
     Jit.AddVariable('uw', UJit);
@@ -258,12 +326,10 @@ begin
     UBase := 7;
     UJit := 7;
     SameCase('uw * 3');
-
     BeginSection('J4: fuzz diff on generated formulas');
     Jit.AddVariable('y', XJit);
     Base.AddVariable('y', XBase);
     FuzzDiff(3000);
-
     BeginSection('J4: cache invalidation on registry change');
     XJit := 3;
     CheckDouble('before registry change', Jit.AsDouble('x * 2'), 6);
@@ -278,7 +344,6 @@ begin
     {$ENDIF}
     CheckDouble('after registry change', Jit.AsDouble('x * 2 + jitconst'), 13);
     CheckDouble('old formula still fine', Jit.AsDouble('x * 2'), 6);
-
     Writeln;
     Writeln('--- J4 benchmark: full AsDouble path ---');
     BenchAsDouble('x * 2 + 1', 'x * 2 + 1', 500000);
@@ -287,7 +352,6 @@ begin
     Writeln;
     Writeln('--- J5 benchmark: script loop (10000 iterations per call) ---');
     BenchLoop('set("k", 0) + while(get("k") < 10000, set("k", get("k") + 1))', 20, 10000);
-
     Writeln;
     Writeln('--- J4 benchmark: bulk mode ---');
     BenchBulk('x * 2 + 1', 500000);
@@ -306,11 +370,17 @@ begin
       )
     );
     Writeln('tier-down reasons: mean -> ', Jit.CodeReason('mean(1, 2, 3)'), '; if -> ', Jit.CodeReason('if(x > 0, x * 2, 0 - x)'));
-
     Failed := TestSummary;
   finally
     Jit.Free;
     Base.Free;
   end;
   if Failed > 0 then System.ExitCode := 1;
+  try
+    if Assigned(Rows) then
+      Rows.SaveToFile(ChangeFileExt(ParamStr(0), '.tsv'));
+  except
+    on E: Exception do Writeln('the report was not written: ' + E.Message);
+  end;
+  Rows.Free;
 end.

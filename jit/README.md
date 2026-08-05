@@ -25,7 +25,10 @@ polynomial 47x, a loop turn **199x**, bulk mode 136x. Details and package
 installation are in `../packages/lazarus/README.md`.
 
 On Win32, and on any platform without the emitter, an IR-walking stage takes
-over: 4.5x to 8.8x on the same formulas, with no machine code involved.
+over: 1.4x to 3.7x on the same formulas, with no machine code involved. Measured
+on 05.08.2026 - win64 gave 1.5x to 3.4x, win32 gave 1.4x to 3.7x. This line used
+to say 4.5x to 8.8x, a number from an old run that stopped reproducing and went
+on living in the text by itself.
 
 Correctness: 3000 random formulas through the generator - **zero disagreements**
 with the base parser.
@@ -105,7 +108,7 @@ stayed on the interpreter forever, and bulk mode on it quietly returned `False`.
 ## Limitations of the current version
 
 - The emitter is x86-64 only (Delphi and FPC). On 32-bit builds the IR stage
-  takes over automatically (4.5-8.8x), and the interpreter remains the last line.
+  takes over automatically (1.4-3.7x), and the interpreter remains the last line.
 - Everything is computed in `Double`. Integer constants past the exact range of
   the mantissa, 2^53, are not compiled - such a script goes back down rather than
   drift away from the interpreter.

@@ -34,7 +34,6 @@ begin
   Write(' FPC_HAS_TYPE_EXTENDED=', {$IFDEF FPC_HAS_TYPE_EXTENDED}'yes'{$ELSE}'no'{$ENDIF});
   {$ENDIF}
   Writeln(' Extended digits=', Length(FloatToStr(Extended(1) / 3)) - 2);
-
   { the same addition that diverges: through Extended first, then straight in Double }
   A := 0.1;
   B := 0.2;

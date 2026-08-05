@@ -315,5 +315,4 @@ begin
   FCache1.ScriptType := FScriptType;
   FCache2.ScriptType := FScriptType;
 end;
-
 end.

@@ -45,7 +45,6 @@ type
     procedure Save(out Value: Integer); overload; virtual;
     procedure Save(out Value: Byte); overload; virtual;
   end;
-
 {$IFDEF FPC}
 function NumberSwap<T>(var A, B: T): Boolean;
 function Swap(var A, B: NativeInt): Boolean; overload;
@@ -56,28 +55,23 @@ function Swap(var A, B: Byte): Boolean; overload;
 function Swap(var A, B: Single): Boolean; overload;
 function Swap(var A, B: Extended): Boolean; overload;
 {$ENDIF}
-
 type
   {$IFNDEF FPC}
   TNumber = record
     class function Swap<T>(var A, B: T): Boolean; static;
   end;
   {$ENDIF}
-
   TFloatFormat = record
   public
     class function Get(const Precision: Integer): string; static;
   end;
-
   TRange = record
     MinValue: Integer;
     MaxValue: Integer;
   end;
   TRangeArray = array of TRange;
-
 function GetHashCode(const Memory: Pointer; const Size: Integer): Integer; overload;
 function GetHashCode(const Value: string): Integer; overload;
-
 function Equal(const AValue, BValue: Extended; AEpsilon: Extended = 0): Boolean; overload;
 function Equal(const AValue, BValue: Integer; const AEpsilon: Integer): Boolean; overload;
 function Above(const AValue, BValue: Extended; AEpsilon: Extended = 0): Boolean; overload;
@@ -94,20 +88,14 @@ function BOE(const AValue, BValue: Extended; AEpsilon: Extended = 0): Boolean; o
 function BOE(const AValue, BValue: Integer; const AEpsilon: Integer): Boolean; overload;
 function Within(const Value, Min, Max: Integer): Boolean; overload;
 function Within(const Value, Min, Max: Extended; const AEpsilon: Extended = 0): Boolean; overload;
-
 function RandomValue(const Min, Max: Extended): Extended; overload;
 function RandomValue(const Probability: Extended): Integer; overload;
-
 function NextStep(const Value, Distance: Extended; const Index: Integer;
   const Epsilon: Extended = 0): Extended;
-
 function Positive(const Value: Integer): Integer;
-
 function FracSize(const Value: Extended): Integer;
-
 function CleanFloat(const Source: string; const Separator: Char): string; overload;
 function CleanFloat(const Source: string): string; overload;
-
 function FitInto(const Value, MaxValue: Extended): Extended; overload;
 function FitInto(const Value, MaxValue: Integer): Integer; overload;
 function Interpolate(const A: TExtendedDynArray; const Size: Integer): TExtendedDynArray;
@@ -117,54 +105,43 @@ function LExtrapolate(const MinRatio, MaxRatio: Extended; const Value, MaxValue:
 function SExtrapolate(const MinRatio, MaxRatio: Extended; const Value, MaxValue: Integer;
   const Invert: Boolean): Extended;
 function RandomDeviation(const MaxDeviation: Extended): Extended;
-
 function SmoothArray(const Target: TExtendedDynArray; const WindowSize: Integer;
   const MinLimit: Boolean = False; const MaxLimit: Boolean = False; const MinValue: Extended = 0;
   const MaxValue: Extended = 0): TExtendedDynArray;
 function CalcTrend(const Target: TExtendedDynArray; const WindowSize: Integer;
   out ExpandChange, NarrowChange: Extended): Integer;
-
 function ProductOfArray(const A: array of Single): Extended; overload;
 {$IFNDEF FPC}
 function ProductOfArray(const A: array of Double): Extended; overload;
 {$ENDIF}
 function ProductOfArray(const A: array of Extended): Extended; overload;
-
 function GeometricMean(const A: array of Single): Extended; overload;
 {$IFNDEF FPC}
 function GeometricMean(const A: array of Double): Extended; overload;
 {$ENDIF}
 function GeometricMean(const A: array of Extended): Extended; overload;
-
 function HarmonicMean(const A: array of Single): Extended; overload;
 {$IFNDEF FPC}
 function HarmonicMean(const A: array of Double): Extended; overload;
 {$ENDIF}
 function HarmonicMean(const A: array of Extended): Extended; overload;
-
 function IsNumber(const Text: string): Boolean;
 function IsFloatNumber(const Text: string): Boolean;
-
 function MakeRange(const MinValue, MaxValue: Integer): TRange;
 function SplitRange(const Min, Max, Count: Integer): TRangeArray;
 function GetRangeIndex(const Value: Integer; const Ranges: TRangeArray): Integer;
 procedure InvertRanges(var Ranges: TRangeArray);
-
 var
   Bits: TBits;
   Epsilon: Extended = 0;
-
 implementation
-
 uses
   {$IFDEF FPC}
   Math, StrUtils, TextUtils, ScriptFormat;
   {$ELSE}
   Math, {$IFNDEF UNICODE}TextUtils,{$ENDIF}Types, ScriptFormat;
   {$ENDIF}
-
 { TBits }
-
 procedure TBits.Open(const Value: Int64);
 var
   I: Integer;
@@ -172,7 +149,6 @@ begin
   Size := SizeOf(Value) * 8;
   for I := 0 to Size - 1 do Bits[I] := (Value and Round(IntPower(2, I))) > 0;
 end;
-
 procedure TBits.Open(const Value: Integer);
 var
   I: Integer;
@@ -180,7 +156,6 @@ begin
   Size := SizeOf(Value) * 8;
   for I := 0 to Size - 1 do Bits[I] := (Value and Round(IntPower(2, I))) > 0;
 end;
-
 procedure TBits.Open(const Value: Byte);
 var
   I: Integer;
@@ -188,7 +163,6 @@ begin
   Size := SizeOf(Value) * 8;
   for I := 0 to Size - 1 do Bits[I] := (Value and Round(IntPower(2, I))) > 0;
 end;
-
 procedure TBits.Save(out Value: Int64);
 var
   I: Integer;
@@ -197,7 +171,6 @@ begin
   for I := 0 to Size - 1 do
     if Bits[I] then Value := Value or Round(IntPower(2, I));
 end;
-
 procedure TBits.Save(out Value: Integer);
 var
   I: Integer;
@@ -206,7 +179,6 @@ begin
   for I := 0 to Size - 1 do
     if Bits[I] then Value := Value or Round(IntPower(2, I));
 end;
-
 procedure TBits.Save(out Value: Byte);
 var
   I: Integer;
@@ -215,13 +187,11 @@ begin
   for I := 0 to Size - 1 do
     if Bits[I] then Value := Value or Round(IntPower(2, I));
 end;
-
 function Bit(const Value: Int64; const Index: Integer): Boolean;
 begin
   Bits.Open(Value);
   Result := Bits.Bits[Index];
 end;
-
 function GetHashCode(const Memory: Pointer; const Size: Integer): Integer;
 var
   I: Integer;
@@ -236,102 +206,83 @@ begin
       {$IFDEF DELPHI_10.2}(PByte(Memory) + I)^{$ELSE}PByte(Integer(Memory) + I)^{$ENDIF};
   {$ENDIF}
 end;
-
 function GetHashCode(const Value: string): Integer;
 begin
   Result := GetHashCode(Pointer(Value), Length(Value) * SizeOf(Char));
 end;
-
 function Equal(const AValue, BValue: Extended; AEpsilon: Extended): Boolean;
 begin
   if AEpsilon = 0 then AEpsilon := Epsilon;
   Result := SameValue(AValue, BValue, AEpsilon);
 end;
-
 function Equal(const AValue, BValue, AEpsilon: Integer): Boolean;
 begin
   Result := Abs(AValue - BValue) <= AEpsilon;
 end;
-
 function Above(const AValue, BValue: Extended; AEpsilon: Extended): Boolean;
 begin
   if AEpsilon = 0 then AEpsilon := Epsilon;
   Result := CompareValue(AValue, BValue, AEpsilon) = GreaterThanValue;
 end;
-
 function Above(const AValue, BValue, AEpsilon: Integer): Boolean;
 begin
   Result := not Equal(AValue, BValue, AEpsilon) and (AValue > BValue);
 end;
-
 function AboveOrEqual(const AValue, BValue: Extended; AEpsilon: Extended): Boolean;
 begin
   if AEpsilon = 0 then AEpsilon := Epsilon;
   Result := CompareValue(AValue, BValue, AEpsilon) <> LessThanValue;
 end;
-
 function AboveOrEqual(const AValue, BValue, AEpsilon: Integer): Boolean;
 begin
   Result := Equal(AValue, BValue, AEpsilon) or (AValue > BValue);
 end;
-
 function AOE(const AValue, BValue: Extended; AEpsilon: Extended = 0): Boolean;
 begin
   Result := AboveOrEqual(AValue, BValue, AEpsilon);
 end;
-
 function AOE(const AValue, BValue, AEpsilon: Integer): Boolean;
 begin
   Result := AboveOrEqual(AValue, BValue, AEpsilon);
 end;
-
 function Below(const AValue, BValue: Extended; AEpsilon: Extended): Boolean;
 begin
   if AEpsilon = 0 then AEpsilon := Epsilon;
   Result := CompareValue(AValue, BValue, AEpsilon) = LessThanValue;
 end;
-
 function Below(const AValue, BValue, AEpsilon: Integer): Boolean;
 begin
   Result := not Equal(AValue, BValue, AEpsilon) and (AValue < BValue);
 end;
-
 function BelowOrEqual(const AValue, BValue: Extended; AEpsilon: Extended): Boolean;
 begin
   if AEpsilon = 0 then AEpsilon := Epsilon;
   Result := CompareValue(AValue, BValue, AEpsilon) <> GreaterThanValue;
 end;
-
 function BelowOrEqual(const AValue, BValue, AEpsilon: Integer): Boolean;
 begin
   Result := Equal(AValue, BValue, AEpsilon) or (AValue < BValue);
 end;
-
 function BOE(const AValue, BValue: Extended; AEpsilon: Extended = 0): Boolean;
 begin
   Result := BelowOrEqual(AValue, BValue, AEpsilon);
 end;
-
 function BOE(const AValue, BValue, AEpsilon: Integer): Boolean;
 begin
   Result := BelowOrEqual(AValue, BValue, AEpsilon);
 end;
-
 function Within(const Value, Min, Max: Integer): Boolean;
 begin
   Result := (Value >= Min) and (Value <= Max);
 end;
-
 function Within(const Value, Min, Max, AEpsilon: Extended): Boolean;
 begin
   Result := AOE(Value, Min, AEpsilon) and BOE(Value, Max, AEpsilon);
 end;
-
 function RandomValue(const Min, Max: Extended): Extended;
 begin
   Result := Min + (Max - Min) * Random;
 end;
-
 function RandomValue(const Probability: Extended): Integer;
 begin
   if (Probability <= 0) or (Probability > 1) then Result := 0
@@ -341,7 +292,6 @@ begin
     else
       Result := 0;
 end;
-
 function NextStep(const Value, Distance: Extended; const Index: Integer; const Epsilon: Extended): Extended;
 var
   A: Extended;
@@ -352,7 +302,6 @@ begin
   else
     Result := (Int(A) + Index) * Distance;
 end;
-
 function Positive(const Value: Integer): Integer;
 begin
   if Value < 0 then
@@ -360,7 +309,6 @@ begin
   else
     Result := Value;
 end;
-
 function FracSize(const Value: Extended): Integer;
 begin
   if Value > 0 then
@@ -371,7 +319,6 @@ begin
   else
     Result := 0;
 end;
-
 function Swap(var A, B): Boolean;
 var
   Size: Integer;
@@ -391,7 +338,6 @@ begin
     end;
   end;
 end;
-
 {$IFDEF FPC}
 function NumberSwap<T>(var A, B: T): Boolean;
 var
@@ -402,47 +348,37 @@ begin
   B := C;
   Result := True;
 end;
-
 function Swap(var A, B: NativeInt): Boolean;
 begin
   Result := NumberSwap<NativeInt>(A, B);
 end;
-
 function Swap(var A, B: Int64): Boolean;
 begin
   Result := NumberSwap<Int64>(A, B);
 end;
-
 function Swap(var A, B: Integer): Boolean;
 begin
   Result := NumberSwap<Integer>(A, B);
 end;
-
 function Swap(var A, B: Word): Boolean;
 begin
   Result := NumberSwap<Word>(A, B);
 end;
-
 function Swap(var A, B: Byte): Boolean;
 begin
   Result := NumberSwap<Byte>(A, B);
 end;
-
 function Swap(var A, B: Single): Boolean;
 begin
   Result := NumberSwap<Single>(A, B);
 end;
-
 function Swap(var A, B: Extended): Boolean;
 begin
   Result := NumberSwap<Extended>(A, B);
 end;
-
 {$ENDIF}
-
 {$IFNDEF FPC}
 { TNumber }
-
 class function TNumber.Swap<T>(var A, B: T): Boolean;
 var
   C: T;
@@ -453,24 +389,19 @@ begin
   Result := True;
 end;
 {$ENDIF}
-
 { TFloatFormat }
-
 class function TFloatFormat.Get(const Precision: Integer): string;
 const
   Template = '0.';
 begin
   Result := Template + DupeString('#', Precision);
 end;
-
 function CleanFloat(const Source: string; const Separator: Char): string; overload;
-
   procedure Put(var S: string; const C: Char; var Index: Integer);
   begin
     S[Index] := C;
     Inc(Index);
   end;
-
 var
   I, J, K: Integer;
   C: Char;
@@ -488,12 +419,10 @@ begin
   end;
   SetLength(Result, J - 1);
 end;
-
 function CleanFloat(const Source: string): string; overload;
 begin
   Result := CleanFloat(Source, ParseFormat.DecimalSeparator);
 end;
-
 function FitInto(const Value, MaxValue: Extended): Extended;
 begin
   if IsNan(Value) or IsInfinite(Value) or IsNan(MaxValue) or IsInfinite(MaxValue) or (MaxValue = 0) then
@@ -507,7 +436,6 @@ begin
   if Result >= MaxValue then
     Result := Result - MaxValue;
 end;
-
 function FitInto(const Value, MaxValue: Integer): Integer;
 begin
   if MaxValue = 0 then
@@ -521,7 +449,6 @@ begin
   if Result >= MaxValue then
     Dec(Result, MaxValue);
 end;
-
 function Interpolate(const A: TExtendedDynArray; const Size: Integer): TExtendedDynArray;
 var
   I, J: Integer;
@@ -548,12 +475,10 @@ begin
       Result[I] := LInterpolate(A[Floor(T)], A[Ceil(T)], Frac(T));
   end;
 end;
-
 function LInterpolate(const A, B, Factor: Extended): Extended;
 begin
   Result := A + (B - A) * Factor;
 end;
-
 function LExtrapolate(const MinRatio, MaxRatio: Extended; const Value, MaxValue: Integer;
   const Invert: Boolean): Extended;
 begin
@@ -562,7 +487,6 @@ begin
   else
     Result := MinRatio + ((Value / MaxValue) * (MaxRatio - MinRatio));
 end;
-
 function SExtrapolate(const MinRatio, MaxRatio: Extended; const Value, MaxValue: Integer;
   const Invert: Boolean): Extended;
 begin
@@ -571,12 +495,10 @@ begin
   else
     Result := MinRatio + MaxRatio * Sin(ArcSin(((Value * (MaxRatio - MinRatio)) / MaxValue) / MaxRatio));
 end;
-
 function RandomDeviation(const MaxDeviation: Extended): Extended;
 begin
   Result := (Random * 2 - 1) * MaxDeviation;
 end;
-
 function ProductOfArray(const A: array of Single): Extended;
 var
   I: Integer;
@@ -584,7 +506,6 @@ begin
   Result := 1;
   for I := Low(A) to High(A) do Result := Result * A[I];
 end;
-
 {$IFNDEF FPC}
 function ProductOfArray(const A: array of Double): Extended;
 var
@@ -594,7 +515,6 @@ begin
   for I := Low(A) to High(A) do Result := Result * A[I];
 end;
 {$ENDIF}
-
 function ProductOfArray(const A: array of Extended): Extended;
 var
   I: Integer;
@@ -602,7 +522,6 @@ begin
   Result := 1;
   for I := Low(A) to High(A) do Result := Result * A[I];
 end;
-
 function GeometricMean(const A: array of Single): Extended;
 begin
   if Length(A) > 0 then
@@ -610,7 +529,6 @@ begin
   else
     Result := 0;
 end;
-
 {$IFNDEF FPC}
 function GeometricMean(const A: array of Double): Extended;
 begin
@@ -620,7 +538,6 @@ begin
     Result := 0;
 end;
 {$ENDIF}
-
 function GeometricMean(const A: array of Extended): Extended;
 begin
   if Length(A) > 0 then
@@ -628,7 +545,6 @@ begin
   else
     Result := 0;
 end;
-
 function HarmonicMean(const A: array of Single): Extended;
 var
   I, J: Integer;
@@ -649,7 +565,6 @@ begin
       Result := 0;
   end;
 end;
-
 {$IFNDEF FPC}
 function HarmonicMean(const A: array of Double): Extended;
 var
@@ -672,7 +587,6 @@ begin
   end;
 end;
 {$ENDIF}
-
 function HarmonicMean(const A: array of Extended): Extended;
 var
   I, J: Integer;
@@ -693,7 +607,6 @@ begin
       Result := 0;
   end;
 end;
-
 function SmoothArray(const Target: TExtendedDynArray; const WindowSize: Integer;
   const MinLimit, MaxLimit: Boolean; const MinValue, MaxValue: Extended): TExtendedDynArray;
 var
@@ -711,7 +624,6 @@ begin
     if MaxLimit and (Result[I] > MaxValue) then Result[I] := MaxValue;
   end;
 end;
-
 function CalcTrend(const Target: TExtendedDynArray; const WindowSize: Integer;
   out ExpandChange, NarrowChange: Extended): Integer;
 type
@@ -888,5 +800,4 @@ initialization
 
 finalization
   Bits.Free;
-
 end.

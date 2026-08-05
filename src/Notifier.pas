@@ -113,8 +113,7 @@ function Available(const Component: TComponent): Boolean;
 
 implementation
 
-uses
-  Connector, MemoryUtils;
+uses Connector, MemoryUtils;
 
 function Available(const Component: TComponent): Boolean;
 begin
@@ -237,5 +236,4 @@ begin
   end;
 end;
 {$WARNINGS ON}
-
 end.

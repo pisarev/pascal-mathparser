@@ -333,5 +333,4 @@ begin
     FNotifier.Notify(ntSuspend, Self);
   end;
 end;
-
 end.

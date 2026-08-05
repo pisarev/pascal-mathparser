@@ -111,12 +111,10 @@ const
     vtSingle,
     vtDouble,
     vtExtended];
-
   FloatTypeSet = [
     vtSingle,
     vtDouble,
     vtExtended];
-
   IntegerTypeSet = [
     vtByte,
     vtShortint,
@@ -127,7 +125,6 @@ const
     vtNativeInt,
     vtNativeUInt,
     vtInt64];
-
   SignedTypeSet = [
     vtShortint,
     vtSmallint,
@@ -137,7 +134,6 @@ const
     vtSingle,
     vtDouble,
     vtExtended];
-
   UnsignedTypeSet = [
     vtByte,
     vtWord,
@@ -186,5 +182,4 @@ function Assignable(const Source, Target: TValueType): Boolean;
 begin
   Result := Source in [Target..High(TValueType)];
 end;
-
 end.

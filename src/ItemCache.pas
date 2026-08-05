@@ -49,8 +49,7 @@ function MakeData(const ItemArray: TTextItemArray1): TCacheData;
 
 implementation
 
-uses
-  Parser, ValueUtils;
+uses Parser, ValueUtils;
 
 function MakeData(const ItemArray: TTextItemArray1): TCacheData;
 begin
@@ -147,5 +146,4 @@ begin
       end;
   end;
 end;
-
 end.

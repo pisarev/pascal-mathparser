@@ -379,5 +379,4 @@ begin
   Index := 0;
   RunScript(Index, Result);
 end;
-
 end.

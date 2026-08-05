@@ -69,14 +69,12 @@ begin
     for I := 1 to 400 do Heavy := Heavy + ' + sin(1)';
     for I := 1 to 200 do Calc.Thread.AddText(Heavy);
     Calc.Thread.ThreadCount := 4;
-
     { the first parallel compilation - this is what took the process down
       before the warm-up }
     Check('C31 parallel pool starts', Calc.Thread.Execute);
     Calc.Thread.WaitFor;
     Check('C31 all 200 items computed without a crash', Calc.Thread.ItemCount = 200, IntToStr(Calc.Thread.ItemCount));
     Calc.Thread.Clear;
-
     { the parser is alive after the pool }
     Check('C31 calculator still works after the pool', GetDouble(Calc.AsValue('2 + 2')) = 4);
   finally

@@ -10,8 +10,7 @@ program Extend;
 { expect: 800.00 }
 {$APPTYPE CONSOLE}
 
-uses
-  ParseTypes, ValueTypes, ValueUtils, Parser;
+uses ParseTypes, ValueTypes, ValueUtils, Parser;
 
 type
   TPricing = class
@@ -35,7 +34,6 @@ begin
   Pricing := TPricing.Create;
   try
     P.AddFunction('discount', Handle, fkMethod, MakeFunctionMethod(Pricing.Discount, 2, pkValue), False);
-
     P.AddVariable('rate', Rate);
     Rate := 20;
     Writeln(P.AsDouble('discount(1000, rate)'):0:2);

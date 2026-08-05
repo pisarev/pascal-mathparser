@@ -15,8 +15,7 @@ unit NumberConsts;
 
 interface
 
-uses
-  SysUtils, TextConsts, Types;
+uses SysUtils, TextConsts, Types;
 
 type
   TNumberType = (ntZero, ntOne, ntTwo, ntThree, ntFour, ntFive, ntSix, ntSeven,
@@ -31,7 +30,6 @@ const
   NumberChar: array[TNumberType] of Char = '0123456789';
   LCaseIndexChar: array[TCharFlag] of Char = 'abcdefghijklmnopqrstuvwxyz';
   UCaseIndexChar: array[TCharFlag] of Char = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
-
   Quecca = 1E30;
   Ronna = 1E27;
   Yotta = 1E24;
@@ -56,7 +54,6 @@ const
   Yocto = 1E-24;
   Ronto = 1E-27;
   Quecto = 1E-30;
-
   Zero = Ord(ntZero);
   One = Ord(ntOne);
   Two = Ord(ntTwo);
@@ -67,7 +64,6 @@ const
   Seven = Ord(ntSeven);
   Eight = Ord(ntEight);
   Nine = Ord(ntNine);
-
   Kilobyte: LongWord = 1024;
   Megabyte: LongWord = 1048576;
   Gigabyte: LongWord = 1073741824;
@@ -84,5 +80,4 @@ implementation
 uses
   TextUtils;
 {$ENDIF}
-
 end.

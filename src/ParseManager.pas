@@ -707,5 +707,4 @@ procedure TParseManager.SetParser(const Value: TParser);
 begin
   inherited Parser := Value;
 end;
-
 end.

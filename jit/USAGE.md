@@ -152,6 +152,24 @@ stage works instead (IR walking, 4.5-8.8x).
 - The accelerator computes in Double. If you need integer semantics on large
   numbers (beyond 2^53), use the ordinary parser.
 
+## Threads: one accelerating parser belongs to one thread
+
+`TJitParser` keeps a cache: the text of the last formula, the list of compiled
+entries and the counters beside them. All of it is written the first time a
+formula is met, and none of it is behind a lock. Two threads that run into a
+formula the cache does not hold yet will both compile it and both append to the
+list.
+
+The plain `TMathParser` does not suffer from this: once everything is
+registered, evaluating a ready script is thread-safe.
+
+To evaluate in parallel, do what the plotting component does - and no locks are
+needed for it:
+
+- compile the scripts up front, in one thread, with `CompileScript`;
+- run the ready `TJitScript` from as many threads as you like - evaluation does
+  not change it.
+
 ## Parallel evaluation: redirecting variables
 
 When several threads evaluate one formula, each needs its own variable. The
@@ -181,7 +199,7 @@ else Value := GetExtended(Parser.ExecuteScript(Script)^);
 
 ## When built code goes stale
 
-`Ready` answers not only "did it build" but also "is it still correct". Built
+`Ready` answers two questions: did it build, and is it still correct. Built
 code remembers the parser's generation and the assumptions it made about
 redirection; as soon as the parser changes, or redirection starts pointing
 somewhere else, `Ready` goes out and `Reason` says `parser changed`.

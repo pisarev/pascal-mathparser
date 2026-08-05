@@ -21,8 +21,7 @@ procedure ZeroMemory(Destination: Pointer; Length: NativeUInt);
 
 implementation
 
-uses
-  Classes, SysUtils;
+uses Classes, SysUtils;
 
 procedure MoveMemory(Destination, Source: Pointer; Length: NativeUInt);
 begin
@@ -43,5 +42,4 @@ procedure ZeroMemory(Destination: Pointer; Length: NativeUInt);
 begin
   FillChar(Destination^, Length, 0);
 end;
-
 end.

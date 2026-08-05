@@ -2250,5 +2250,4 @@ initialization
 
 finalization
   Helper.Free;
-
 end.

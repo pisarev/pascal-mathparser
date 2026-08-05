@@ -54,8 +54,7 @@ function MakeData(const AFlagArray: TFunctionFlagArray; const ACleanText: PStrin
 
 implementation
 
-uses
-  Parser, ValueUtils;
+uses Parser, ValueUtils;
 
 function MakeData(const AFlagArray: TFunctionFlagArray; const ACleanText: PString;
   const ATypeArray: PHandleArray): TCacheData;
@@ -180,5 +179,4 @@ begin
       end;
   end;
 end;
-
 end.

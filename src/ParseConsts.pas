@@ -37,20 +37,16 @@ const
   StringCode = Ord(icString);
   ScriptCode = Ord(icScript);
   ParameterCode = Ord(icParameter);
-
   FRedirectCode = 1;
   TRedirectCode = 2;
-
   TOperatorArray: array[TTextOperator] of string = (Minus, Plus);
   POperatorArray: array[TParameterOperator] of string = (Comma, Semicolon);
   BracketArray: array[TBracketKind] of TBracket = (LParenthesis + RParenthesis, LBracket + RBracket, LBrace + RBrace);
   ParameterPrefix = '#';
   DelimiterArray = Blanks + [Comma, Semicolon, Plus, Minus, LParenthesis, RParenthesis, LBracket, RBracket, LBrace, RBrace, Quote, DoubleQuote];
-
   InternalFunctionName = LBrace;
   MinusFunctionName = Minus;
   PlusFunctionName = Plus;
-
   VoidFunctionName = 'Void';
   NewFunctionName = 'New';
   NewParameterMinCount = 2;
@@ -245,7 +241,6 @@ const
   RandomRangeParameterCount = 2;
   RandomFromFunctionName = 'RandomFrom';
   RandomFromParameterCount = 1;
-
   DateTimeFunctionName = 'DateTime';
   DateFunctionName = 'Date';
   TimeFunctionName = 'Time';
@@ -402,7 +397,6 @@ const
   MaxDoubleConstantName = 'MaxDouble';
   TinyConstantName = 'Tiny';
   HugeConstantName = 'Huge';
-
   ShortintTypeName = 'Shortint';
   ByteTypeName = 'Byte';
   SmallintTypeName = 'Smallint';
@@ -424,5 +418,4 @@ implementation
 
 initialization
   LockText := DoubleQuote;
-
 end.

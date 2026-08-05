@@ -82,6 +82,7 @@ type
       const PA: TParameterArray): TValue; virtual;
     function RepeatMethod(const Header: PScriptHeader; const AFunction: PFunction; const AType: PType;
       const PA: TParameterArray): TValue; virtual;
+    procedure CheckLoop(const AFunction: PFunction);
     function WhileMethod(const Header: PScriptHeader; const AFunction: PFunction; const AType: PType;
       const PA: TParameterArray): TValue; virtual;
     function MultiplyMethod(const Header: PScriptHeader; const AFunction: PFunction; const AType: PType;
@@ -4972,7 +4973,10 @@ begin
     end;
     Result := EmptyValue;
     while AsBoolean(P, Header, PA[2]) do
+    begin
+      CheckLoop(AFunction);
       AssignBoolean(Result, AsBoolean(P, Header, PA[3]) or GetBoolean(Result));
+    end;
   finally
     if Assigned(Value) then
     begin
@@ -6152,6 +6156,7 @@ begin
   Result := EmptyValue;
   P := TCustomParser(FParser);
   repeat
+    CheckLoop(AFunction);
     AssignBoolean(Result, AsBoolean(P, Header, PA[0]) or GetBoolean(Result));
   until AsBoolean(P, Header, PA[1]);
 end;
@@ -6734,6 +6739,23 @@ begin
   Result := EmptyValue;
 end;
 
+procedure TMethod.CheckLoop(const AFunction: PFunction);
+begin
+  if Assigned(ParseBreak) and ParseBreak^ then
+    raise ParseErrors.Error(LoopBreakError, [AFunction.Name]);
+  if ParseLoopLeft > 0 then
+  begin
+    Dec(ParseLoopLeft);
+    if ParseLoopLeft = 0 then
+    begin
+      ParseLoopLeft := -1;
+      raise ParseErrors.Error(LoopLimitError, [AFunction.Name]);
+    end;
+  end
+  else if ParseLoopLeft < 0 then
+    raise ParseErrors.Error(LoopLimitError, [AFunction.Name]);
+end;
+
 function TMethod.WhileMethod(const Header: PScriptHeader; const AFunction: PFunction; const AType: PType;
   const PA: TParameterArray): TValue;
 var
@@ -6744,7 +6766,10 @@ begin
   Result := EmptyValue;
   P := TCustomParser(FParser);
   while AsBoolean(P, Header, PA[0]) do
-    AssignBoolean(Result, AsBoolean(P, Header, PA[1]) or GetBoolean(Result))
+  begin
+    CheckLoop(AFunction);
+    AssignBoolean(Result, AsBoolean(P, Header, PA[1]) or GetBoolean(Result));
+  end;
 end;
 
 function TMethod.XorMethod(const Header: PScriptHeader; const AFunction: PFunction; const AType: PType;
@@ -8434,5 +8459,4 @@ finalization
   {$ELSE}
   DeleteCriticalSection(MethodSync);
   {$ENDIF}
-
 end.

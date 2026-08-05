@@ -430,8 +430,7 @@ procedure Register;
 
 implementation
 
-uses
-  ZUtils, TextConsts, TextUtils;
+uses ZUtils, TextConsts, TextUtils;
 
 procedure Register;
 begin
@@ -1540,5 +1539,4 @@ procedure TBlobManager.WriteWord(const AName: string; const Value: Word; const I
 begin
   Write(ItemKind, AName, Value, SizeOf(Value));
 end;
-
 end.

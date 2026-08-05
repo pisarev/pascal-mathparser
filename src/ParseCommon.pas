@@ -87,5 +87,4 @@ begin
     Value := AValue;
   end;
 end;
-
 end.

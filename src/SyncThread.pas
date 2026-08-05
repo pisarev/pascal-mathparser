@@ -278,5 +278,4 @@ procedure TSyncThread.Work;
 begin
   DoWork;
 end;
-
 end.

@@ -590,5 +590,4 @@ begin
   if Available(Connector) then Connector.Delete(FFunctionHandle);
   Parser := nil;
 end;
-
 end.

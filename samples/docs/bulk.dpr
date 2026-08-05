@@ -22,12 +22,10 @@ begin
   P := TJitParser.Create(nil);
   try
     P.AddVariable('x', X);
-
     SetLength(Inputs, 100000);
     SetLength(Outputs, 100000);
     for I := 0 to High(Inputs) do
       Inputs[I] := I / 1000;
-
     P.ExecuteMany('x * x * 3 + 1', X, Inputs, Outputs);
     Writeln(Outputs[High(Outputs)]:0:2);
   finally

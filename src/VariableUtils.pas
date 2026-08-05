@@ -72,5 +72,4 @@ begin
     Target := ATarget;
   end;
 end;
-
 end.

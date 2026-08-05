@@ -67,6 +67,7 @@ type
     FThreadId: {$IFDEF FPC}TThreadID{$ELSE}LongWord{$ENDIF};
     function GetActive: Boolean;
     function GetFinished: Boolean;
+    function GetStopFlag: PBoolean;
     procedure SetPriority(const Value: TThreadPriority);
     procedure SetSuspended(const Value: Boolean);
   protected
@@ -93,6 +94,7 @@ type
     property Active: Boolean read GetActive;
     property Aborted: Boolean read FAborted;
     property Stopped: Boolean read FStopped write FStopped;
+    property StopFlag: PBoolean read GetStopFlag;
     {$IFNDEF FPC}
     property Handle: THandle read FHandle;
     {$ENDIF}
@@ -339,6 +341,11 @@ begin
   inherited;
 end;
 
+function TThread.GetStopFlag: PBoolean;
+begin
+  Result := @FStopped;
+end;
+
 function TThread.GetActive: Boolean;
 begin
   Result := FStarted;
@@ -541,5 +548,4 @@ finalization
   DeleteCriticalSection(ThreadSync);
   {$ENDIF}
   FreeAndNil(SyncList);
-
 end.

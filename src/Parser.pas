@@ -4663,5 +4663,4 @@ finalization
   {$ELSE}
   DeleteCriticalSection(RedirectCategorySync);
   {$ENDIF}
-
 end.

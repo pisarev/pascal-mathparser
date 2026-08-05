@@ -1758,5 +1758,4 @@ begin
     vtExtended: AssignExtended(Result, Abs(Value.Float80));
   end;
 end;
-
 end.

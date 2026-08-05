@@ -15,8 +15,8 @@ procedure Register;
 implementation
 
 uses
-  Classes, BlobManager, Calculator, Connector, ExactTimer, ParseManager,
-  ParseValueList, Parser, SyncThread;
+  Classes, BlobManager, Calculator, Connector, ExactTimer, ParseManager, ParseValueList,
+  Parser, SyncThread;
 
 const
   Palette = 'CrossPascal';
@@ -24,12 +24,8 @@ const
 procedure Register;
 begin
   RegisterComponents(Palette, [TParser, TMathParser, TCalculator]);
-
   RegisterComponents(Palette, [TParseValueList, TParseManager, TConnector]);
-
   RegisterComponents(Palette, [TCalcThread, TSyncThread, TSyncTimer, TExactTimer]);
-
   RegisterComponents(Palette, [TBlobManager]);
 end;
-
 end.

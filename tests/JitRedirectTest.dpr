@@ -264,15 +264,12 @@ var
 begin
   BeginSection('categories are handed out one at a time');
   for I := 0 to Count - 1 do Seen[I] := GetRedirectCategory;
-
   Ok := True;
   for I := 0 to Count - 1 do if Seen[I] <= 0 then Ok := False;
   Check('every category is positive', Ok);
-
   Ok := True;
   for I := 1 to Count - 1 do if Seen[I] <= Seen[I - 1] then Ok := False;
   Check('categories strictly increase', Ok, Format('  first=%d last=%d', [Seen[0], Seen[Count - 1]]));
-
   Ok := True;
   for I := 0 to Count - 1 do
     for J := I + 1 to Count - 1 do
@@ -289,23 +286,17 @@ var
 begin
   BeginSection('the redirect table');
   Category := GetRedirectCategory;
-
   Target := -1;
   Check('a query with category zero fails', not Parser.GetRedirect(0, GlobalHandle, Target));
-
   Target := -1;
   Check('a query for an unknown row fails', not Parser.GetRedirect(Category, GlobalHandle, Target));
-
   Index := Parser.CreateRedirect;
   Check('a row can be created', Index >= 0, Format('  index=%d', [Index]));
   Check('the row can be filled in', Parser.SetRedirect(Index, Category, GlobalHandle, 12345));
-
   Target := -1;
   Check('the row is found', Parser.GetRedirect(Category, GlobalHandle, Target));
   Check('the row gives back its target', Target = 12345, Format('  target=%d', [Target]));
-
   Check('filling in a row that does not exist fails', not Parser.SetRedirect(Index + 10000, Category, GlobalHandle, 1));
-
   Check('the row can be deleted', Parser.DeleteRedirect(Index));
   Target := -1;
   Check('after deletion the query fails again', not Parser.GetRedirect(Category, GlobalHandle, Target));
@@ -325,11 +316,9 @@ begin
   try
     Parser.SetRedirect(IndexA, CatA, GlobalHandle, 111);
     Parser.SetRedirect(IndexB, CatB, GlobalHandle, 222);
-
     Target := -1;
     Parser.GetRedirect(CatA, GlobalHandle, Target);
     Check('the first category keeps its target', Target = 111, Format('  target=%d', [Target]));
-
     Target := -1;
     Parser.GetRedirect(CatB, GlobalHandle, Target);
     Check('the second category keeps its own', Target = 222, Format('  target=%d', [Target]));
@@ -414,7 +403,6 @@ var
 begin
   BeginSection('changing the registry invalidates compiled code');
   Check('the cell was ready to begin with', Slots[0].Ready, '  reason: ' + Slots[0].Reason);
-
   {
     The registration protocol matters here, and it cost a crash to learn.
 
@@ -434,14 +422,11 @@ begin
     Parser.Notify(ntCompile, Parser);
   end;
   Parser.Prepare;
-
   Check('the compiled script no longer claims to be ready', not Slots[0].Ready, '  reason: ' + Slots[0].Reason);
-
   { The point of invalidation is not that the code stops working - it is that the
     caller still gets the right answer. }
   Value := Slots[0].ByParser;
   CheckDouble('the interpreter still answers correctly', Value, Expect(0));
-
   Slots[0].Compile;
   Check('recompiling makes it ready again', Slots[0].Ready, '  reason: ' + Slots[0].Reason);
   if Slots[0].Ready then
@@ -474,16 +459,13 @@ begin
   { Every cell is recompiled first: earlier sections changed the registry on
     purpose, and stale code would be measured instead of the mechanism. }
   for I := Low(Slots) to High(Slots) do Slots[I].Compile;
-
   UseCode := True;
   for I := Low(Slots) to High(Slots) do
     if not Slots[I].Ready then UseCode := False;
   Check('every cell is compiled before the threads start', UseCode);
-
   for I := Low(Slots) to High(Slots) do
     Workers[I] := TWorker.Create(Slots[I], Expect(I), ThreadRounds, UseCode);
   for I := Low(Slots) to High(Slots) do Workers[I].WaitFor;
-
   Wrong := 0;
   Raised := '';
   for I := Low(Slots) to High(Slots) do
@@ -493,7 +475,6 @@ begin
       Raised := Raised + Format(' [cell %d: %s]', [I, Workers[I].Raised]);
     Workers[I].Free;
   end;
-
   Check('no thread raised', Raised = '', '  ' + Raised);
   Check('no thread ever read another cell''s variable', Wrong = 0,
     Format('  wrong answers: %d of %d', [Wrong, ThreadCount * ThreadRounds]));
@@ -547,7 +528,6 @@ begin
     end;
   end;
   Check('the table stays consistent through the whole run', Ok);
-
   { The cells set up at the start must be untouched by all of that. }
   CheckDouble('cell 0 still reads its own variable', Slots[0].ByParser, Expect(0));
   CheckDouble('cell 1 still reads its own variable', Slots[1].ByParser, Expect(1));
@@ -574,11 +554,9 @@ begin
       Parser.Prepare;
       GlobalHandle := Parser.FindFunction('X').Handle^;
       Parser.StringToScript(Formula, Source);
-
       CategoriesAreUniqueAndGrowing;
       TheTableAnswersWhatWasPutIn;
       TwoCategoriesKeepTheirOwnTargets;
-
       { All the preparation first, and only then the compilation: any change to
         the parser devalues code compiled before it. }
       for I := Low(Slots) to High(Slots) do
@@ -588,7 +566,6 @@ begin
       end;
       try
         for I := Low(Slots) to High(Slots) do Slots[I].Compile;
-
         TheInterpreterReadsItsOwnVariable;
         TheCompiledCodeReadsItsOwnVariable;
         ABoxedValueIsRedirectedToo;

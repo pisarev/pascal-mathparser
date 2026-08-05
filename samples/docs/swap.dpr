@@ -10,8 +10,7 @@ program Swap;
 { expect: 5.00 5.00 }
 {$APPTYPE CONSOLE}
 
-uses
-  Parser, ParseJit.Parser;
+uses Parser, ParseJit.Parser;
 
 var
   P: TMathParser;
@@ -32,7 +31,6 @@ begin
   finally
     P.Free;
   end;
-
   P := TJitParser.Create(nil);
   try
     Writeln(Answer(P):0:2);

@@ -67,5 +67,4 @@ begin
   FillChar(Result, SizeOf(TString), 0);
   StrLCopy(Result, PChar(S), High(TString));
 end;
-
 end.

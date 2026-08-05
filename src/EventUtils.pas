@@ -113,5 +113,4 @@ begin
   StrLCopy(Result.Name, PChar(Name), High(TString));
   Result.Priority := Priority;
 end;
-
 end.

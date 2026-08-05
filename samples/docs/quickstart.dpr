@@ -10,8 +10,7 @@ program QuickStart;
 { expect: 21.0000 }
 {$APPTYPE CONSOLE}
 
-uses
-  CalcUtils, Parser, ParseJit.Parser;
+uses CalcUtils, Parser, ParseJit.Parser;
 
 var
   P: TMathParser;
@@ -22,7 +21,6 @@ begin
   { show }
   Y := AsDouble('sin(1) + sqrt(2)');
   Writeln(Y:0:4);
-
   P := TMathParser.Create(nil);
   try
     P.AddVariable('x', X);
@@ -34,7 +32,6 @@ begin
   finally
     P.Free;
   end;
-
   Jit := TJitParser.Create(nil);
   try
     Jit.AddVariable('x', X);

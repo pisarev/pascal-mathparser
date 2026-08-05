@@ -26,5 +26,4 @@ initialization
   ParseFormat := FormatSettings;
   ParseFormat.DecimalSeparator := '.';
   ParseFormat.ThousandSeparator := #0;
-
 end.

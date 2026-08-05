@@ -21,11 +21,11 @@ interface
 
 uses
   {$IFDEF FPC}
-  SysUtils, Classes, FastList, Notifier, ParseTypes, Parser, ValueTypes, ValueUtils,
+  SysUtils, Math, Classes, FastList, Notifier, ParseTypes, Parser, ValueTypes, ValueUtils,
   ParseJit.Decoder, ParseJit.CodeGen, ParseJit.Executor;
   {$ELSE}
-  System.SysUtils, System.Classes, FastList, Notifier, ParseTypes, Parser, ValueTypes,
-  ValueUtils, ParseJit.Decoder, ParseJit.CodeGen, ParseJit.Executor;
+  System.SysUtils, System.Math, System.Classes, FastList, Notifier, ParseTypes, Parser,
+  ValueTypes, ValueUtils, ParseJit.Decoder, ParseJit.CodeGen, ParseJit.Executor;
   {$ENDIF}
 
 type
@@ -59,6 +59,8 @@ type
     FLookupCount: Int64;
     FLastCode: TJitEntry;
     FGeneration: Int64;
+    FMachineCount: Int64;
+    FExecutorCount: Int64;
     function GetCode(const Text: string): TJitEntry;
   public
     constructor Create(AOwner: TComponent); override;
@@ -72,6 +74,8 @@ type
     function CompileScript(const Script: TScript): TJitScript; virtual;
     function ScriptReason(const Script: TScript): string; virtual;
     property JitEnabled: Boolean read FEnabled write FEnabled;
+    property MachineCount: Int64 read FMachineCount;
+    property ExecutorCount: Int64 read FExecutorCount;
     property Generation: Int64 read FGeneration;
     property HitCount: Int64 read FHitCount;
     property MissCount: Int64 read FMissCount;
@@ -179,14 +183,17 @@ begin
     StringToScript(Text, Script, Error);
     if Error.ErrorType = etOK then
     begin
+      Result.Generation := FGeneration;
       {$IFDEF CPUX64}
       Result.Code := TJitCode.Create(Self);
       Result.Code.Compile(Script);
       {$ENDIF}
+      if Assigned(Result.Code) and Result.Code.Ready then Inc(FMachineCount);
       if not Result.Ready then
       begin
         Result.Executor := TJitExecutor.Create(Self);
         Result.Executor.Prepare(Script);
+        Inc(FExecutorCount);
       end;
       Script := nil;
     end;
@@ -194,7 +201,7 @@ begin
     Result.Free;
     raise;
   end;
-  Result.Generation := FGeneration;
+  if Result.Generation = 0 then Result.Generation := FGeneration;
   FList.AddObject(Text, Result);
   FLastText := Text;
   FLastCode := Result;
@@ -250,10 +257,12 @@ begin
   Result.Code := TJitCode.Create(Self);
   Result.Code.Compile(Script);
   {$ENDIF}
+  if Assigned(Result.Code) and Result.Code.Ready then Inc(FMachineCount);
   if not Result.Ready then
   begin
     Result.Executor := TJitExecutor.Create(Self);
     Result.Executor.Prepare(Script);
+    Inc(FExecutorCount);
   end;
 end;
 
@@ -273,19 +282,34 @@ function TJitParser.ExecuteMany(const Text: string; var Variable: Double; const 
   var Outputs: array of Double): Boolean;
 var
   Code: TJitEntry;
+  Script: TScript;
   I: Integer;
 begin
   Result := False;
   if Length(Inputs) > Length(Outputs) then Exit;
+  for I := Low(Inputs) to High(Inputs) do Outputs[I] := NaN;
   Code := GetCode(Text);
-  if not (Assigned(Code) and Code.Ready) then Exit;
+  if Assigned(Code) and Code.Ready then
+  begin
+    for I := Low(Inputs) to High(Inputs) do
+    begin
+      Variable := Inputs[I];
+      Outputs[I] := Code.Execute;
+    end;
+    Inc(FHitCount, Length(Inputs));
+    Exit(True);
+  end;
+  Script := nil;
+  try
+    StringToScript(Text, Script);
+  except
+    Exit;
+  end;
   for I := Low(Inputs) to High(Inputs) do
   begin
     Variable := Inputs[I];
-    Outputs[I] := Code.Execute;
+    Outputs[I] := GetDouble(ExecuteScript(Script)^);
   end;
-  Inc(FHitCount, Length(Inputs));
   Result := True;
 end;
-
 end.

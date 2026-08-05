@@ -38,13 +38,12 @@ to a contiguous byte array and runs a linear pass with no allocations. On top of
 that it caches by *shape*: once `2 + 3` has been compiled, `5 + 7` reuses the
 same script and only writes the numbers into a copy.
 
-| | Interpreted | Compiled | Times faster |
-|---|---:|---:|---:|
-| `x * 2 + 1` | 869 ns | 41 ns | 21 |
-| polynomial, degree 3 | 1978 ns | 49 ns | 41 |
-| heavy math chain | 2689 ns | 145 ns | 19 |
-| one turn of a `while` loop | 3966 ns | 36 ns | 110 |
-| bulk mode, `x * 2 + 1` | 902 ns | 8 ns | 121 |
+With the optional accelerator on top, the same formulas run between nine and a
+hundred times faster, depending on what they do. The
+[measured table](https://pisarev.github.io/mathparser-live/accelerator.html) says
+which is which, how many runs each row was averaged over, and what exactly was
+compared - the numbers live in one place and are produced by programs that ship
+with this repository, so nothing here can quietly drift away from them.
 
 One `AsDouble` call, start to finish, averaged over a million runs. These are the
 numbers printed by `tests/JitParserTest.dpr` on the machine that prepared this
@@ -91,8 +90,9 @@ functions over a parser it owns, which is what the program at the top uses.
 This works on every target, console programs on Linux included. It did not always:
 the owned `TCalculator` uses a synchronising timer, and under FPC that timer was
 built from the widgetset, so a console program refused to link. The timer now runs
-on a plain thread, and the library needs `LazUtils` but no LCL. All six samples
-under `samples/docs` are compiled and run by both matrices, on Windows and Linux.
+on a plain thread, and the library needs neither the LCL nor `LazUtils` - the RTL
+is enough. All six samples under `samples/docs` are compiled and run by both
+matrices, on Windows and Linux.
 
 ## The accelerator
 
@@ -228,7 +228,11 @@ this library learned the hard way:
 - `Extended` is 10 bytes on 32-bit Delphi and on FPC for Linux, and 8 bytes on
   64-bit Windows, so the last bit of a long chain can differ between targets.
 - Register every function and variable before the first evaluation. Evaluation is
-  thread-safe after that; registration itself is not.
+  thread-safe after that; registration itself is not. This is about `TMathParser`:
+  `TJitParser` keeps a cache of compiled formulas and writes it without a lock, so
+  one accelerating parser belongs to one thread. To evaluate in parallel, compile
+  the scripts up front with `CompileScript` and run the compiled `TJitScript` from
+  as many threads as you like - see [jit/USAGE.md](jit/USAGE.md).
 
 ## License
 

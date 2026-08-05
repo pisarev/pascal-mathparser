@@ -254,7 +254,6 @@ type
       {$ENDIF}
       BitsDirty: Boolean;
       UpdateCount: Integer;
-
     function BitWordCount(const N: Integer): Integer; inline;
     function BitFirstSet(const W: TBitWord): Integer; inline;
     procedure BitsInit;
@@ -265,7 +264,6 @@ type
     procedure BitsAssign(const X, Y: Integer; const Value: Pointer); inline;
     function RowNextSet(const Y, XMin, XMax: Integer; var XFound: Integer): Boolean;
     function ColNextSet(const X, YMin, YMax: Integer; var YFound: Integer): Boolean;
-
     function GetData(const X, Y: Integer): Pointer;
     function GetEmpty: Boolean;
     function GetFlag(const X, Y: Integer): Boolean;
@@ -1827,24 +1825,19 @@ begin
   if not Check(X, Y) then Exit(nil);
   FillChar(Flag, SizeOf(TFlag), 0);
   BitsEnsure;
-
   Step := 0;
   if Assigned(RawData[Y, X]) and Compare(X, Y, RawData[Y, X], Step, Flag.Stop, P) then
     Exit(RawData[Y, X]);
   if Flag.Stop then Exit(nil);
-
   Size.cx := Length(RawData[0]);
   Size.cy := Length(RawData);
-
   for Step := 1 to Max(Size.cx, Size.cy) - 1 do
   begin
     if Stop(Step, P) then Exit(nil);
-
     A.X := Max(0, X - Step);
     A.Y := Max(0, Y - Step);
     B.X := Min(Size.cx - 1, X + Step);
     B.Y := Min(Size.cy - 1, Y + Step);
-
     repeat
       if Flag.Prev and (A.Y = Prev.A.Y) then
       begin
@@ -1859,7 +1852,6 @@ begin
             Inc(I);
           end;
         end;
-
         if Prev.B.X + 1 <= B.X then
         begin
           I := Prev.B.X + 1;
@@ -1873,7 +1865,6 @@ begin
         end;
         Break;
       end;
-
       I := A.X;
       while RowNextSet(A.Y, I, B.X, I) do
       begin
@@ -1888,7 +1879,6 @@ begin
         Inc(I);
       end;
     until True;
-
     repeat
       if Flag.Prev and (B.Y = Prev.B.Y) then
       begin
@@ -1903,7 +1893,6 @@ begin
             Inc(I);
           end;
         end;
-
         if Prev.B.X + 1 <= B.X then
         begin
           I := Prev.B.X + 1;
@@ -1917,7 +1906,6 @@ begin
         end;
         Break;
       end;
-
       I := A.X;
       while RowNextSet(B.Y, I, B.X, I) do
       begin
@@ -1932,7 +1920,6 @@ begin
         Inc(I);
       end;
     until True;
-
     repeat
       if Flag.Prev and (A.X = Prev.A.X) then
       begin
@@ -1947,7 +1934,6 @@ begin
             Inc(I);
           end;
         end;
-
         if (Prev.B.Y + 1 <= B.Y - 1) then
         begin
           I := Prev.B.Y + 1;
@@ -1961,7 +1947,6 @@ begin
         end;
         Break;
       end;
-
       if (A.Y + 1 <= B.Y - 1) then
       begin
         I := A.Y + 1;
@@ -1979,7 +1964,6 @@ begin
         end;
       end;
     until True;
-
     repeat
       if Flag.Prev and (B.X = Prev.B.X) then
       begin
@@ -1994,7 +1978,6 @@ begin
             Inc(I);
           end;
         end;
-
         if (Prev.B.Y + 1 <= B.Y - 1) then
         begin
           I := Prev.B.Y + 1;
@@ -2008,7 +1991,6 @@ begin
         end;
         Break;
       end;
-
       if (A.Y + 1 <= B.Y - 1) then
       begin
         I := A.Y + 1;
@@ -2026,12 +2008,10 @@ begin
         end;
       end;
     until True;
-
     Prev.A := A;
     Prev.B := B;
     Flag.Prev := True;
   end;
-
   Result := nil;
 end;
 
@@ -4697,5 +4677,4 @@ end;
 
 initialization
   Randomize;
-
 end.

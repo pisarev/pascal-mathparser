@@ -96,7 +96,6 @@ var
   Value, ResultValue: TValue;
 begin
   BeginSection('Wave A: math correctness');
-
   DoubleVar := 5.7;
   CheckFormula('A#1 bitwise and, Double lhs', 'dv && 7', 6);
   MathParser.BooleanMode := bmComplete;
@@ -108,15 +107,11 @@ begin
   CheckFormula('A#1 bitwise xor, Double lhs', 'dv xor 0', 6);
   CheckFormula('A#1 bitwise shl, Double lhs', 'dv shl 0', 6);
   CheckFormula('A#1 bitwise shr, Double lhs', 'dv shr 0', 6);
-
   CheckFormula('A#2 root: 8 // 3 is cube root', '8 // 3', 2);
   CheckFormula('A#2 root: 16 // 4', '16 // 4', 2);
-
   CheckFormula('A#3 poly(2, 1, 2, 3) = 1+2*2+3*4', 'poly(2, 1, 2, 3)', 17);
-
   CheckFormula('A#4 sqrt keeps fractional argument', 'sqrt(2.25)', 1.5);
   CheckFormula('A#4 sqr keeps fractional argument', 'sqr(1.5)', 2.25);
-
   Value := EmptyValue;
   Value.ValueType := vtUnknown;
   DirtyStack;
@@ -125,9 +120,7 @@ begin
   DirtyStack;
   ResultValue := Positive(Value);
   Check('A#7 Positive(vtUnknown) is EmptyValue, not stack garbage', CompareMem(@ResultValue, @EmptyValue, SizeOf(TValue)));
-
   CheckFormula('A#28 strtodatetime with date and time', 'hourof(strtodatetime("01.02.2020 10:30"))', 10);
-
   { the reference comes from the formula: the library ArcSecH on FPC is
     noticeably less precise }
   CheckFormula('A#25 arcsech works under correct name', 'arcsech(0.5)', Ln((1 + Sqrt(1 - 0.25)) / 0.5), 1E-9);
@@ -140,14 +133,12 @@ var
   P: Pointer;
 begin
   BeginSection('Wave B: x64 correctness');
-
   DirtyStack;
   AssignInt64(Value, -5);
   Check('B#5 GetNativeInt(-5) = -5', GetNativeInt(Value) = -5, IntToStr(GetNativeInt(Value)));
   DirtyStack;
   AssignInt64(Value, -1);
   Check('B#5 GetNativeUInt(-1) wraps to all ones', GetNativeUInt(Value) = NativeUInt(-1), UIntToStr(GetNativeUInt(Value)));
-
   {$IFDEF CPUX64}
   P := Pointer($100000001);
   {$ELSE}
@@ -156,7 +147,6 @@ begin
   DirtyStack;
   AssignPointer(Value, P);
   Check('B#6 AssignPointer keeps full pointer width', Pointer(GetNativeUInt(Value)) = P, UIntToStr(GetNativeUInt(Value)));
-
   CheckFormula('B#20 MaxInteger is Int32 bound', 'MaxInteger', 2147483647);
   CheckFormula('B#20 MinInteger is Int32 bound', 'MinInteger', -2147483648);
   CheckFormula('B#20 MaxNativeInt is platform bound', 'MaxNativeInt', Double(High(NativeInt)));
@@ -182,11 +172,9 @@ end;
   Off: NativeInt;
 begin
   BeginSection('Wave C: silent data loss');
-
   { the C#9 runtime test lives in TestPoolEarly: WaitFor fails while pumping
     messages AFTER the whole wave of tests has run (C31, still open), and works
     in a clean context }
-
   Check('C#26 TString capacity raised to 4096', StringLength = 4096, IntToStr(StringLength));
   SIn := StringOfChar('m', StringLength + 50);
   FillChar(GuardS, SizeOf(GuardS), 0);
@@ -197,7 +185,6 @@ begin
   GuardT.T := MakeType(SIn, Handle, vtInteger);
   Check('C#13 MakeType truncates at capacity', StrLen(PChar(@GuardT.T.Name)) = StringLength - 1, IntToStr(StrLen(PChar(@GuardT.T.Name))));
   Check('C#13 MakeType does not overflow', GuardT.Pad[0] = #0);
-
   FL := TFastList.Create;
   try
     FL.CaseSensitive := True;
@@ -209,7 +196,6 @@ begin
   finally
     FL.Free;
   end;
-
   BM := TBlobManager.Create(nil);
   MS := TMemoryStream.Create;
   try
@@ -234,7 +220,6 @@ begin
     finally
       BM2.Free;
     end;
-
     Off := -1;
     B := MS.Memory;
     for I := 0 to MS.Size - 15 do
@@ -317,7 +302,6 @@ var
   H1, H2: NativeInt;
 begin
   BeginSection('Wave F: core details');
-
   RI := MathParser.CreateRedirect;
   try
     Check('F#8 SetRedirect', MathParser.SetRedirect(RI, 7, 12345, 777));
@@ -328,7 +312,6 @@ begin
   finally
     MathParser.DeleteRedirect(RI);
   end;
-
   ED := Default(TEventData);
   Ev := MakeEvent(H1, 'e1', 1, nil);
   AddEvent(ED, Ev);
@@ -343,7 +326,6 @@ var
   SavedGlobal: Char;
 begin
   BeginSection('Wave G: decisions');
-
   { G#29, the new contract: the library has no business changing the decimal
     separator of the whole process. Set the global one to a comma (as a locale
     would) and make sure the parser still reads a dot while the global stays
@@ -357,19 +339,16 @@ begin
     FormatSettings.DecimalSeparator := SavedGlobal;
   end;
   CheckFormula('G#29 parser still reads dot literals', '1.5 + 1.5', 3);
-
   CheckFormula('G#18 registry alive without license unit', 'sin(0) + 2', 2);
 end;
 
 procedure TestWaveGSpecs;
 begin
   BeginSection('Wave G: revived entities and priorities');
-
   CheckFormula('G-C1 exit terminates whole script', 'exit(99) + 200', 99);
   CheckFormula('G-C1 exit breaks while', 'while(1, exit(7))', 7);
   CheckFormula('G-C1 exit inside if branch', 'if(1, exit(3), 0) + 100', 3);
   CheckFormula('G-C1 tryexcept does not swallow exit', 'tryexcept(exit(7), 555)', 7);
-
   { C32: a short-circuit or in While/Repeat/For skipped the body after the first true }
   { new = -1 (true), the loop returns the OR of the bodies = 1 (Boolean8),
     get = the counter }
@@ -377,12 +356,9 @@ begin
   CheckFormula('C32 repeat counter advances', 'new("rc", 0) + repeat(set("rc", get("rc") + 1), get("rc") >= 3) + get("rc")', 3);
   CheckFormula('G-C1 exit breaks counting while',
     'new("ec", 0) + while(get("ec") < 100000, if(get("ec") > 4, exit(get("ec")), set("ec", get("ec") + 1)))', 5);
-
   Check('G-C2 BitwiseXorHandle is live', MathParser.BitwiseXorHandle >= 0, IntToStr(MathParser.BitwiseXorHandle));
   CheckFormula('G-C2 bxor works', 'dv bxor 0', 6);
-
   CheckFormula('G-C3 || synonym works', 'dv || 0', 6);
-
   CheckFormula('G-C4 power binds tighter than mul', '2 * 3 ** 2', 18);
   CheckFormula('G-C4 root binds tighter than mul', '2 * 8 // 3', 4);
   try
@@ -396,7 +372,6 @@ end;
 procedure TestLayout;
 begin
   BeginSection('Layout: binary script format');
-
   { The script lives in one continuous byte array, and a value is written into
     it at an offset that is a multiple of 8. If TValue were aligned to 16 the
     compiler would use an aligned SSE move for the copy and fault at such an

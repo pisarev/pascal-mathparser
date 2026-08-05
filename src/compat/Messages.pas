@@ -24,5 +24,4 @@ type
   end;
 
 implementation
-
 end.

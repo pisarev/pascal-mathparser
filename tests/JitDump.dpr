@@ -75,7 +75,6 @@ begin
     YVar := 4;
     P.AddVariable('x', XVar);
     P.AddVariable('y', YVar);
-
     BeginSection('IR dump (representative scripts)');
     DecodeCase('2 + 2 * 2', True);
     DecodeCase('x * 2 + 1', True);
@@ -84,7 +83,6 @@ begin
     DecodeCase('set("bi", 0) + while(get("bi") < 3, set("bi", get("bi") + 1))', True);
     DecodeCase('get("bi")', True);
     DecodeCase('x > 1', True);
-
     BeginSection('IR coverage (must decode everything)');
     DecodeCase('42', False);
     DecodeCase('-42', False);
@@ -116,7 +114,6 @@ begin
     DecodeCase('MaxNativeInt - 1', False);
     DecodeCase('encodedate(2026, 7, 20)', False);
     DecodeCase('roundto(x, -2)', False);
-
     Failed := TestSummary;
   finally
     Decoder.Free;

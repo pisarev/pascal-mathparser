@@ -15,8 +15,7 @@ unit TestKit;
 
 interface
 
-uses
-  SysUtils, Math;
+uses SysUtils, Math;
 
 procedure BeginSection(const Name: string);
 procedure Check(const Name: string; const Condition: Boolean; const Details: string = '');
@@ -129,5 +128,4 @@ begin
   Writeln(Format('TOTAL: %d, FAILED: %d', [TestCount, FailCount]));
   Result := FailCount;
 end;
-
 end.

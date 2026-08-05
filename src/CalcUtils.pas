@@ -15,8 +15,7 @@ unit CalcUtils;
 
 interface
 
-uses
-  Calculator, ValueTypes;
+uses Calculator, ValueTypes;
 
 function AsValue(const Text: string): TValue;
 function AsByte(const Text: string): Byte;
@@ -283,5 +282,4 @@ initialization
 
 finalization
   Calc.Free;
-
 end.

@@ -11,6 +11,7 @@ program JitBench;
 {$B-}
 
 uses
+  Classes,
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
   SysUtils,
   Math,
@@ -78,6 +79,30 @@ begin
   end;
 end;
 
+{
+  A machine-readable report.
+
+  The benchmark numbers are wanted in three places at once - the parser README,
+  the accelerator README and the showcase page - and while each carried its own
+  copy, all three showed a different run as the current one. Now the run writes
+  a file and the texts take their numbers from it.
+
+  The format is deliberately plain: name, nanoseconds before and after, number
+  of repeats. The repeat count is in the report because it DIFFERS from row to
+  row - the heavy chain runs half a million times, not a million - and a page
+  promising "averaged over a million" was promising that on its behalf too.
+}
+var
+  Rows: TStringList;
+
+procedure Report(const Name: string; const Base, Fast: Double; const Count: Integer);
+var
+  Plain: TFormatSettings;
+begin
+  Plain := TFormatSettings.Invariant;
+  Rows.Add(Format('%s'#9'%.1f'#9'%.1f'#9'%d', [Name, Base, Fast, Count], Plain));
+end;
+
 procedure BenchCase(const Name, Formula: string; const Count: Integer);
 var
   Script: TScript;
@@ -96,7 +121,6 @@ begin
     end;
     P.ExecuteScript(Script);
     Executor.Execute;
-
     T0 := Now64;
     for I := 1 to Count do
     begin
@@ -104,7 +128,6 @@ begin
       P.ExecuteScript(Script);
     end;
     TInterp := Elapsed(T0);
-
     T0 := Now64;
     for I := 1 to Count do
     begin
@@ -112,9 +135,9 @@ begin
       Executor.Execute;
     end;
     TJit := Elapsed(T0);
-
     Writeln(Format('%-26s interp %8.1f ns   ir %8.1f ns   speedup %5.2fx',
       [Name, TInterp / Count * 1E9, TJit / Count * 1E9, TInterp / TJit]));
+    Report('ir/' + Name, TInterp / Count * 1E9, TJit / Count * 1E9, Count);
     Flush(Output);
     Script := nil;
   finally
@@ -171,7 +194,6 @@ begin
     Executor.Prepare(Script);
     P.ExecuteScript(Script);
     Code.Execute;
-
     T0 := Now64;
     for I := 1 to Count do
     begin
@@ -179,7 +201,6 @@ begin
       P.ExecuteScript(Script);
     end;
     TInterp := Elapsed(T0);
-
     T0 := Now64;
     for I := 1 to Count do
     begin
@@ -187,7 +208,6 @@ begin
       Executor.Execute;
     end;
     TIr := Elapsed(T0);
-
     T0 := Now64;
     for I := 1 to Count do
     begin
@@ -195,7 +215,6 @@ begin
       Code.Execute;
     end;
     TNative := Elapsed(T0);
-
     Writeln(
       Format(
         '%-22s interp %7.1f   ir %7.1f   native %6.1f ns   speedup %5.2fx / %5.2fx',
@@ -209,6 +228,7 @@ begin
         ]
       )
     );
+    Report('native/' + Name, TInterp / Count * 1E9, TNative / Count * 1E9, Count);
     Flush(Output);
     Script := nil;
   finally
@@ -221,13 +241,13 @@ var
   Failed: Integer;
 
 begin
+  Rows := TStringList.Create;
   P := TMathParser.Create(nil);
   try
     XVar := 2.5;
     YVar := 4;
     P.AddVariable('x', XVar);
     P.AddVariable('y', YVar);
-
     BeginSection('J2 diff: IR executor vs interpreter');
     DumpCase('2 + 2 * 2');
     DiffCase('2 + 2 * 2');
@@ -250,7 +270,6 @@ begin
     DiffCase('mean(1, 2, 3)');
     DiffCase('if(1, 2, 3)');
     DiffCase('Integer x + 1');
-
     Writeln;
     Writeln('--- J2 benchmark (ExecuteScript vs IR executor) ---');
     BenchCase('const 42', '42', 2000000);
@@ -258,7 +277,6 @@ begin
     BenchCase('polynomial deg3', 'x * x * x * 3 + x * x * 2 + x * 7 + 11', 1000000);
     BenchCase('heavy math chain', 'sin(x) * cos(x) + sqrt(x) + exp(x * 0.001) + ln(x + 1)', 500000);
     BenchCase('nested parentheses', '(x + 1) * (x + 2) * (x + 3)', 1000000);
-
     BeginSection('J3 diff: native code vs interpreter');
     NativeCase('2 + 2 * 2');
     NativeCase('x * 2 + 1');
@@ -278,7 +296,6 @@ begin
     NativeCase('abs(0 - x) + sqr(x)');
     NativeCase('sin(x * y) / cos(x + y)');
     NativeCase('mean(1, 2, 3)');
-
     Writeln;
     Writeln('--- J3 benchmark (interpreter vs IR executor vs native code) ---');
     NativeBench('x * 2 + 1', 'x * 2 + 1', 2000000);
@@ -287,10 +304,20 @@ begin
     NativeBench('divisions', 'x / 4 + y / 8 + x / 2', 1000000);
     NativeBench('heavy math chain', 'sin(x) * cos(x) + sqrt(x) + exp(x * 0.001) + ln(x + 1)', 500000);
     NativeBench('sqrt nest', 'sqrt(sqrt(x))', 1000000);
-
     Failed := TestSummary;
   finally
     P.Free;
   end;
   if Failed > 0 then System.ExitCode := 1;
+  {
+    The report is written next to the executable: the showcase page and the
+    README consistency check both take their numbers from here. One run, one
+    source.
+  }
+  try
+    Rows.SaveToFile(ChangeFileExt(ParamStr(0), '.tsv'));
+  except
+    on E: Exception do Writeln('the report was not written: ' + E.Message);
+  end;
+  Rows.Free;
 end.
