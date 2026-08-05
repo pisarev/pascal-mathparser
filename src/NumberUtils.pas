@@ -285,7 +285,8 @@ begin
 end;
 function RandomValue(const Probability: Extended): Integer;
 begin
-  if (Probability <= 0) or (Probability > 1) then Result := 0
+  if (Probability <= 0) or (Probability > 1) then
+    Result := 0
   else
     if Random <= Probability then
       Result := 1
@@ -800,4 +801,5 @@ initialization
 
 finalization
   Bits.Free;
+
 end.

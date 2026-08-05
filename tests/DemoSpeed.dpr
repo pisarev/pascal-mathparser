@@ -12,13 +12,7 @@ program DemoSpeed;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils,
-  Parser,
-  ParseTypes,
-  ValueTypes,
-  ValueUtils,
-  ParseJit.Parser,
-  TestKit in 'TestKit.pas';
+  SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Parser, TestKit in 'TestKit.pas';
 
 { repeats the demo scenario: integer variables, compile, optimise, run in a loop }
 procedure DemoCase(const Formula: string; const Count: Integer);

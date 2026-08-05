@@ -12,8 +12,8 @@ program BigScript;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Parser,
-  ParseJit.Decoder, TestKit in 'TestKit.pas';
+  SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Parser, ParseJit.Decoder,
+  TestKit in 'TestKit.pas';
 
 var
   P: TJitParser;

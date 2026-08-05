@@ -21,8 +21,8 @@ uses
   SysUtils, Classes, Math, Types, MemoryUtils, TextConsts, TextTypes;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
-  WinApi.Windows, System.SysUtils, System.Classes, System.Math, System.Types, MemoryUtils, TextConsts,
-  TextTypes;
+  WinApi.Windows, System.SysUtils, System.Classes, System.Math, System.Types, MemoryUtils,
+  TextConsts, TextTypes;
   {$ELSE}
   Windows, SysUtils, Classes, Math, Types, MemoryUtils, TextConsts, TextTypes;
   {$ENDIF}
@@ -220,7 +220,8 @@ begin
     Strings[Index] := Strings.Names[Index] +
       {$IFDEF DELPHI_7}Strings.NameValueSeparator{$ELSE}Equal{$ENDIF} + Value;
   end
-  else if Index >= 0 then Strings.Delete(Index);
+  else if Index >= 0 then
+    Strings.Delete(Index);
 end;
 
 {$IFNDEF FPC}
@@ -464,7 +465,8 @@ begin
   J := 0;
   K := Length(Text);
   while Index <= K do
-    if Locked(Index, FlagArray) then Inc(Index)
+    if Locked(Index, FlagArray) then
+      Inc(Index)
     else begin
       if Text[Index] = Bracket[btL] then
         Inc(I)
@@ -512,7 +514,8 @@ begin
   I := 0;
   J := 0;
   while Index > 0 do
-    if Locked(Index, FlagArray) then Dec(Index)
+    if Locked(Index, FlagArray) then
+      Dec(Index)
     else begin
       if Text[Index] = Bracket[btL] then
         Inc(I)
@@ -608,7 +611,8 @@ begin
   for I := 1 to Length(Lock) do for J := 1 to Length(Text) do
     if (Text[J] = Lock[I]) and ((J = 1) or (Text[J - 1] <> Lock[I])) and ((J = Length(Text)) or
       (Text[J + 1] <> Lock[I])) then
-        if K < 0 then K := J
+        if K < 0 then
+          K := J
         else begin
           AddLock(Array1, K, J);
           K := -1;
@@ -769,7 +773,8 @@ function SameText(const AText, BText: PChar; const Size: Integer; const IgnoreCa
 var
   I, J: Integer;
 begin
-  if Size > 0 then I := Size
+  if Size > 0 then
+    I := Size
   else begin
     I := StrLen(AText);
     J := StrLen(BText);
@@ -880,7 +885,8 @@ begin
         I := 1;
         J := Length(Text);
         while (I <= J) and CharInSet(Text[I], CharSet) do Inc(I);
-        if I > J then Result := ''
+        if I > J then
+          Result := ''
         else begin
           while (J > 0) and CharInSet(Text[J], CharSet) do Dec(J);
           Result := Copy(Text, I, J - I + 1);
@@ -1369,4 +1375,5 @@ finalization
   {$IFNDEF FPC}
   ReleaseDC(0, DC);
   {$ENDIF}
+
 end.

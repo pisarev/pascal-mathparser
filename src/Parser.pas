@@ -949,8 +949,8 @@ implementation
 
 uses
   {$IFDEF FPC}
-  DateUtils, Connector, FlagCache, ItemCache, NumberConsts, NumberUtils,
-  ParseCommon, ParseManager, ParseMessages, ParseUtils, ParseValidator, ScriptFormat, TextUtils,
+  DateUtils, Connector, FlagCache, ItemCache, NumberConsts, NumberUtils, ParseCommon,
+  ParseManager, ParseMessages, ParseUtils, ParseValidator, ScriptFormat, TextUtils,
   ThreadUtils, ValueConsts, ValueUtils, Variants;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
@@ -958,8 +958,8 @@ uses
   NumberConsts, NumberUtils, ParseCommon, ParseManager, ParseMessages, ParseUtils,
   ParseValidator, ScriptFormat, TextUtils, ThreadUtils, ValueConsts, ValueUtils;
   {$ELSE}
-  DateUtils, Connector, FlagCache, ItemCache, NumberConsts, NumberUtils,
-  ParseCommon, ParseManager, ParseMessages, ParseUtils, ParseValidator, ScriptFormat, TextUtils,
+  DateUtils, Connector, FlagCache, ItemCache, NumberConsts, NumberUtils, ParseCommon,
+  ParseManager, ParseMessages, ParseUtils, ParseValidator, ScriptFormat, TextUtils,
   ThreadUtils, ValueConsts, ValueUtils, Variants;
   {$ENDIF}
   {$ENDIF}
@@ -2110,7 +2110,8 @@ var
   AFunction: PFunction;
 begin
   FillChar(Result, SizeOf(TTextData), 0);
-  if InBrace(Text, FBracket) then Result.TextType := ttScript
+  if InBrace(Text, FBracket) then
+    Result.TextType := ttScript
   else if Quoted(Text) then
   begin
     Result.TextType := ttString;
@@ -2605,7 +2606,8 @@ begin
         end;
       end;
     end;
-    if Idle then Result := EmptyValue
+    if Idle then
+      Result := EmptyValue
     else begin
       AType := ParseUtils.GetType(Self, ItemHeader);
       case AFunction.Kind of
@@ -2973,7 +2975,8 @@ begin
             end
             else
               Script := nil;
-            if Assigned(Script) then AddScript(Result, Script)
+            if Assigned(Script) then
+              AddScript(Result, Script)
             else begin
               ItemIndex := Length(Result);
               Resize(Result, ItemIndex + SizeOf(TItemHeader));
@@ -2982,7 +2985,8 @@ begin
               FillChar(Syntax, SizeOf(TSyntax), 0);
               Syntax.PriorHandle := -1;
               Data := TextData[AItem.Text];
-              if Data.TextType = ttNumber then Write(icNumber)
+              if Data.TextType = ttNumber then
+                Write(icNumber)
               else begin
                 if AItem.Text = '' then
                 begin
@@ -3558,7 +3562,8 @@ begin
               S := AFunction.Name;
               if AItem <> '' then S := AItem + Space + S;
               if BItem <> '' then S := S + Space + BItem;
-              if Match(ItemArray, Array1.B) then Break
+              if Match(ItemArray, Array1.B) then
+                Break
               else begin
                 S := Embrace(IntToStr(AddScript(SA, InternalCompile(S, SA, False, AFunction))), BracketArray[bkBrace]);
                 Array1.A[Index] := MakeTextItem(S, FInternalHandle, -1);
@@ -4663,4 +4668,5 @@ finalization
   {$ELSE}
   DeleteCriticalSection(RedirectCategorySync);
   {$ENDIF}
+
 end.

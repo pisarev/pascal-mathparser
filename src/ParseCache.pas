@@ -165,7 +165,8 @@ begin
   if Enabled then
   begin
     I := List.List.IndexOf(Text);
-    if I < 0 then Result := nil
+    if I < 0 then
+      Result := nil
     else begin
       CD := Data[I];
       if Assigned(CD) then
@@ -315,4 +316,5 @@ begin
   FCache1.ScriptType := FScriptType;
   FCache2.ScriptType := FScriptType;
 end;
+
 end.

@@ -74,8 +74,7 @@ uses
   TextUtils;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
-  System.StrUtils, Winapi.SHFolder, MemoryUtils, SearchUtils, TextBuilder,
-  TextUtils;
+  System.StrUtils, Winapi.SHFolder, MemoryUtils, SearchUtils, TextBuilder, TextUtils;
   {$ELSE}
   StrUtils, SHFolder, MemoryUtils, SearchUtils, TextBuilder, TextUtils;
   {$ENDIF}
@@ -503,4 +502,5 @@ initialization
 
 finalization
   Clear;
+
 end.

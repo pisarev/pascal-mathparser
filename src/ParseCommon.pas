@@ -66,7 +66,8 @@ begin
   ItemName^ := Trim(Text);
   if AnsiStartsText(Lock, ItemName^) then
     System.Delete(ItemName^, 1, Length(Lock));
-  if ByName then Result := Strings.IndexOfName(ItemName^)
+  if ByName then
+    Result := Strings.IndexOfName(ItemName^)
   else
     Result := Strings.IndexOf(ItemName^);
 end;
@@ -87,4 +88,5 @@ begin
     Value := AValue;
   end;
 end;
+
 end.

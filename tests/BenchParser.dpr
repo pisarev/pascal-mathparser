@@ -12,12 +12,7 @@ program BenchParser;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils,
-  Math,
-  Parser,
-  ParseTypes,
-  ValueTypes,
-  ValueUtils;
+  SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils;
 
 var
   P: TMathParser;

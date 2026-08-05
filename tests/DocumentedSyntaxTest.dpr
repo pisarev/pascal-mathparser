@@ -12,10 +12,7 @@ program DocumentedSyntaxTest;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils,
-  Parser,
-  CalcUtils,
-  TestKit in 'TestKit.pas';
+  SysUtils, Parser, CalcUtils, TestKit in 'TestKit.pas';
 
 {
   What this file guards.

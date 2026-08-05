@@ -28,4 +28,5 @@ begin
   RegisterComponents(Palette, [TCalcThread, TSyncThread, TSyncTimer, TExactTimer]);
   RegisterComponents(Palette, [TBlobManager]);
 end;
+
 end.

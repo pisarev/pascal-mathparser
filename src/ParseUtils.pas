@@ -18,8 +18,8 @@ interface
 
 uses
   {$IFDEF FPC}
-  SysUtils, Types, MemoryUtils, ParseErrors, Parser, ParseTypes, TextConsts,
-  TextTypes, TextUtils, ValueTypes, ValueUtils;
+  SysUtils, Types, MemoryUtils, ParseErrors, Parser, ParseTypes, TextConsts, TextTypes,
+  TextUtils, ValueTypes, ValueUtils;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
   WinApi.Windows, System.SysUtils, System.Types, BaseTypes, MemoryUtils, ParseErrors,
@@ -255,15 +255,15 @@ implementation
 
 uses
   {$IFDEF FPC}
-  Math, Cache, FlagCache, FlexibleList, ItemCache, NumberConsts, ParseConsts, ScriptFormat, StrUtils,
-  TextBuilder, ValueConsts;
+  Math, Cache, FlagCache, FlexibleList, ItemCache, NumberConsts, ParseConsts, ScriptFormat,
+  StrUtils, TextBuilder, ValueConsts;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
   System.Math, Cache, FlagCache, FlexibleList, ItemCache, NumberConsts, ParseConsts,
   ScriptFormat, StrUtils, TextBuilder, ValueConsts;
   {$ELSE}
-  Math, Cache, FlagCache, FlexibleList, ItemCache, NumberConsts, ParseConsts, ScriptFormat, StrUtils,
-  TextBuilder, ValueConsts;
+  Math, Cache, FlagCache, FlexibleList, ItemCache, NumberConsts, ParseConsts, ScriptFormat,
+  StrUtils, TextBuilder, ValueConsts;
   {$ENDIF}
   {$ENDIF}
 
@@ -319,7 +319,8 @@ var
 begin
   Data := P;
   Result := Data.Index < Data.FromIndex;
-  if Result then Inc(Data.Index)
+  if Result then
+    Inc(Data.Index)
   else
     Result := Data.Code <> Item.Code;
   if Result then
@@ -1213,7 +1214,8 @@ var
   I: Integer;
   AType: PType;
 begin
-  if Quoted(Text) then Result := @Data.TA[StringHandle]
+  if Quoted(Text) then
+    Result := @Data.TA[StringHandle]
   else begin
     for I := Low(Data.TOrder) to High(Data.TOrder) do
       if GetType(Data, I, AType) and Whole(Text, 1, StrLen(AType.Name)) and DeletePrefix(Text, AType.Name, Trim) then
@@ -1367,7 +1369,8 @@ begin
       end;
       Break;
     end
-    else if not CharInSet(Text[I], Blanks) then Break;
+    else if not CharInSet(Text[I], Blanks) then
+      Break;
   end;
 end;
 
@@ -1387,7 +1390,8 @@ begin
       end;
       Break;
     end
-    else if not CharInSet(Text[I], Blanks) then Break;
+    else if not CharInSet(Text[I], Blanks) then
+      Break;
   end;
 end;
 
@@ -1517,7 +1521,8 @@ begin
   I := 1;
   J := Length(Result);
   while Result[I] = LockText do Inc(I);
-  if I > J then Result := ''
+  if I > J then
+    Result := ''
   else begin
     while Result[J] = LockText do Dec(J);
     Result := Trim(Copy(Result, I, J - I + 1));
@@ -2051,7 +2056,8 @@ end;
 
 procedure IncNumber(var Number: TNumber; const Value: TValue);
 begin
-  if Number.Valid then Number.Value := Operation(Number.Value, Value, otAdd)
+  if Number.Valid then
+    Number.Value := Operation(Number.Value, Value, otAdd)
   else begin
     Number.Value := Value;
     Number.Valid := True;
@@ -2250,4 +2256,5 @@ initialization
 
 finalization
   Helper.Free;
+
 end.

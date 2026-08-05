@@ -98,4 +98,5 @@ initialization
 
 finalization
   Validator.Free;
+
 end.

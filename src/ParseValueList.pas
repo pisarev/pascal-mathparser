@@ -139,7 +139,8 @@ begin
   Result := FindParser;
   if Result then
   begin
-    if Trim(Value) = '' then S := ValueToText(EmptyValue)
+    if Trim(Value) = '' then
+      S := ValueToText(EmptyValue)
     else
       S := Value;
     Index := ParseCommon.IndexOf(List, AName, True, @ItemName);
@@ -290,7 +291,8 @@ begin
       begin
         Item.Item.Script := nil;
         S := {$IFDEF DELPHI_7}List.ValueFromIndex[Index]{$ELSE}GetValueFromIndex(List, Index){$ENDIF};
-        if TryTextToValue(S, Item.Item.Value) then ConvertToVariable(AFunction, @Item.Item.Value)
+        if TryTextToValue(S, Item.Item.Value) then
+          ConvertToVariable(AFunction, @Item.Item.Value)
         else begin
           Parser.StringToScript(S, Item.Item.Script);
           Result := GetFunction(Item, AFunction);
@@ -590,4 +592,5 @@ begin
   if Available(Connector) then Connector.Delete(FFunctionHandle);
   Parser := nil;
 end;
+
 end.

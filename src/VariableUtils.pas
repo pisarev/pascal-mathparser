@@ -66,10 +66,12 @@ begin
     SetLength(ATarget, I - 1);
     J := 0;
     for I := Low(Target) to High(Target) do
-      if I = Index then Inc(J)
+      if I = Index then
+        Inc(J)
       else
         ATarget[I - J] := Target[I];
     Target := ATarget;
   end;
 end;
+
 end.

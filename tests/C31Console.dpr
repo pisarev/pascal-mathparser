@@ -34,18 +34,15 @@ uses
     that pulls in the LCL widgetset, so FPC needs Interfaces or the linker fails
     on the WSRegister* symbols. The widgetset is never started: the pool runs on
     Synchronize and Sleep, and no display is needed. }
-  SysUtils,
-  Calculator,
-  ParseTypes,
-  ValueTypes,
-  ValueUtils;
+  SysUtils, Calculator, ParseTypes, ValueTypes, ValueUtils;
 
 var
   Failed: Integer = 0;
 
 procedure Check(const Name: string; const Ok: Boolean; const Details: string = '');
 begin
-  if Ok then Writeln('PASS  ', Name)
+  if Ok then
+    Writeln('PASS  ', Name)
   else begin
     Inc(Failed);
     Write('FAIL  ', Name);

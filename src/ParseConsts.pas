@@ -418,4 +418,5 @@ implementation
 
 initialization
   LockText := DoubleQuote;
+
 end.

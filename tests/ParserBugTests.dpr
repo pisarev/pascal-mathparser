@@ -13,23 +13,9 @@ program ParserBugTests;
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
   {$IFDEF FPC}Interfaces,{$ENDIF}
-  SysUtils,
-  Classes,
-  Math,
-  BaseTypes,
-  Parser,
-  ParseTypes,
-  TextTypes,
-  ValueTypes,
-  ValueConsts,
-  ValueUtils,
-  Calculator,
-  BlobManager,
-  FastList,
-  ParseManager,
-  EventUtils,
-  Forms,
-  TestKit in 'TestKit.pas';
+  SysUtils, Classes, Math, BaseTypes, Parser, ParseTypes, TextTypes, ValueTypes,
+  ValueConsts, ValueUtils, Calculator, BlobManager, FastList, ParseManager, EventUtils,
+  Forms, TestKit in 'TestKit.pas';
 
 type
   TExceptionSpy = class

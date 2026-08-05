@@ -13,16 +13,8 @@ program JitParserTest;
 uses
   Classes,
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils,
-  Math,
-  Parser,
-  ParseTypes,
-  ValueTypes,
-  ValueUtils,
-  ParseJit.Decoder,
-  ParseJit.CodeGen,
-  ParseJit.Parser,
-  TestKit in 'TestKit.pas';
+  SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Decoder,
+  ParseJit.CodeGen, ParseJit.Parser, TestKit in 'TestKit.pas';
 
 var
   Base: TMathParser;
@@ -153,7 +145,8 @@ const
   Ops: array[0..3] of string = (' + ', ' - ', ' * ', ' / ');
   Funcs: array[0..4] of string = ('sin', 'cos', 'sqrt', 'abs', 'sqr');
 begin
-  if Depth <= 0 then Kind := Random(3)
+  if Depth <= 0 then
+    Kind := Random(3)
   else
     Kind := Random(6);
   case Kind of

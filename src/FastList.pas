@@ -1111,8 +1111,9 @@ begin
     begin
       I := (L + H) shr 1;
       C := CompareStrings(FList[I].FString, S);
-      if C < 0 then L := I + 1 else
-      begin
+      if C < 0 then
+        L := I + 1
+      else begin
         H := I - 1;
         if C = 0 then
         begin
@@ -1642,7 +1643,10 @@ procedure TFastList.SetUpdateState(Updating: Boolean);
 begin
   EnterCriticalSection(FLock);
   try
-    if Updating then Changing else Changed;
+    if Updating then
+      Changing
+    else
+      Changed;
   finally
     LeaveCriticalSection(FLock);
   end;
@@ -1690,4 +1694,5 @@ begin
       DeleteCodeArray(I);
     end;
 end;
+
 end.

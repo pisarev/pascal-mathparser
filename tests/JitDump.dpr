@@ -12,13 +12,7 @@ program JitDump;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils,
-  Parser,
-  ParseTypes,
-  ValueTypes,
-  ValueUtils,
-  ParseJit.Decoder,
-  TestKit in 'TestKit.pas';
+  SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Decoder, TestKit in 'TestKit.pas';
 
 var
   P: TMathParser;

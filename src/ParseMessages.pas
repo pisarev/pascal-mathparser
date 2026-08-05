@@ -58,4 +58,5 @@ begin
     ReturnType := AReturnType;
   end;
 end;
+
 end.

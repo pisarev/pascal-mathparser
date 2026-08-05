@@ -16,23 +16,14 @@ program JitRedirectTest;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils,
-  Classes,
-  Math,
+  SysUtils, Classes, Math,
   { BaseTypes is here for one reason: on Delphi 12 and later it redefines
     NativeInt as a distinct type, and GetRedirect takes its target as a var
     parameter. Without this unit the handles declared below are the system type,
     the var parameter refuses them, and the compiler says only that the types are
     not identical. Under FPC the unit declares nothing and the system type is
     already the right one. }
-  BaseTypes,
-  Notifier,
-  ParseTypes,
-  ParseUtils,
-  Parser,
-  ValueTypes,
-  ValueUtils,
-  ParseJit.Parser,
+  BaseTypes, Notifier, ParseTypes, ParseUtils, Parser, ValueTypes, ValueUtils, ParseJit.Parser,
   TestKit in 'TestKit.pas';
 
 {
@@ -176,7 +167,8 @@ end;
 
 function TSlot.Reason: string;
 begin
-  if Assigned(FCode) then Result := FCode.Reason
+  if Assigned(FCode) then
+    Result := FCode.Reason
   else
     Result := 'no code';
 end;
@@ -232,7 +224,10 @@ begin
   try
     for I := 1 to FRounds do
     begin
-      if FUseCode then Value := FSlot.ByCode else Value := FSlot.ByParser;
+      if FUseCode then
+        Value := FSlot.ByCode
+      else
+        Value := FSlot.ByParser;
       if not SameValue(Value, FExpected, 1E-9) then Inc(FWrong);
     end;
   except

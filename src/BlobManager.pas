@@ -1539,4 +1539,5 @@ procedure TBlobManager.WriteWord(const AName: string; const Value: Word; const I
 begin
   Write(ItemKind, AName, Value, SizeOf(Value));
 end;
+
 end.

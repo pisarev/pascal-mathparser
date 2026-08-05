@@ -27,12 +27,7 @@ program DoubleParity;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils,
-  Parser,
-  ParseTypes,
-  ValueTypes,
-  ValueUtils,
-  ParseJit.Parser;
+  SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Parser;
 
 const
   Formula: array[0..29] of string = (
@@ -117,8 +112,9 @@ begin
           Continue;
         end;
       end;
-      if Bits(ValueBase) = Bits(ValueJit) then Mark := ' ' else
-      begin
+      if Bits(ValueBase) = Bits(ValueJit) then
+        Mark := ' '
+      else begin
         Mark := '!';
         Inc(Diff);
       end;

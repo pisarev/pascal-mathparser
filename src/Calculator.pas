@@ -405,13 +405,15 @@ begin
     Dec(J);
     for I := 0 to J do
     begin
-      if I < FThreadList.Count then Thread := TCalcThread(FThreadList[I])
+      if I < FThreadList.Count then
+        Thread := TCalcThread(FThreadList[I])
       else
         Thread := TCalcThread(FThreadList[AddThread]);
       SetupThread(Thread);
       K := I * Count;
       Thread.Index := K;
-      if I = J then Thread.Count := FItemList.Count - K
+      if I = J then
+        Thread.Count := FItemList.Count - K
       else
         Thread.Count := Count;
       Thread.Start;
@@ -506,7 +508,8 @@ begin
   if Result then
     for I := 0 to FThreadCount - 1 do
     begin
-      if I < FThreadList.Count then Thread := TCalcThread(FThreadList[I])
+      if I < FThreadList.Count then
+        Thread := TCalcThread(FThreadList[I])
       else
         Thread := TCalcThread(FThreadList[AddThread]);
       with Thread.FParseManager do
@@ -618,7 +621,8 @@ end;
 
 function TCalculator.AsValue(const Text: string): TValue;
 begin
-  if FThread.Finished then Result := FParseManager.AsValue(Text)
+  if FThread.Finished then
+    Result := FParseManager.AsValue(Text)
   else
     raise Error(OperationError);
 end;
@@ -741,7 +745,8 @@ var
   Item: PItem;
 begin
   Item := FParseValueList.Find(AName);
-  if Assigned(Item) then Result := ValueToText(Item.Item.Value)
+  if Assigned(Item) then
+    Result := ValueToText(Item.Item.Value)
   else
     Result := '';
 end;
@@ -1052,4 +1057,5 @@ begin
     Result := False;
   end;
 end;
+
 end.

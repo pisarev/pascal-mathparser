@@ -13,13 +13,7 @@ program JitContractTest;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils,
-  Math,
-  Parser,
-  ParseTypes,
-  ValueUtils,
-  ParseJit.Parser,
-  ParseJit.CodeGen,
+  SysUtils, Math, Parser, ParseTypes, ValueUtils, ParseJit.Parser, ParseJit.CodeGen,
   TestKit in 'TestKit.pas';
 
 {

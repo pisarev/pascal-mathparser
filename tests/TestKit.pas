@@ -102,7 +102,8 @@ end;
 procedure Check(const Name: string; const Condition: Boolean; const Details: string);
 begin
   Inc(TestCount);
-  if Condition then Writeln('PASS  ', Name)
+  if Condition then
+    Writeln('PASS  ', Name)
   else begin
     Inc(FailCount);
     Write('FAIL  ', Name);
@@ -128,4 +129,5 @@ begin
   Writeln(Format('TOTAL: %d, FAILED: %d', [TestCount, FailCount]));
   Result := FailCount;
 end;
+
 end.

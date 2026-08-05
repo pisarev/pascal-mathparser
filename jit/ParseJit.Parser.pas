@@ -24,8 +24,8 @@ uses
   SysUtils, Math, Classes, FastList, Notifier, ParseTypes, Parser, ValueTypes, ValueUtils,
   ParseJit.Decoder, ParseJit.CodeGen, ParseJit.Executor;
   {$ELSE}
-  System.SysUtils, System.Math, System.Classes, FastList, Notifier, ParseTypes, Parser,
-  ValueTypes, ValueUtils, ParseJit.Decoder, ParseJit.CodeGen, ParseJit.Executor;
+  System.SysUtils, System.Math, System.Classes, FastList, Notifier, ParseTypes,
+  Parser, ValueTypes, ValueUtils, ParseJit.Decoder, ParseJit.CodeGen, ParseJit.Executor;
   {$ENDIF}
 
 type
@@ -111,11 +111,16 @@ end;
 
 function TJitEntry.Reason: string;
 begin
-  if not Fresh then Result := 'parser changed'
-  else if Assigned(Code) and Code.Ready then Result := ''
-  else if Assigned(Executor) and Executor.Ready then Result := 'ir executor'
-  else if Assigned(Code) then Result := Code.Reason
-  else if Assigned(Executor) then Result := Executor.Reason
+  if not Fresh then
+    Result := 'parser changed'
+  else if Assigned(Code) and Code.Ready then
+    Result := ''
+  else if Assigned(Executor) and Executor.Ready then
+    Result := 'ir executor'
+  else if Assigned(Code) then
+    Result := Code.Reason
+  else if Assigned(Executor) then
+    Result := Executor.Reason
   else
     Result := 'no code';
 end;
@@ -242,7 +247,8 @@ var
   Code: TJitEntry;
 begin
   Code := GetCode(Text);
-  if Assigned(Code) then Result := Code.Reason
+  if Assigned(Code) then
+    Result := Code.Reason
   else
     Result := 'no code';
 end;
@@ -312,4 +318,5 @@ begin
   end;
   Result := True;
 end;
+
 end.

@@ -42,4 +42,5 @@ procedure ZeroMemory(Destination: Pointer; Length: NativeUInt);
 begin
   FillChar(Destination^, Length, 0);
 end;
+
 end.

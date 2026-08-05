@@ -44,4 +44,5 @@ end;
 initialization
   FillChar(EmptyValue, SizeOf(TValue), 0);
   EmptyValue.ValueType := vtByte;
+
 end.

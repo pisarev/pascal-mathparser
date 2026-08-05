@@ -402,7 +402,8 @@ begin
     if not FStarted then
       FSuspended := Value
     else
-      if Value then Suspend
+      if Value then
+        Suspend
       else
         Resume;
 end;
@@ -462,7 +463,8 @@ begin
   Result := SuspendThread(FThreadID);
   FSuspended := Result = 0;
   {$ELSE}
-  if FSuspended then Result := 0
+  if FSuspended then
+    Result := 0
   else begin
     Result := SuspendThread(FHandle);
     FSuspended := True;
@@ -548,4 +550,5 @@ finalization
   DeleteCriticalSection(ThreadSync);
   {$ENDIF}
   FreeAndNil(SyncList);
+
 end.

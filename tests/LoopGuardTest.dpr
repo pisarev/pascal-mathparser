@@ -13,13 +13,7 @@ program LoopGuardTest;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils,
-  Parser,
-  ParseTypes,
-  ValueTypes,
-  ValueUtils,
-  Thread,
-  TestKit in 'TestKit.pas';
+  SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, Thread, TestKit in 'TestKit.pas';
 
 {
   What this file guards.
@@ -147,7 +141,10 @@ var
   Script: TScript;
 begin
   ParseLoopLeft := FBudget;
-  if FWatched then ParseBreak := StopFlag else ParseBreak := nil;
+  if FWatched then
+    ParseBreak := StopFlag
+  else
+    ParseBreak := nil;
   FStarted := True;
   Script := nil;
   try
@@ -217,7 +214,8 @@ begin
     Sleep(RaiseAfter);
     T.Stop;
   end;
-  if Waiting(T, Deadline) then Result := T.Note
+  if Waiting(T, Deadline) then
+    Result := T.Note
   else begin
     { the deadline passed. Ask nicely first, then kill }
     T.Stop;

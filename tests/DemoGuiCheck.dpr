@@ -48,7 +48,8 @@ begin
       else
         for I := 1 to FRepeatCount do FParser.ExecuteScript(Script);
       TickCount := GetTickCount - TickCount;
-      if Compiled.Ready then Writeln('Execution mode: native machine code')
+      if Compiled.Ready then
+        Writeln('Execution mode: native machine code')
       else
         Writeln('Execution mode: interpreter (', Compiled.Reason, ')');
       Writeln('Repeat count: ', FRepeatCount);

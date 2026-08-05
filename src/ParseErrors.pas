@@ -163,4 +163,5 @@ function Error(const Text, Message: string; const Arguments: array of const): Ex
 begin
   Result := Error(EText(Text, Message, Arguments));
 end;
+
 end.

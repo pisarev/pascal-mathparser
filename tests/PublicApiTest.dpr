@@ -12,13 +12,7 @@ program PublicApiTest;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils,
-  BaseTypes,
-  Parser,
-  ParseTypes,
-  ValueTypes,
-  ValueUtils,
-  TestKit in 'TestKit.pas';
+  SysUtils, BaseTypes, Parser, ParseTypes, ValueTypes, ValueUtils, TestKit in 'TestKit.pas';
 
 {
   What this file guards.

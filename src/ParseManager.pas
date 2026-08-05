@@ -360,7 +360,8 @@ begin
         I := ParseCommon.IndexOf(FList, Text, False);
         if I < 0 then
         begin
-          if FList.Count < FMaxCount then I := FList.Add(Text)
+          if FList.Count < FMaxCount then
+            I := FList.Add(Text)
           else begin
             I := Next;
             FList[I] := Text;
@@ -459,7 +460,8 @@ begin
       Parser.StringToScript(FList[Index], Result.Item.Script);
       if FOptimization then Optimize(Index);
     except
-      if Assigned(FErrorValue) then ParseCommon.AssignValue(Result.Item, FErrorValue^)
+      if Assigned(FErrorValue) then
+        ParseCommon.AssignValue(Result.Item, FErrorValue^)
       else begin
         Delete(PItem(FList.Objects[Index]));
         FList.Objects[Index] := nil;
@@ -611,7 +613,8 @@ begin
           if Trim(S) = '' then Continue;
           AItem := Trim(SubStr(S, Equal, 0, False));
           BItem := Trim(SubStr(S, Equal, 1, False));
-          if TryTextToValue(BItem, Value) then AssignValue(AItem, Value)
+          if TryTextToValue(BItem, Value) then
+            AssignValue(AItem, Value)
           else
             AssignValue(AItem, BItem)
         end;
@@ -707,4 +710,5 @@ procedure TParseManager.SetParser(const Value: TParser);
 begin
   inherited Parser := Value;
 end;
+
 end.

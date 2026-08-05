@@ -294,7 +294,8 @@ begin
       if (Step.FastOp <> foNone) and (IsFloat(LValue) or IsFloat(RValue)) and
         (LValue.ValueType <> ValueTypes.vtUnknown) and (RValue.ValueType <> ValueTypes.vtUnknown) then
         begin
-          if Step.FastOp = foMultiply then SetFloat(Value, FloatOf(LValue) * FloatOf(RValue))
+          if Step.FastOp = foMultiply then
+            SetFloat(Value, FloatOf(LValue) * FloatOf(RValue))
           else
             SetFloat(Value, FloatOf(LValue) / FloatOf(RValue));
         end
@@ -327,10 +328,12 @@ begin
     Inc(Index);
     RunTerm(Index, TermValue);
     Inc(Index);
-    if First and (Sign = 0) then Value := TermValue
+    if First and (Sign = 0) then
+      Value := TermValue
     else if IsFloat(Value) or IsFloat(TermValue) then
     begin
-      if Sign = 0 then SetFloat(Value, FloatOf(Value) + FloatOf(TermValue))
+      if Sign = 0 then
+        SetFloat(Value, FloatOf(Value) + FloatOf(TermValue))
       else
         SetFloat(Value, FloatOf(Value) - FloatOf(TermValue));
     end
@@ -379,4 +382,5 @@ begin
   Index := 0;
   RunScript(Index, Result);
 end;
+
 end.

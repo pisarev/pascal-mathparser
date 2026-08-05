@@ -13,16 +13,8 @@ program JitBench;
 uses
   Classes,
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils,
-  Math,
-  Parser,
-  ParseTypes,
-  ValueTypes,
-  ValueUtils,
-  ParseJit.Decoder,
-  ParseJit.Executor,
-  ParseJit.CodeGen,
-  TestKit in 'TestKit.pas';
+  SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Decoder,
+  ParseJit.Executor, ParseJit.CodeGen, TestKit in 'TestKit.pas';
 
 var
   P: TMathParser;

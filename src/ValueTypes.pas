@@ -182,4 +182,5 @@ function Assignable(const Source, Target: TValueType): Boolean;
 begin
   Result := Source in [Target..High(TValueType)];
 end;
+
 end.

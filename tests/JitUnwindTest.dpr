@@ -14,14 +14,7 @@ program JitUnwindTest;
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
   {$IFDEF MSWINDOWS}Windows,{$ENDIF}
-  SysUtils,
-  Math,
-  Parser,
-  ParseTypes,
-  ValueTypes,
-  ValueUtils,
-  ParseJit.Parser,
-  TestKit in 'TestKit.pas';
+  SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Parser, TestKit in 'TestKit.pas';
 
 {
   What this file guards: that the stack can be unwound through a frame of

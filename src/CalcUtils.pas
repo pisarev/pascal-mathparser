@@ -282,4 +282,5 @@ initialization
 
 finalization
   Calc.Free;
+
 end.

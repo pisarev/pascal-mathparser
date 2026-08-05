@@ -24,8 +24,8 @@ uses
   SysUtils, NumberUtils, ParseTypes, Parser, ValueConsts, ValueTypes, ValueUtils,
   ParseJit.Decoder, ParseJit.Memory;
   {$ELSE}
-  System.SysUtils, NumberUtils, ParseTypes, Parser, ValueConsts,
-  ValueTypes, ValueUtils, ParseJit.Decoder, ParseJit.Memory;
+  System.SysUtils, NumberUtils, ParseTypes, Parser, ValueConsts, ValueTypes, ValueUtils,
+  ParseJit.Decoder, ParseJit.Memory;
   {$ENDIF}
 
 type
@@ -104,32 +104,50 @@ const
 
 function JitAbove(L, R: Double): Double;
 begin
-  if NumberUtils.Above(L, R, Epsilon) then Result := -1 else Result := 0;
+  if NumberUtils.Above(L, R, Epsilon) then
+    Result := -1
+  else
+    Result := 0;
 end;
 
 function JitBelow(L, R: Double): Double;
 begin
-  if NumberUtils.Below(L, R, Epsilon) then Result := -1 else Result := 0;
+  if NumberUtils.Below(L, R, Epsilon) then
+    Result := -1
+  else
+    Result := 0;
 end;
 
 function JitAboveOrEqual(L, R: Double): Double;
 begin
-  if NumberUtils.AboveOrEqual(L, R, Epsilon) then Result := -1 else Result := 0;
+  if NumberUtils.AboveOrEqual(L, R, Epsilon) then
+    Result := -1
+  else
+    Result := 0;
 end;
 
 function JitBelowOrEqual(L, R: Double): Double;
 begin
-  if NumberUtils.BelowOrEqual(L, R, Epsilon) then Result := -1 else Result := 0;
+  if NumberUtils.BelowOrEqual(L, R, Epsilon) then
+    Result := -1
+  else
+    Result := 0;
 end;
 
 function JitEqual(L, R: Double): Double;
 begin
-  if NumberUtils.Equal(L, R, Epsilon) then Result := -1 else Result := 0;
+  if NumberUtils.Equal(L, R, Epsilon) then
+    Result := -1
+  else
+    Result := 0;
 end;
 
 function JitNotEqual(L, R: Double): Double;
 begin
-  if NumberUtils.Equal(L, R, Epsilon) then Result := 0 else Result := -1;
+  if NumberUtils.Equal(L, R, Epsilon) then
+    Result := 0
+  else
+    Result := -1;
 end;
 
 function JitGetBoxed(P: PValue): Double;
@@ -360,7 +378,8 @@ begin
   case AValueType of
     ValueTypes.vtDouble: EmitLoadMemory(Address);
     ValueTypes.vtExtended:
-      if SizeOf(Extended) = SizeOf(Double) then EmitLoadMemory(Address)
+      if SizeOf(Extended) = SizeOf(Double) then
+        EmitLoadMemory(Address)
       else
         Result := False;
     ValueTypes.vtSingle:
@@ -422,7 +441,8 @@ end;
 
 function TJitCode.EmitJump(const Conditional: Boolean): Integer;
 begin
-  if Conditional then Emit([$0F, $84])
+  if Conditional then
+    Emit([$0F, $84])
   else
     Emit([$E9]);
   Result := FSize;
@@ -521,7 +541,8 @@ begin
       Exit(False);
     end;
     Inc(Index, 3);
-    if Assigned(Direct) then EmitLoadMemory(Direct)
+    if Assigned(Direct) then
+      EmitLoadMemory(Direct)
     else begin
       EmitLoadArgument(Boxed);
       EmitCall(@JitGetBoxed);
@@ -751,8 +772,10 @@ begin
         Exit(False);
       end;
       Compare := False;
-      if Op.AFunction.Handle^ = FMultiplyHandle then Multiply := True
-      else if Op.AFunction.Handle^ = FDivideHandle then Multiply := False
+      if Op.AFunction.Handle^ = FMultiplyHandle then
+        Multiply := True
+      else if Op.AFunction.Handle^ = FDivideHandle then
+        Multiply := False
       else begin
         Multiply := False;
         Compare := True;
@@ -812,7 +835,8 @@ begin
       end
       else begin
         EmitLoadSlot(True, Slot);
-        if Sign = 0 then Emit([$F2, $0F, $58, $C8])
+        if Sign = 0 then
+          Emit([$F2, $0F, $58, $C8])
         else
           Emit([$F2, $0F, $5C, $C8]);
         Emit([$66, $0F, $28, $C1]);
@@ -851,7 +875,8 @@ begin
     FReason := FDecoder.Reason;
     Exit(False);
   end;
-  if TestCapacity > 0 then FCapacity := TestCapacity
+  if TestCapacity > 0 then
+    FCapacity := TestCapacity
   else
     FCapacity := 4096 + UnwindReserve + FDecoder.Count * 64;
   FBuffer := AllocCode(FCapacity);
@@ -924,4 +949,5 @@ begin
     raise Exception.Create('jit code is not ready: ' + FReason);
   Result := FCode();
 end;
+
 end.

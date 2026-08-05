@@ -21,8 +21,7 @@ uses
   SysUtils, Classes, EventUtils, Notifier, Parser, ParseTypes, ValueTypes;
   {$ELSE}
   {$IFDEF DELPHI_10.2}
-  System.SysUtils, System.Classes, BaseTypes, EventUtils, Notifier, Parser, ParseTypes,
-  ValueTypes;
+  System.SysUtils, System.Classes, BaseTypes, EventUtils, Notifier, Parser, ParseTypes, ValueTypes;
   {$ELSE}
   SysUtils, Classes, EventUtils, Notifier, Parser, ParseTypes, ValueTypes;
   {$ENDIF}
@@ -139,7 +138,8 @@ end;
 procedure TConnector.Connect;
 begin
   inherited;
-  if Available(Parser) then FFunctionEvent := Parser.Connect(Custom, Self)
+  if Available(Parser) then
+    FFunctionEvent := Parser.Connect(Custom, Self)
   else if Available(Connector) then
   begin
     Connector.Notifier.Add(Self);
@@ -333,4 +333,5 @@ begin
     FNotifier.Notify(ntSuspend, Self);
   end;
 end;
+
 end.

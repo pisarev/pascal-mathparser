@@ -502,15 +502,21 @@ end;
 function GetValueType(const Value: Int64): TValueType;
 begin
   if Value > 0 then
-    if Value > High(LongWord) then Result := vtInt64
-    else if Value > High(Word) then Result := vtLongWord
-    else if Value > High(Byte) then Result := vtWord
+    if Value > High(LongWord) then
+      Result := vtInt64
+    else if Value > High(Word) then
+      Result := vtLongWord
+    else if Value > High(Byte) then
+      Result := vtWord
     else
       Result := vtByte
   else
-    if Value < -High(Integer) - 1 then Result := vtInt64
-    else if Value < -High(Smallint) - 1 then Result := vtInteger
-    else if Value < -High(Shortint) - 1 then Result := vtSmallint
+    if Value < -High(Integer) - 1 then
+      Result := vtInt64
+    else if Value < -High(Smallint) - 1 then
+      Result := vtInteger
+    else if Value < -High(Shortint) - 1 then
+      Result := vtSmallint
     else
       Result := vtShortint;
 end;
@@ -1758,4 +1764,5 @@ begin
     vtExtended: AssignExtended(Result, Abs(Value.Float80));
   end;
 end;
+
 end.

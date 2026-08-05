@@ -21,8 +21,7 @@ uses
   SysUtils, FlexibleList, ParseTypes, Types, ValueTypes;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
-  WinApi.Windows, System.SysUtils, BaseTypes, FlexibleList, ParseTypes, Types,
-  ValueTypes;
+  WinApi.Windows, System.SysUtils, BaseTypes, FlexibleList, ParseTypes, Types, ValueTypes;
   {$ELSE}
   Windows, SysUtils, FlexibleList, ParseTypes, Types, ValueTypes;
   {$ENDIF}
@@ -698,7 +697,8 @@ procedure TVariableContainer.SetVariable(const Name: string; const Value: PValue
 var
   I: Integer;
 begin
-  if Find(Name, @I) then FList.List.Objects[I] := TObject(Value)
+  if Find(Name, @I) then
+    FList.List.Objects[I] := TObject(Value)
   else
     FList.List.AddObject(Name, TObject(Value));
 end;
@@ -5097,7 +5097,8 @@ begin
   Parameter := GetParameter(P, Header, PA[0]);
   Check(FParser, AFunction, 0, Parameter.THandle, True);
   S := Trim(Parameter.Text);
-  if Assigned(P.FindFunction(S)) then Result := P.NegativeValue
+  if Assigned(P.FindFunction(S)) then
+    Result := P.NegativeValue
   else begin
     Parameter := GetParameter(P, Header, PA[1]);
     P.BeginUpdate;
@@ -8459,4 +8460,5 @@ finalization
   {$ELSE}
   DeleteCriticalSection(MethodSync);
   {$ENDIF}
+
 end.
