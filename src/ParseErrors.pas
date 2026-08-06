@@ -29,9 +29,12 @@ uses
 type
   EParserExit = class(Exception)
   private
+    FOwnerParser: TObject;
     FValue: TValue;
   public
-    constructor Create(const AValue: TValue);
+    constructor Create(const AValue: TValue); overload;
+    constructor Create(const AOwnerParser: TObject; const AValue: TValue); overload;
+    property OwnerParser: TObject read FOwnerParser;
     property Value: TValue read FValue;
   end;
 
@@ -118,9 +121,20 @@ function Error(const Text, Message: string; const Arguments: array of const): Ex
 
 implementation
 
+uses
+  ParseExecution;
+
 constructor EParserExit.Create(const AValue: TValue);
 begin
   inherited Create('script exit');
+  FOwnerParser := CurrentParserOf(CurrentExecuteFrame);
+  FValue := AValue;
+end;
+
+constructor EParserExit.Create(const AOwnerParser: TObject; const AValue: TValue);
+begin
+  inherited Create('script exit');
+  FOwnerParser := AOwnerParser;
   FValue := AValue;
 end;
 

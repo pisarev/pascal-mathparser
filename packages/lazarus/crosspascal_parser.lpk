@@ -24,8 +24,8 @@
       </CodeGeneration>
     </CompilerOptions>
     <Description Value="MathParser: a compiler and interpreter of mathematical expressions (core)"/>
-    <License Value="Copyright Yuriy Pisarev"/>
-    <Version Major="3"/>
+    <License Value="MIT"/>
+    <Version Major="1" Minor="0" Release="3"/>
     <Files>
       <Item>
         <Filename Value="..\..\src\Parser.pas"/>
@@ -50,6 +50,10 @@
       <Item>
         <Filename Value="..\..\src\ParseErrors.pas"/>
         <UnitName Value="ParseErrors"/>
+      </Item>
+      <Item>
+        <Filename Value="..\..\src\ParseExecution.pas"/>
+        <UnitName Value="ParseExecution"/>
       </Item>
       <Item>
         <Filename Value="..\..\src\ParseValidator.pas"/>

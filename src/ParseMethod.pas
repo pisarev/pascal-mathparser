@@ -32,8 +32,7 @@ type
   private
     FList: TFlexibleList;
   protected
-    function Find(const Name: string;
-      Index: {$IFDEF FPC}System.{$ENDIF}PInteger = nil): Boolean; virtual;
+    function Find(const Name: string; Index: {$IFDEF FPC}System.{$ENDIF}PInteger = nil): Boolean; virtual;
     property List: TFlexibleList read FList write FList;
   public
     constructor Create; virtual;
@@ -575,8 +574,7 @@ procedure Check(const Parser: TObject; const AFunction: PFunction; const PA: TPa
 var
   I: Integer;
 begin
-  for I := Low(PA) to High(PA) do
-    Check(Parser, AFunction, I, PA[I].THandle, TextFlag);
+  for I := Low(PA) to High(PA) do Check(Parser, AFunction, I, PA[I].THandle, TextFlag);
 end;
 
 procedure Check(const ValueType: TValueType);
@@ -623,8 +621,7 @@ begin
     SetLength(Result, 0)
   else
     SetLength(Result, TillIndex - FromIndex + 1);
-  for I := FromIndex to TillIndex do
-    Result[I - FromIndex] := GetExtended(PA[I].Value);
+  for I := FromIndex to TillIndex do Result[I - FromIndex] := GetExtended(PA[I].Value);
 end;
 
 function IArray(const PA: TParameterArray; const FromIndex, TillIndex: Integer): TIntegerDynArray;
@@ -642,8 +639,6 @@ begin
   Result := 1;
   for I := 1 to Value do Result := Result * I;
 end;
-
-{ TVariableContainer }
 
 procedure TVariableContainer.Clear;
 var
@@ -683,8 +678,7 @@ begin
   inherited;
 end;
 
-function TVariableContainer.Find(const Name: string;
-  Index: {$IFDEF FPC}System.{$ENDIF}PInteger): Boolean;
+function TVariableContainer.Find(const Name: string; Index: {$IFDEF FPC}System.{$ENDIF}PInteger): Boolean;
 var
   I: Integer;
 begin
@@ -703,14 +697,10 @@ begin
     FList.List.AddObject(Name, TObject(Value));
 end;
 
-{ TCustomMethod }
-
 constructor TCustomMethod.Create(const AParser: TObject);
 begin
   FParser := AParser;
 end;
-
-{ TMethod }
 
 function TMethod.AboveMethod(const Header: PScriptHeader; const AFunction: PFunction; const AType: PType;
   const LValue, RValue: TValue): TValue;
@@ -4904,7 +4894,7 @@ function TMethod.ExitMethod(const Header: PScriptHeader; const AFunction: PFunct
 begin
   Check(AFunction, PA, AFunction.Method.Parameter.Count);
   Check(FParser, AFunction, PA, False);
-  raise EParserExit.Create(PA[0].Value);
+  raise EParserExit.Create(FParser, PA[0].Value);
 end;
 
 function TMethod.FalseMethod(const Header: PScriptHeader; const AFunction: PFunction;
@@ -4967,8 +4957,7 @@ begin
       Parameter := GetParameter(P, Header, PA[1]);
       New(Value);
       Value^ := Parameter.Value;
-      if P.GetType(Parameter.THandle, BType) then
-        Value^ := Convert(Value^, BType.ValueType);
+      if P.GetType(Parameter.THandle, BType) then Value^ := Convert(Value^, BType.ValueType);
       P.AddVariable(S, Value^, True);
     end;
     Result := EmptyValue;
@@ -5106,8 +5095,7 @@ begin
       New(Value);
       try
         Value^ := Parameter.Value;
-        if P.GetType(Parameter.THandle, BType) then
-          Value^ := Convert(Value^, BType.ValueType);
+        if P.GetType(Parameter.THandle, BType) then Value^ := Convert(Value^, BType.ValueType);
         P.AddVariable(S, Value^, AsBoolean(P, Header, PA, 2, False));
         FContainer.SetVariable(S, Value);
       except
@@ -6962,8 +6950,6 @@ begin
       end;
   end;
 end;
-
-{ TMathMethod }
 
 function TMathMethod.AbsMethod(const Header: PScriptHeader; const AFunction: PFunction; const AType: PType;
   const Value: TValue): TValue;

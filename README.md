@@ -137,7 +137,10 @@ author.
 - **`exit` ends the whole evaluation, brackets included.** A bracketed group is a
   script in its own right, so `99 + (exit(42))` is 42 and never 141. That holds
   whichever way `ExecuteKindSet` is set; up to 1.0.1 the group kept its own `exit`
-  when groups were evaluated up front.
+  when groups were evaluated up front. An `exit` belongs to the parser whose
+  formula raised it: if that formula reaches a second parser and the second one
+  calls back into the first, the `exit` passes the middle parser untouched and
+  ends the evaluation it came from. Up to 1.0.2 the middle parser took it.
 
 Case never separates two names. `Sin`, `sin` and `SIN` are one built-in, and a
 variable registered as `Rate` also answers to `rate`; registering a second
@@ -266,12 +269,66 @@ from inside a running formula is not supported.
   library's named types: `TFunctionOrder` or `TNativeIntDynArray`.
 - `Extended` is 10 bytes on 32-bit Delphi and on FPC for Linux, and 8 bytes on
   64-bit Windows, so the last bit of a long chain can differ between targets.
-- Register every function and variable before the first evaluation. Evaluation is
-  thread-safe after that; registration itself is not. This is about `TMathParser`:
-  `TJitParser` keeps a cache of compiled formulas and writes it without a lock, so
+- `TJitParser` keeps a cache of compiled formulas and writes it without a lock, so
   one accelerating parser belongs to one thread. To evaluate in parallel, compile
   the scripts up front with `CompileScript` and run the compiled `TJitScript` from
   as many threads as you like - see [jit/USAGE.md](jit/USAGE.md).
+
+## Thread safety
+
+A `TMathParser` instance may be shared by multiple OS threads only after its
+evaluation configuration has been frozen. Complete all function, variable and
+type registration, redirects, event-handler assignment and relevant property
+changes before starting worker threads. Do not modify or destroy the parser
+while an evaluation is active.
+
+A `TScript` is a mutable execution image, not immutable bytecode. Evaluation
+writes intermediate and final values into the script headers. The same script
+storage must therefore never have more than one active evaluation. This
+restriction applies both to concurrent evaluations in different threads and to
+reentrant evaluations in the same thread.
+
+Every simultaneously active evaluation requires an independent byte copy:
+
+```pascal
+for I := 0 to High(Pack) do
+begin
+  P.StringToScript(StringReplace('v0 * v0 + 1', 'v0', 'v' + IntToStr(I), [rfReplaceAll]), Compiled);
+  Pack[I].FScript := Copy(Compiled);
+end;
+for I := 0 to High(Pack) do Pack[I].Start;
+```
+
+A plain assignment - `WorkerScript := CompiledScript` - is not enough: after it
+both variables refer to the same script storage, because that is what assigning
+a dynamic array does in Delphi and in Free Pascal alike. A worker may reuse its
+private copy for any number of serial, non-overlapping evaluations.
+
+Registered variables and callbacks are external shared state. Variable storage
+must either remain unchanged during parallel evaluation or be redirected to
+storage private to the current worker. Registered callbacks, event handlers and
+parser overrides must themselves be reentrant and thread-safe.
+
+Operations that modify parser-owned or application-owned state are not part of
+the parallel-evaluation contract. Do not concurrently perform registration,
+deletion, redirect changes, parser-property changes or state-changing formula
+operations on a shared parser. Formula functions such as `parse`, `new`,
+`delete`, `set`, `setepsilon`, `setdecimalseparator` and other user or built-in
+functions that mutate shared state require their own synchronization or isolated
+parser state.
+
+`ExecuteScript` returns a `PValue` that points into the supplied script buffer.
+The pointer remains valid only while that exact buffer still exists and has not
+been resized, reassigned or released. Its contents are overwritten by the next
+execution of the same script storage. Read or copy the value immediately. Do not
+retain the pointer and do not share it with another evaluation.
+
+The high-level conversion methods such as `AsInteger`, `AsDouble`, `AsExtended`,
+`AsBoolean`, `AsString` and `AsDateTime` return their results by value and are
+the recommended public interface.
+
+`TJitParser` has additional restrictions described in
+[jit/USAGE.md](jit/USAGE.md).
 
 ## License
 

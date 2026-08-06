@@ -130,6 +130,7 @@
         <DCCReference Include="..\..\src\ParseCommon.pas"/>
         <DCCReference Include="..\..\src\ParseConsts.pas"/>
         <DCCReference Include="..\..\src\ParseErrors.pas"/>
+        <DCCReference Include="..\..\src\ParseExecution.pas"/>
         <DCCReference Include="..\..\src\ParseManager.pas"/>
         <DCCReference Include="..\..\src\ParseMessages.pas"/>
         <DCCReference Include="..\..\src\ParseMethod.pas"/>

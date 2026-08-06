@@ -59,6 +59,7 @@ contains
   ParseCommon in '..\..\src\ParseCommon.pas',
   ParseConsts in '..\..\src\ParseConsts.pas',
   ParseErrors in '..\..\src\ParseErrors.pas',
+  ParseExecution in '..\..\src\ParseExecution.pas',
   ParseManager in '..\..\src\ParseManager.pas',
   ParseMessages in '..\..\src\ParseMessages.pas',
   ParseMethod in '..\..\src\ParseMethod.pas',

@@ -949,41 +949,23 @@ implementation
 uses
   {$IFDEF FPC}
   DateUtils, Connector, FlagCache, ItemCache, NumberConsts, NumberUtils, ParseCommon,
-  ParseManager, ParseMessages, ParseUtils, ParseValidator, ScriptFormat, TextUtils,
-  ThreadUtils, ValueConsts, ValueUtils, Variants;
+  ParseExecution, ParseManager, ParseMessages, ParseUtils, ParseValidator, ScriptFormat,
+  TextUtils, ThreadUtils, ValueConsts, ValueUtils, Variants;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
   System.DateUtils, System.UITypes, System.Variants, Connector, FlagCache, ItemCache,
-  NumberConsts, NumberUtils, ParseCommon, ParseManager, ParseMessages, ParseUtils,
-  ParseValidator, ScriptFormat, TextUtils, ThreadUtils, ValueConsts, ValueUtils;
+  NumberConsts, NumberUtils, ParseCommon, ParseExecution, ParseManager, ParseMessages,
+  ParseUtils, ParseValidator, ScriptFormat, TextUtils, ThreadUtils, ValueConsts, ValueUtils;
   {$ELSE}
   DateUtils, Connector, FlagCache, ItemCache, NumberConsts, NumberUtils, ParseCommon,
-  ParseManager, ParseMessages, ParseUtils, ParseValidator, ScriptFormat, TextUtils,
-  ThreadUtils, ValueConsts, ValueUtils, Variants;
+  ParseExecution, ParseManager, ParseMessages, ParseUtils, ParseValidator, ScriptFormat,
+  TextUtils, ThreadUtils, ValueConsts, ValueUtils, Variants;
   {$ENDIF}
   {$ENDIF}
 
 procedure Register;
 begin
   RegisterComponents('Samples', [TParser, TMathParser]);
-end;
-
-type
-  PExecuteFrame = ^TExecuteFrame;
-  TExecuteFrame = record
-    Previous: PExecuteFrame;
-    Parser: TObject;
-    SameParserParent: PExecuteFrame;
-  end;
-
-threadvar
-  CurrentExecuteFrame: PExecuteFrame;
-
-function FindExecuteFrame(const AParser: TObject): PExecuteFrame;
-begin
-  Result := CurrentExecuteFrame;
-  while Assigned(Result) and (Result.Parser <> AParser) do
-    Result := Result.Previous;
 end;
 
 var
@@ -1050,8 +1032,6 @@ begin
   Result.NotifyType := NotifyType;
   Result.Component := Component;
 end;
-
-{ TCache }
 
 procedure TCache.Clear;
 var
@@ -1176,8 +1156,6 @@ begin
   end;
 end;
 {$ENDIF}
-
-{ TCustomParser }
 
 function TCustomParser.AddConstant(const AName: string; const Value: TValue): Boolean;
 var
@@ -1517,22 +1495,8 @@ begin
           end;
           if Index > Low(ItemArray) then
           begin
-            Result := MakeError(
-              etNumberTypeError,
-              EText(
-                NumberTypeError,
-                [
-                  AType.Name,
-                  ValueToText(Data.Number^),
-                  RestoreText(
-                    Self,
-                    ItemArray,
-                    SA,
-                    Parameter
-                  )
-                ]
-              )
-            );
+            Result := MakeError(etNumberTypeError,
+              EText(NumberTypeError, [AType.Name, ValueToText(Data.Number^), RestoreText(Self, ItemArray, SA, Parameter)]));
             Exit;
           end;
         end;
@@ -1549,22 +1513,8 @@ begin
             end;
             if BFlag then
             begin
-              Result := MakeError(
-                etFunctionTypeError,
-                EText(
-                  FunctionTypeError,
-                  [
-                    AType.Name,
-                    AFunction.Name,
-                    RestoreText(
-                      Self,
-                      ItemArray,
-                      SA,
-                      Parameter
-                    )
-                  ]
-                )
-              );
+              Result := MakeError(etFunctionTypeError,
+                EText(FunctionTypeError, [AType.Name, AFunction.Name, RestoreText(Self, ItemArray, SA, Parameter)]));
               Exit;
             end;
           end;
@@ -1693,40 +1643,14 @@ begin
                 begin
                   if PriorParameter.R and Parameter.L then
                   begin
-                    Result := MakeError(
-                      etAMutualExcessError,
-                      EText(
-                        RestoreText(
-                          Self,
-                          Text,
-                          SA
-                        ),
-                        AMutualExcessError,
-                        [
-                          PriorFunction.Name,
-                          AFunction.Name
-                        ]
-                      )
-                    );
+                    Result := MakeError(etAMutualExcessError,
+                      EText(RestoreText(Self, Text, SA), AMutualExcessError, [PriorFunction.Name, AFunction.Name]));
                     Exit;
                   end;
                   if not PriorParameter.R and not Parameter.L then
                   begin
-                    Result := MakeError(
-                      etBMutualExcessError,
-                      EText(
-                        RestoreText(
-                          Self,
-                          Text,
-                          SA
-                        ),
-                        BMutualExcessError,
-                        [
-                          PriorFunction.Name,
-                          AFunction.Name
-                        ]
-                      )
-                    );
+                    Result := MakeError(etBMutualExcessError,
+                      EText(RestoreText(Self, Text, SA), BMutualExcessError, [PriorFunction.Name, AFunction.Name]));
                     Exit;
                   end;
                 end;
@@ -1898,8 +1822,7 @@ begin
   Handle := Copy(HandleArray);
   try
     Sort(Handle);
-    for I := High(Handle) downto Low(Handle) do
-      if DeleteFunction(Handle[I]) then Inc(Result);
+    for I := High(Handle) downto Low(Handle) do if DeleteFunction(Handle[I]) then Inc(Result);
   finally
     Handle := nil;
   end;
@@ -1914,8 +1837,7 @@ begin
   Handle := Copy(HandleArray);
   try
     Sort(Handle);
-    for I := High(Handle) downto Low(Handle) do
-      if DeleteType(Handle[I]) then Inc(Result);
+    for I := High(Handle) downto Low(Handle) do if DeleteType(Handle[I]) then Inc(Result);
   finally
     Handle := nil;
   end;
@@ -2252,8 +2174,6 @@ begin
   end
 end;
 
-{ TParser }
-
 function TParser.Connect(const ABeforeFunction: TFunctionEvent;
   const AAddressee: TCustomAddressee): TFunctionEvent;
 begin
@@ -2333,16 +2253,8 @@ begin
       MakeFunctionMethod(FMethod.StrToIntDefMethod, StrToIntDefParameterCount), True);
     InternalAddFunction(StrToFloatFunctionName, FStrToFloatHandle, fkMethod,
       MakeFunctionMethod(FMethod.StrToFloatMethod, StrToFloatParameterCount), True);
-    InternalAddFunction(
-      StrToFloatDefFunctionName,
-      FStrToFloatDefHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMethod.StrToFloatDefMethod,
-        StrToFloatDefParameterCount
-      ),
-      True
-    );
+    InternalAddFunction(StrToFloatDefFunctionName, FStrToFloatDefHandle, fkMethod,
+      MakeFunctionMethod(FMethod.StrToFloatDefMethod, StrToFloatDefParameterCount), True);
     InternalAddFunction(ParseFunctionName, FParseHandle, fkMethod, MakeFunctionMethod(FMethod.ParseMethod, ParseParameterCount), False);
     InternalAddFunction(DerivFunctionName, FDerivHandle, fkMethod, MakeFunctionMethod(FMethod.DerivMethod, DerivParameterMaxCount), False);
     InternalAddFunction(FalseFunctionName, FFalseHandle, fkMethod, MakeFunctionMethod(FMethod.FalseMethod), True);
@@ -2362,16 +2274,8 @@ begin
     InternalAddFunction(GetEpsilonFunctionName, FGetEpsilonHandle, fkMethod, MakeFunctionMethod(FMethod.GetEpsilonMethod), False);
     InternalAddFunction(SetEpsilonFunctionName, FSetEpsilonHandle, fkMethod,
       MakeFunctionMethod(FMethod.SetEpsilonMethod, SetEpsilonParameterCount), False);
-    InternalAddFunction(
-      SetDecimalSeparatorFunctionName,
-      FSetDecimalSeparatorHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMethod.SetDecimalSeparatorMethod,
-        SetDecimalSeparatorParameterCount
-      ),
-      False
-    );
+    InternalAddFunction(SetDecimalSeparatorFunctionName, FSetDecimalSeparatorHandle, fkMethod,
+      MakeFunctionMethod(FMethod.SetDecimalSeparatorMethod, SetDecimalSeparatorParameterCount), False);
     AddType(ShortintTypeName, FShortintHandle, vtShortint);
     AddType(ByteTypeName, FByteHandle, vtByte);
     AddType(SmallintTypeName, FSmallintHandle, vtSmallint);
@@ -2517,8 +2421,7 @@ begin
     if Data.Parameter then
       Data.Text.Append(Data.ItemText.Text)
     else
-      if Data.ItemText.Size > 0 then
-        Data.Text.Append(Data.ItemText.Text, Data.Delimiter);
+      if Data.ItemText.Size > 0 then Data.Text.Append(Data.ItemText.Text, Data.Delimiter);
     Data.ItemText.Clear;
   end;
   Result := True;
@@ -2535,7 +2438,6 @@ begin
   Result := @Header.Value;
   Frame.Previous := CurrentExecuteFrame;
   Frame.Parser := Self;
-  Frame.SameParserParent := FindExecuteFrame(Self);
   CurrentExecuteFrame := @Frame;
   try
     try
@@ -2546,10 +2448,10 @@ begin
       ParseScript(Index, ESMethod, @Value);
     except
       on E: EParserExit do
-        if not Assigned(Frame.SameParserParent) then
-          Header.Value := E.Value
-        else
-          raise;
+      begin
+        if (E.OwnerParser <> Self) or HasExecuteFrame(Self, Frame.Previous) then raise;
+        Header.Value := E.Value;
+      end;
     end;
   finally
     CurrentExecuteFrame := Frame.Previous;
@@ -2743,10 +2645,8 @@ begin
   begin
     I := 0;
     J := FRedirectList.Count - 1;
-    while (I < J) and (PRedirect(FRedirectList[I]).Category <> Category) do
-      Inc(I);
-    while (J > 0) and (PRedirect(FRedirectList[J]).Category <> Category) do
-      Dec(J);
+    while (I < J) and (PRedirect(FRedirectList[I]).Category <> Category) do Inc(I);
+    while (J > 0) and (PRedirect(FRedirectList[J]).Category <> Category) do Dec(J);
     while I <= J do
     begin
       K := (I + J) div 2;
@@ -2904,8 +2804,7 @@ var
         end;
       icFunction:
         begin
-          if GetType(AItem.THandle, AType) then
-            WriteType(Code, AType.ValueType);
+          if GetType(AItem.THandle, AType) then WriteType(Code, AType.ValueType);
           WriteFunction(Result, BItem.FHandle);
         end;
       icString:
@@ -2916,8 +2815,7 @@ var
         end;
       icScript, icParameter:
         begin
-          if GetType(AItem.THandle, AType) then
-            WriteType(Code, AType.ValueType);
+          if GetType(AItem.THandle, AType) then WriteType(Code, AType.ValueType);
           WriteScript(Result, Script, Code = icParameter, @ItemIndex);
         end;
     end;
@@ -3428,12 +3326,11 @@ begin
     for I := Low(ItemArray) to High(ItemArray) do
       if ItemArray[I].FHandle >= 0 then
       begin
-        for Flag := False to True do
-          if Peek(ItemArray[I].FHandle, Flag, AFunction) then
-          begin
-            Inc(L[Flag]);
-            Break;
-          end;
+        for Flag := False to True do if Peek(ItemArray[I].FHandle, Flag, AFunction) then
+        begin
+          Inc(L[Flag]);
+          Break;
+        end;
         if (L[False] > 0) and (L[True] > 0) or (L[False] > 1) then Break;
       end;
     Result := (L[False] > 0) and (L[True] > 0) or (L[False] > 1);
@@ -3463,8 +3360,7 @@ begin
                     J := AFunction.Handle^;
                     S := Embrace(IntToStr(AddScript(SA, InternalCompile(Trim(S), SA, False, Idle))),
                       BracketArray[bkBrace]);
-                    if not GetFunction(J, AFunction) then
-                      raise Error(ScriptError);
+                    if not GetFunction(J, AFunction) then raise Error(ScriptError);
                     AddItem(Array1.A, S, FInternalHandle, -1);
                   end
                 else begin
@@ -3492,8 +3388,7 @@ begin
                     J := AFunction.Handle^;
                     S := Embrace(IntToStr(AddScript(SA, InternalCompile(Trim(S), SA, False, Idle))),
                       BracketArray[bkBrace]);
-                    if not GetFunction(J, AFunction) then
-                      raise Error(ScriptError);
+                    if not GetFunction(J, AFunction) then raise Error(ScriptError);
                     AddItem(Array1.A, S, FInternalHandle, -1);
                   end;
                   ItemArray := Array1.A;
@@ -3540,8 +3435,7 @@ begin
               else begin
                 Reset(Array1.A, Array1.Data);
                 try
-                  for J := Low(ItemArray) to I - 1 do
-                    AddItem(Array1.A, Array1.Data, ItemArray[J]);
+                  for J := Low(ItemArray) to I - 1 do AddItem(Array1.A, Array1.Data, ItemArray[J]);
                 finally
                   Apply(Array1.A, Array1.Data);
                 end;
@@ -3574,8 +3468,7 @@ begin
               else begin
                 Reset(Array1.A, Array1.Data);
                 try
-                  for J := I + 1 to High(ItemArray) do
-                    AddItem(Array1.A, Array1.Data, ItemArray[J]);
+                  for J := I + 1 to High(ItemArray) do AddItem(Array1.A, Array1.Data, ItemArray[J]);
                 finally
                   Apply(Array1.A, Array1.Data);
                 end;
@@ -3710,8 +3603,7 @@ begin
         begin
           I := AddParameter(Data.PA^, Data.AD, ItemHeader.UserType.Handle, '');
           J := Item.ScriptString.Size;
-          if J > SizeOf(TString) - SizeOf(Char) then
-            J := SizeOf(TString) - SizeOf(Char);
+          if J > SizeOf(TString) - SizeOf(Char) then J := SizeOf(TString) - SizeOf(Char);
           ZeroMemory(@Data.PA^[I].Text, SizeOf(TString));
           CopyMemory(@Data.PA^[I].Text, PAnsiChar(Index) + SizeOf(TCode) + SizeOf(TScriptString), J);
         end;
@@ -3728,8 +3620,7 @@ begin
   end;
   if Index - Start >= ItemHeader.Size then
   begin
-    if (I >= 0) and Boolean(ItemHeader.Sign) then
-      Data.PA^[I].Value := Negative(Data.PA^[I].Value);
+    if (I >= 0) and Boolean(ItemHeader.Sign) then Data.PA^[I].Value := Negative(Data.PA^[I].Value);
     Data.Index^ := Index;
   end;
   Result := True;
@@ -3957,8 +3848,7 @@ var
   Redirect2: PRedirect absolute Item2;
 begin
   Result := CompareValue(Redirect1.Category, Redirect2.Category);
-  if Result = EqualsValue then
-    Result := CompareValue(Redirect1.Source, Redirect2.Source);
+  if Result = EqualsValue then Result := CompareValue(Redirect1.Source, Redirect2.Source);
 end;
 
 function TParser.SetRedirect(const Index: Integer; const Category, Source, Target: NativeInt): Boolean;
@@ -4086,8 +3976,6 @@ begin
   StringToScript(Text, FScript);
 end;
 
-{ TMathParser }
-
 constructor TMathParser.Create(AOwner: TComponent);
 begin
   inherited;
@@ -4188,16 +4076,8 @@ begin
       MakeFunctionMethod(FMathMethod.VarianceMethod, VarianceParameterCount), True);
     InternalAddFunction(PopnVarianceFunctionName, FPopnVarianceHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.PopnVarianceMethod, PopnVarianceParameterCount), True);
-    InternalAddFunction(
-      TotalVarianceFunctionName,
-      FTotalVarianceHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.TotalVarianceMethod,
-        TotalVarianceParameterCount
-      ),
-      True
-    );
+    InternalAddFunction(TotalVarianceFunctionName, FTotalVarianceHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.TotalVarianceMethod, TotalVarianceParameterCount), True);
     InternalAddFunction(NormFunctionName, FNormHandle, fkMethod, MakeFunctionMethod(FMathMethod.NormMethod, NormParameterCount), True);
     InternalAddFunction(RandGFunctionName, FRandGHandle, fkMethod, MakeFunctionMethod(FMathMethod.RandGMethod, RandGParameterCount), True);
     InternalAddFunction(RandomRangeFunctionName, FRandomRangeHandle, fkMethod,
@@ -4240,43 +4120,16 @@ begin
       MakeFunctionMethod(FMathMethod.GetMinuteMethod, GetMinuteParameterCount), True, vtWord);
     InternalAddFunction(GetSecondFunctionName, FGetSecondHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.GetSecondMethod, GetSecondParameterCount), True, vtWord);
-    InternalAddFunction(
-      GetMilliSecondFunctionName,
-      FGetMilliSecondHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.GetMilliSecondMethod,
-        GetMilliSecondParameterCount
-      ),
-      True,
-      vtWord
-    );
-    InternalAddFunction(
-      EncodeDateTimeFunctionName,
-      FEncodeDateTimeHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.EncodeDateTimeMethod,
-        EncodeDateTimeParameterCount
-      ),
-      True,
-      vtDouble
-    );
+    InternalAddFunction(GetMilliSecondFunctionName, FGetMilliSecondHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.GetMilliSecondMethod, GetMilliSecondParameterCount), True, vtWord);
+    InternalAddFunction(EncodeDateTimeFunctionName, FEncodeDateTimeHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.EncodeDateTimeMethod, EncodeDateTimeParameterCount), True, vtDouble);
     InternalAddFunction(EncodeDateFunctionName, FEncodeDateHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.EncodeDateMethod, EncodeDateParameterCount), True, vtDouble);
     InternalAddFunction(EncodeTimeFunctionName, FEncodeTimeHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.EncodeTimeMethod, EncodeTimeParameterCount), True, vtDouble);
-    InternalAddFunction(
-      StrToDateTimeFunctionName,
-      FStrToDateTimeHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.StrToDateTimeMethod,
-        StrToDateTimeParameterCount
-      ),
-      False,
-      vtDouble
-    );
+    InternalAddFunction(StrToDateTimeFunctionName, FStrToDateTimeHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.StrToDateTimeMethod, StrToDateTimeParameterCount), False, vtDouble);
     InternalAddFunction(StrToDateFunctionName, FStrToDateHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.StrToDateMethod, StrToDateParameterCount), False, vtDouble);
     InternalAddFunction(StrToTimeFunctionName, FStrToTimeHandle, fkMethod,
@@ -4299,297 +4152,83 @@ begin
       True, vtWord);
     InternalAddFunction(SecondOfFunctionName, FSecondOfHandle, fkMethod, MakeFunctionMethod(FMathMethod.SecondOfMethod, False, True),
       True, vtWord);
-    InternalAddFunction(
-      MilliSecondOfFunctionName,
-      FMilliSecondOfHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MilliSecondOfMethod,
-        False,
-        True
-      ),
-      True,
-      vtWord
-    );
+    InternalAddFunction(MilliSecondOfFunctionName, FMilliSecondOfHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MilliSecondOfMethod, False, True), True, vtWord);
     InternalAddFunction(YearsBetweenFunctionName, FYearsBetweenHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.YearsBetweenMethod, YearsBetweenParameterCount), True, vtInteger);
-    InternalAddFunction(
-      MonthsBetweenFunctionName,
-      FMonthsBetweenHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MonthsBetweenMethod,
-        MonthsBetweenParameterCount
-      ),
-      True,
-      vtInteger
-    );
+    InternalAddFunction(MonthsBetweenFunctionName, FMonthsBetweenHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MonthsBetweenMethod, MonthsBetweenParameterCount), True, vtInteger);
     InternalAddFunction(WeeksBetweenFunctionName, FWeeksBetweenHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.WeeksBetweenMethod, WeeksBetweenParameterCount), True, vtInteger);
     InternalAddFunction(DaysBetweenFunctionName, FDaysBetweenHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.DaysBetweenMethod, DaysBetweenParameterCount), True, vtInteger);
     InternalAddFunction(HoursBetweenFunctionName, FHoursBetweenHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.HoursBetweenMethod, HoursBetweenParameterCount), True, vtInt64);
-    InternalAddFunction(
-      MinutesBetweenFunctionName,
-      FMinutesBetweenHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MinutesBetweenMethod,
-        MinutesBetweenParameterCount
-      ),
-      True,
-      vtInt64
-    );
-    InternalAddFunction(
-      SecondsBetweenFunctionName,
-      FSecondsBetweenHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.SecondsBetweenMethod,
-        SecondsBetweenParameterCount
-      ),
-      True,
-      vtInt64
-    );
-    InternalAddFunction(
-      MilliSecondsBetweenFunctionName,
-      FMilliSecondsBetweenHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MilliSecondsBetweenMethod,
-        MilliSecondsBetweenParameterCount
-      ),
-      True,
-      vtInt64
-    );
-    InternalAddFunction(
-      MonthOfTheYearFunctionName,
-      FMonthOfTheYearHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MonthOfTheYearMethod,
-        False,
-        True
-      ),
-      True,
-      vtWord
-    );
-    InternalAddFunction(
-      WeekOfTheYearFunctionName,
-      FWeekOfTheYearHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.WeekOfTheYearMethod,
-        False,
-        True
-      ),
-      True,
-      vtWord
-    );
+    InternalAddFunction(MinutesBetweenFunctionName, FMinutesBetweenHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MinutesBetweenMethod, MinutesBetweenParameterCount), True, vtInt64);
+    InternalAddFunction(SecondsBetweenFunctionName, FSecondsBetweenHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SecondsBetweenMethod, SecondsBetweenParameterCount), True, vtInt64);
+    InternalAddFunction(MilliSecondsBetweenFunctionName, FMilliSecondsBetweenHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MilliSecondsBetweenMethod, MilliSecondsBetweenParameterCount),
+      True, vtInt64);
+    InternalAddFunction(MonthOfTheYearFunctionName, FMonthOfTheYearHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MonthOfTheYearMethod, False, True), True, vtWord);
+    InternalAddFunction(WeekOfTheYearFunctionName, FWeekOfTheYearHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.WeekOfTheYearMethod, False, True), True, vtWord);
     InternalAddFunction(DayOfTheYearFunctionName, FDayOfTheYearHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.DayOfTheYearMethod, False, True), True, vtWord);
-    InternalAddFunction(
-      HourOfTheYearFunctionName,
-      FHourOfTheYearHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.HourOfTheYearMethod,
-        False,
-        True
-      ),
-      True,
-      vtWord
-    );
+    InternalAddFunction(HourOfTheYearFunctionName, FHourOfTheYearHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.HourOfTheYearMethod, False, True), True, vtWord);
     InternalAddFunction(MinuteOfTheYearFunctionName, FMinuteOfTheYearHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.MinuteOfTheYearMethod, False, True), True, vtLongWord);
     InternalAddFunction(SecondOfTheYearFunctionName, FSecondOfTheYearHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.SecondOfTheYearMethod, False, True), True, vtLongWord);
-    InternalAddFunction(
-      MilliSecondOfTheYearFunctionName,
-      FMilliSecondOfTheYearHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MilliSecondOfTheYearMethod,
-        False,
-        True
-      ),
-      True,
-      vtInt64
-    );
-    InternalAddFunction(
-      WeekOfTheMonthFunctionName,
-      FWeekOfTheMonthHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.WeekOfTheMonthMethod,
-        False,
-        True
-      ),
-      True,
-      vtWord
-    );
-    InternalAddFunction(
-      DayOfTheMonthFunctionName,
-      FDayOfTheMonthHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.DayOfTheMonthMethod,
-        False,
-        True
-      ),
-      True,
-      vtWord
-    );
-    InternalAddFunction(
-      HourOfTheMonthFunctionName,
-      FHourOfTheMonthHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.HourOfTheMonthMethod,
-        False,
-        True
-      ),
-      True,
-      vtWord
-    );
+    InternalAddFunction(MilliSecondOfTheYearFunctionName, FMilliSecondOfTheYearHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MilliSecondOfTheYearMethod, False, True), True, vtInt64);
+    InternalAddFunction(WeekOfTheMonthFunctionName, FWeekOfTheMonthHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.WeekOfTheMonthMethod, False, True), True, vtWord);
+    InternalAddFunction(DayOfTheMonthFunctionName, FDayOfTheMonthHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DayOfTheMonthMethod, False, True), True, vtWord);
+    InternalAddFunction(HourOfTheMonthFunctionName, FHourOfTheMonthHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.HourOfTheMonthMethod, False, True), True, vtWord);
     InternalAddFunction(MinuteOfTheMonthFunctionName, FMinuteOfTheMonthHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.MinuteOfTheMonthMethod, False, True), True, vtWord);
     InternalAddFunction(SecondOfTheMonthFunctionName, FSecondOfTheMonthHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.SecondOfTheMonthMethod, False, True), True, vtLongWord);
-    InternalAddFunction(
-      MilliSecondOfTheMonthFunctionName,
-      FMilliSecondOfTheMonthHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MilliSecondOfTheMonthMethod,
-        False,
-        True
-      ),
-      True,
-      vtLongWord
-    );
+    InternalAddFunction(MilliSecondOfTheMonthFunctionName, FMilliSecondOfTheMonthHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MilliSecondOfTheMonthMethod, False, True), True, vtLongWord);
     InternalAddFunction(DayOfTheWeekFunctionName, FDayOfTheWeekHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.DayOfTheWeekMethod, False, True), True, vtWord);
-    InternalAddFunction(
-      HourOfTheWeekFunctionName,
-      FHourOfTheWeekHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.HourOfTheWeekMethod,
-        False,
-        True
-      ),
-      True,
-      vtWord
-    );
+    InternalAddFunction(HourOfTheWeekFunctionName, FHourOfTheWeekHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.HourOfTheWeekMethod, False, True), True, vtWord);
     InternalAddFunction(MinuteOfTheWeekFunctionName, FMinuteOfTheWeekHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.MinuteOfTheWeekMethod, False, True), True, vtWord);
     InternalAddFunction(SecondOfTheWeekFunctionName, FSecondOfTheWeekHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.SecondOfTheWeekMethod, False, True), True, vtLongWord);
-    InternalAddFunction(
-      MilliSecondOfTheWeekFunctionName,
-      FMilliSecondOfTheWeekHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MilliSecondOfTheWeekMethod,
-        False,
-        True
-      ),
-      True,
-      vtLongWord
-    );
+    InternalAddFunction(MilliSecondOfTheWeekFunctionName, FMilliSecondOfTheWeekHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MilliSecondOfTheWeekMethod, False, True), True, vtLongWord);
     InternalAddFunction(HourOfTheDayFunctionName, FHourOfTheDayHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.HourOfTheDayMethod, False, True), True, vtWord);
-    InternalAddFunction(
-      MinuteOfTheDayFunctionName,
-      FMinuteOfTheDayHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MinuteOfTheDayMethod,
-        False,
-        True
-      ),
-      True,
-      vtWord
-    );
-    InternalAddFunction(
-      SecondOfTheDayFunctionName,
-      FSecondOfTheDayHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.SecondOfTheDayMethod,
-        False,
-        True
-      ),
-      True,
-      vtLongWord
-    );
-    InternalAddFunction(
-      MilliSecondOfTheDayFunctionName,
-      FMilliSecondOfTheDayHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MilliSecondOfTheDayMethod,
-        False,
-        True
-      ),
-      True,
-      vtLongWord
-    );
+    InternalAddFunction(MinuteOfTheDayFunctionName, FMinuteOfTheDayHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MinuteOfTheDayMethod, False, True), True, vtWord);
+    InternalAddFunction(SecondOfTheDayFunctionName, FSecondOfTheDayHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SecondOfTheDayMethod, False, True), True, vtLongWord);
+    InternalAddFunction(MilliSecondOfTheDayFunctionName, FMilliSecondOfTheDayHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MilliSecondOfTheDayMethod, False, True), True, vtLongWord);
     InternalAddFunction(MinuteOfTheHourFunctionName, FMinuteOfTheHourHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.MinuteOfTheHourMethod, False, True), True, vtWord);
     InternalAddFunction(SecondOfTheHourFunctionName, FSecondOfTheHourHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.SecondOfTheHourMethod, False, True), True, vtWord);
-    InternalAddFunction(
-      MilliSecondOfTheHourFunctionName,
-      FMilliSecondOfTheHourHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MilliSecondOfTheHourMethod,
-        False,
-        True
-      ),
-      True,
-      vtLongWord
-    );
+    InternalAddFunction(MilliSecondOfTheHourFunctionName, FMilliSecondOfTheHourHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MilliSecondOfTheHourMethod, False, True), True, vtLongWord);
     InternalAddFunction(SecondOfTheMinuteFunctionName, FSecondOfTheMinuteHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.SecondOfTheMinuteMethod, False, True), True, vtWord);
-    InternalAddFunction(
-      MilliSecondOfTheMinuteFunctionName,
-      FMilliSecondOfTheMinuteHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MilliSecondOfTheMinuteMethod,
-        False,
-        True
-      ),
-      True,
-      vtLongWord
-    );
-    InternalAddFunction(
-      MilliSecondOfTheSecondFunctionName,
-      FMilliSecondOfTheSecondHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.MilliSecondOfTheSecondMethod,
-        False,
-        True
-      ),
-      True,
-      vtWord
-    );
-    InternalAddFunction(
-      CompareDateTimeFunctionName,
-      FCompareDateTimeHandle,
-      fkMethod,
-      MakeFunctionMethod(
-        FMathMethod.CompareDateTimeMethod,
-        CompareDateTimeParameterCount
-      ),
-      True,
-      vtShortint
-    );
+    InternalAddFunction(MilliSecondOfTheMinuteFunctionName, FMilliSecondOfTheMinuteHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MilliSecondOfTheMinuteMethod, False, True), True, vtLongWord);
+    InternalAddFunction(MilliSecondOfTheSecondFunctionName, FMilliSecondOfTheSecondHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MilliSecondOfTheSecondMethod, False, True), True, vtWord);
+    InternalAddFunction(CompareDateTimeFunctionName, FCompareDateTimeHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.CompareDateTimeMethod, CompareDateTimeParameterCount), True, vtShortint);
     InternalAddFunction(SameDateTimeFunctionName, FSameDateTimeHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.SameDateTimeMethod, SameDateTimeParameterCount), True, vtShortint);
     InternalAddFunction(CompareDateFunctionName, FCompareDateHandle, fkMethod,
