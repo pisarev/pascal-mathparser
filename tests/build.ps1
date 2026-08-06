@@ -52,11 +52,17 @@ foreach ($Target in @('win32', 'win64')) {
 }
 
 # The rest of the JIT layer: x64 only, since that is where the emitter works.
-# ThreadWaitTest is not about the JIT but takes the same build path, and word
-# size does not affect its contract.
+# The thread tests and the loop guard are not about the JIT but take the same
+# build path, and word size does not affect their contract.
+#
+# The thread tests and ExitRoutingTest used to be listed for FPC only. What they
+# guard - who owns an Exit in a chain of parsers, and the thread-safe subset -
+# is written in code both compilers share, so a regression there would have gone
+# unnoticed on Delphi. They were run by hand instead, which is the definition of
+# a regression waiting to happen: it holds only while somebody remembers.
 $Out = Join-Path $PSScriptRoot 'out\win64'
 $Rtl = Join-Path (Split-Path $Bin) 'lib\win64\release'
-foreach ($Test in @('JitDump', 'JitBench', 'JitParserTest', 'JitContractTest', 'PublicApiTest', 'DocumentedSyntaxTest', 'DemoSpeed', 'BigScript', 'ThreadWaitTest', 'C31Console')) {
+foreach ($Test in @('JitDump', 'JitBench', 'JitParserTest', 'JitContractTest', 'PublicApiTest', 'DocumentedSyntaxTest', 'DemoSpeed', 'BigScript', 'ThreadWaitTest', 'ThreadSafetyTest', 'ThreadShareTest', 'ExitRoutingTest', 'LoopGuardTest', 'C31Console')) {
     Write-Host "=== BUILD $Test (win64) ==="
     & (Join-Path $Bin 'dcc64.exe') -B -Q ('-U' + $Src + ';' + $Jit + ';' + $Rtl) ('-I' + $Src) ('-E' + $Out) ('-N0' + (Join-Path $Out 'dcu')) '-NSSystem;System.Win;WinApi;Vcl' (Join-Path $PSScriptRoot "$Test.dpr")
     if ($LASTEXITCODE -ne 0) { throw "build failed: $Test" }
