@@ -410,7 +410,6 @@ type
     FEpsilonHandle: NativeInt;
     FEqualHandle: NativeInt;
     FExceptionTypeSet: TExceptionTypeSet;
-    FExecuteDepth: Integer;
     FExitHandle: NativeInt;
     FExtendedHandle: NativeInt;
     FFalseHandle: NativeInt;
@@ -967,6 +966,24 @@ uses
 procedure Register;
 begin
   RegisterComponents('Samples', [TParser, TMathParser]);
+end;
+
+type
+  PExecuteFrame = ^TExecuteFrame;
+  TExecuteFrame = record
+    Previous: PExecuteFrame;
+    Parser: TObject;
+    SameParserParent: PExecuteFrame;
+  end;
+
+threadvar
+  CurrentExecuteFrame: PExecuteFrame;
+
+function FindExecuteFrame(const AParser: TObject): PExecuteFrame;
+begin
+  Result := CurrentExecuteFrame;
+  while Assigned(Result) and (Result.Parser <> AParser) do
+    Result := Result.Previous;
 end;
 
 var
@@ -2511,27 +2528,31 @@ function TParser.ExecuteScript(const Index: NativeInt): PValue;
 var
   Header: PScriptHeader;
   Value: TValue;
+  Frame: TExecuteFrame;
 begin
   Notify;
   Header := PScriptHeader(Index);
-  if not (ekSubsequent in FExecuteKindSet) and (Header.ScriptCount > 0) then
-    ExecuteInternalScript(Index);
   Result := @Header.Value;
-  Header.Value := EmptyValue;
-  Value := EmptyValue;
-  Inc(FExecuteDepth);
+  Frame.Previous := CurrentExecuteFrame;
+  Frame.Parser := Self;
+  Frame.SameParserParent := FindExecuteFrame(Self);
+  CurrentExecuteFrame := @Frame;
   try
     try
+      if not (ekSubsequent in FExecuteKindSet) and (Header.ScriptCount > 0) then
+        ExecuteInternalScript(Index);
+      Header.Value := EmptyValue;
+      Value := EmptyValue;
       ParseScript(Index, ESMethod, @Value);
     except
       on E: EParserExit do
-        if FExecuteDepth = 1 then
+        if not Assigned(Frame.SameParserParent) then
           Header.Value := E.Value
         else
           raise;
     end;
   finally
-    Dec(FExecuteDepth);
+    CurrentExecuteFrame := Frame.Previous;
   end;
 end;
 

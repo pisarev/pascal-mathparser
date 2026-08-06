@@ -122,7 +122,7 @@ to the interpreter without a word, so the answer is never fast but wrong, and
 
 ## Syntax that surprises people
 
-Four of these have caught every person who has used the library, including its
+Five of these have caught every person who has used the library, including its
 author.
 
 - **Power is `**`, not `^`.** `^` is exclusive or. `x ^ 2` quietly returns
@@ -134,6 +134,10 @@ author.
   `Boolean`.
 - **`!` is negation, not a factorial.** `!0` is -1, the same as `not 0`. The
   factorial is a function: `factorial(5)` is 120.
+- **`exit` ends the whole evaluation, brackets included.** A bracketed group is a
+  script in its own right, so `99 + (exit(42))` is 42 and never 141. That holds
+  whichever way `ExecuteKindSet` is set; up to 1.0.1 the group kept its own `exit`
+  when groups were evaluated up front.
 
 Case never separates two names. `Sin`, `sin` and `SIN` are one built-in, and a
 variable registered as `Rate` also answers to `rate`; registering a second
@@ -166,7 +170,6 @@ from `ParseTypes`:
 
 ```pascal
     P.AddFunction('discount', Handle, fkMethod, MakeFunctionMethod(Pricing.Discount, 2, pkValue), False);
-
     P.AddVariable('rate', Rate);
     Rate := 20;
     Writeln(P.AsDouble('discount(1000, rate)'):0:2);
@@ -218,6 +221,42 @@ this library learned the hard way:
   compiled unit, which is the only way the `NativeInt` trap above is visible.
 - `DocumentedSyntaxTest.dpr` runs every claim this file makes about the language.
   A sentence here is either checked there or it is not published.
+
+## Stopping a formula that will not finish
+
+`while`, `repeat` and `for` can be written so that they never end. Two guards in
+`ParseTypes` let the caller take control back. Both are off by default, so a
+program that already runs its loops to completion is unaffected.
+
+```pascal
+ParseLoopLeft := 1000;
+Note := '';
+try
+  P.AsDouble('While(1 = 1, Set("cnt", cnt + 1))');
+except
+  on E: Exception do Note := E.Message;
+end;
+Writeln(Format('%s stopped it, cnt reached %.0f', [Copy(Note, 1, 10), GetDouble(Cnt)]));
+```
+
+That prints `Loop limit stopped it, cnt reached 999`: the guard is read before
+each turn, so the thousandth read is the one that stops a loop that has run 999
+times. `ParseBreak` is the other half - it points at a flag someone else raises,
+a worker thread's `Stopped` typically, and is read at the same place, so a
+formula that spins from the very first turn still stops. Inside WebAssembly the
+budget is the only way out at all, since a module cannot be interrupted from
+outside. `nil` and zero mean no guard.
+
+A spent budget is not the same as no budget: once it runs out, every further
+loop in that thread fails at once until a new budget is set. Otherwise a single
+aborted evaluation would silently lift the limit for everything after it.
+
+Both guards are thread-local. One parser is normally shared by several threads,
+and a field on the object would let one thread's cancellation tear down the
+others. Inside a thread they are shared by every nested evaluation, so a formula
+function that evaluates another formula spends from the same budget and watches
+the same flag. Set them at the boundary of the outermost call; setting them again
+from inside a running formula is not supported.
 
 ## Known traps
 
