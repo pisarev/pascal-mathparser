@@ -72,6 +72,7 @@ type
     procedure ClearCode; virtual;
     function CodeReason(const Text: string): string; virtual;
     function CompileScript(const Script: TScript): TJitScript; virtual;
+    function EvaluationMask: TFPUExceptionMask;
     function ScriptReason(const Script: TScript): string; virtual;
     property JitEnabled: Boolean read FEnabled write FEnabled;
     property MachineCount: Int64 read FMachineCount;
@@ -130,12 +131,37 @@ begin
     Result := 'no code';
 end;
 
-function TJitEntry.Execute: Double;
+procedure ArmMask(const Want: TFPUExceptionMask; out Saved: TFPUExceptionMask; out Changed: Boolean);
 begin
-  if Assigned(Code) and Code.Ready then
-    Result := Code.Execute
+  Saved := GetExceptionMask;
+  Changed := Saved <> Want;
+  if Changed then SetExceptionMask(Want);
+end;
+
+procedure DisarmMask(const Saved: TFPUExceptionMask; const Changed: Boolean);
+begin
+  if Changed then SetExceptionMask(Saved);
+end;
+
+function TJitEntry.Execute: Double;
+var
+  Saved: TFPUExceptionMask;
+  Changed: Boolean;
+  Want: TFPUExceptionMask;
+begin
+  if Owner is TJitParser then
+    Want := TJitParser(Owner).EvaluationMask
   else
-    Result := GetDouble(Executor.Execute);
+    Want := [exInvalidOp, exDenormalized, exZeroDivide, exOverflow, exUnderflow, exPrecision];
+  ArmMask(Want, Saved, Changed);
+  try
+    if Assigned(Code) and Code.Ready then
+      Result := Code.Execute
+    else
+      Result := GetDouble(Executor.Execute);
+  finally
+    DisarmMask(Saved, Changed);
+  end;
 end;
 
 constructor TJitParser.Create(AOwner: TComponent);
@@ -229,18 +255,6 @@ begin
   inherited;
 end;
 
-procedure ArmMask(const Want: TFPUExceptionMask; out Saved: TFPUExceptionMask; out Changed: Boolean);
-begin
-  Saved := GetExceptionMask;
-  Changed := Saved <> Want;
-  if Changed then SetExceptionMask(Want);
-end;
-
-procedure DisarmMask(const Saved: TFPUExceptionMask; const Changed: Boolean);
-begin
-  if Changed then SetExceptionMask(Saved);
-end;
-
 function TJitParser.AsDouble(const Text: string): Double;
 var
   Code: TJitEntry;
@@ -275,6 +289,11 @@ begin
     Result := Code.Reason
   else
     Result := 'no code';
+end;
+
+function TJitParser.EvaluationMask: TFPUExceptionMask;
+begin
+  Result := ExceptionMask;
 end;
 
 function TJitParser.CompileScript(const Script: TScript): TJitScript;

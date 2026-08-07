@@ -344,8 +344,6 @@ begin
   if Result then SetLength(Target, Size - 1);
 end;
 
-{ THash }
-
 function THash.Add(const TextType: TTextType; const Index: Integer; const Data: TTextData): Integer;
 begin
   Result := FastList.Add(FIndexArray[Data.TextCode].BindArray[TextType], Data.HashCode, Index);
@@ -468,8 +466,7 @@ begin
     HashCode := FIndexArray[TextCode].BindArray[TextType, Index].HashCode;
     for I := Index downto Low(FIndexArray[TextCode].BindArray[TextType]) do
     begin
-      if HashCode <> FIndexArray[TextCode].BindArray[TextType, I].HashCode then
-        Break;
+      if HashCode <> FIndexArray[TextCode].BindArray[TextType, I].HashCode then Break;
       if Match then
       begin
         Result := I;
@@ -479,8 +476,7 @@ begin
     if Index < High(FIndexArray[TextCode].BindArray[TextType]) then for I := Index +
       1 to High(FIndexArray[TextCode].BindArray[TextType]) do
       begin
-        if HashCode <> FIndexArray[TextCode].BindArray[TextType, I].HashCode then
-          Break;
+        if HashCode <> FIndexArray[TextCode].BindArray[TextType, I].HashCode then Break;
         if Match then
         begin
           Result := I;
@@ -532,16 +528,15 @@ function THash.IndexOf(const TextType: TTextType; const S: string; out TextCode:
   const KnownIndex: Integer): Integer;
 var
   HashCode: Integer;
+  Key: string;
 begin
   if FList.CaseSensitive then
-    HashCode := MakeHashCode(S)
+    Key := S
   else
-    HashCode := MakeHashCode(AnsiLowerCase(S));
+    Key := AnsiLowerCase(S);
+  HashCode := MakeHashCode(Key);
   TextCode := MakeTextCode(HashCode);
-  if FList.CaseSensitive then
-    Result := IndexOf(TextType, FastList.MakeTextData(HashCode, TextCode), S, KnownIndex)
-  else
-    Result := IndexOf(TextType, FastList.MakeTextData(HashCode, TextCode), AnsiLowerCase(S), KnownIndex);
+  Result := IndexOf(TextType, FastList.MakeTextData(HashCode, TextCode), Key, KnownIndex);
 end;
 
 procedure THash.LoadContent(const Stream: TMemoryStream);
@@ -559,24 +554,23 @@ begin
     begin
       Size := {$IFDEF CPU64}PInt64{$ELSE}PInteger{$ENDIF}(Item.Stream.Memory)^;
       SetLength(FIndexArray, Size);
-      for I := Low(FIndexArray) to High(FIndexArray) do
-        for J := Low(TTextType) to High(TTextType) do
+      for I := Low(FIndexArray) to High(FIndexArray) do for J := Low(TTextType) to High(TTextType) do
+      begin
+        Item := B.Find(Format('IndexArray(%d).BindArray(%d).Size', [I, Ord(J)]));
+        if Assigned(Item) then
         begin
-          Item := B.Find(Format('IndexArray(%d).BindArray(%d).Size', [I, Ord(J)]));
-          if Assigned(Item) then
-          begin
-            Size := {$IFDEF CPU64}PInt64{$ELSE}PInteger{$ENDIF}(Item.Stream.Memory)^;
-            SetLength(FIndexArray[I].BindArray[J], Size);
-            Data := B.Find(Format('IndexArray(%d).BindArray(%d).Data', [I, Ord(J)]));
-            if Assigned(Data) then
-              CopyMemory(FIndexArray[I].BindArray[J], Data.Stream.Memory, Size * SizeOf(TBind));
-          end;
-          Data := B.Find(Format('IndexArray(%d).Live(%d)', [I, Ord(J)]));
+          Size := {$IFDEF CPU64}PInt64{$ELSE}PInteger{$ENDIF}(Item.Stream.Memory)^;
+          SetLength(FIndexArray[I].BindArray[J], Size);
+          Data := B.Find(Format('IndexArray(%d).BindArray(%d).Data', [I, Ord(J)]));
           if Assigned(Data) then
-            FIndexArray[I].Live[J] := PBoolean(Data.Stream.Memory)^
-          else
-            FIndexArray[I].Live[J] := False;
+            CopyMemory(FIndexArray[I].BindArray[J], Data.Stream.Memory, Size * SizeOf(TBind));
         end;
+        Data := B.Find(Format('IndexArray(%d).Live(%d)', [I, Ord(J)]));
+        if Assigned(Data) then
+          FIndexArray[I].Live[J] := PBoolean(Data.Stream.Memory)^
+        else
+          FIndexArray[I].Live[J] := False;
+      end;
     end;
   finally
     B.Free;
@@ -652,16 +646,15 @@ begin
   try
     Data := Length(FIndexArray);
     B.Import(dkData, 'IndexArray.Size', @Data, SizeOf(NativeInt));
-    for I := Low(FIndexArray) to High(FIndexArray) do
-      for J := Low(TTextType) to High(TTextType) do
-      begin
-        Size := Length(FIndexArray[I].BindArray[J]);
-        B.Import(dkData, Format('IndexArray(%d).BindArray(%d).Size', [I, Ord(J)]), @Size, SizeOf(NativeInt));
-        Data := NativeInt(Pointer(FIndexArray[I].BindArray[J]));
-        B.Import(dkData, Format('IndexArray(%d).BindArray(%d).Data', [I, Ord(J)]), Pointer(Data), Size * SizeOf(TBind));
-        Data := NativeInt(FIndexArray[I].Live[J]);
-        B.Import(dkData, Format('IndexArray(%d).Live(%d)', [I, Ord(J)]), @Data, SizeOf(NativeInt));
-      end;
+    for I := Low(FIndexArray) to High(FIndexArray) do for J := Low(TTextType) to High(TTextType) do
+    begin
+      Size := Length(FIndexArray[I].BindArray[J]);
+      B.Import(dkData, Format('IndexArray(%d).BindArray(%d).Size', [I, Ord(J)]), @Size, SizeOf(NativeInt));
+      Data := NativeInt(Pointer(FIndexArray[I].BindArray[J]));
+      B.Import(dkData, Format('IndexArray(%d).BindArray(%d).Data', [I, Ord(J)]), Pointer(Data), Size * SizeOf(TBind));
+      Data := NativeInt(FIndexArray[I].Live[J]);
+      B.Import(dkData, Format('IndexArray(%d).Live(%d)', [I, Ord(J)]), @Data, SizeOf(NativeInt));
+    end;
     B.Save(Stream);
   finally
     B.Free;
@@ -751,20 +744,16 @@ procedure THash.Synchronize(const TypeArray: array of TTextType; const Index: In
 var
   I: Integer;
 begin
-  for I := Low(TypeArray) to High(TypeArray) do
-    Synchronize(TypeArray[I], Index, OffsetType);
+  for I := Low(TypeArray) to High(TypeArray) do Synchronize(TypeArray[I], Index, OffsetType);
 end;
 
 procedure THash.Synchronize(const Index: Integer; const OffsetType: TOffsetType);
 var
   I: TTextType;
 begin
-  for I := Low(TTextType) to High(TTextType) do
-    Synchronize(I, Index, OffsetType);
+  for I := Low(TTextType) to High(TTextType) do Synchronize(I, Index, OffsetType);
 end;
 {$ENDIF}
-
-{ TFastList }
 
 function TFastList.Add(const S: string): Integer;
 begin
@@ -785,8 +774,7 @@ procedure TFastList.AddCode(const TextType: TTextType; const IndexFlag: TIndexFl
 var
   I: Integer;
 begin
-  for I := Low(CodeArray) to High(CodeArray) do
-    AddCode(TextType, IndexFlag, CodeArray[I]);
+  for I := Low(CodeArray) to High(CodeArray) do AddCode(TextType, IndexFlag, CodeArray[I]);
 end;
 
 function TFastList.AddObject(const S: string; AObject: TObject): Integer;
@@ -1577,8 +1565,7 @@ procedure TFastList.SetFlag(const TypeArray: array of TTextType; const IndexFlag
 var
   I: Integer;
 begin
-  for I := Low(TypeArray) to High(TypeArray) do
-    SetFlag(TypeArray[I], IndexFlag);
+  for I := Low(TypeArray) to High(TypeArray) do SetFlag(TypeArray[I], IndexFlag);
 end;
 {$ENDIF}
 
@@ -1591,9 +1578,8 @@ procedure TFastList.SetFlag(const TypeArray: array of TTextType; const FlagArray
 var
   I, J: Integer;
 begin
-  for I := Low(TypeArray) to High(TypeArray) do
-    for J := Low(FlagArray) to High(FlagArray) do
-      SetFlag(TypeArray[I], FlagArray[J]);
+  for I := Low(TypeArray) to High(TypeArray) do for J := Low(FlagArray) to High(FlagArray) do
+    SetFlag(TypeArray[I], FlagArray[J]);
 end;
 
 {$IFDEF DELPHI_XE5}

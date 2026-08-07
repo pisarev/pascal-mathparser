@@ -41,8 +41,7 @@ const
 
     Entries ending in a space are prefixes: the engine appends a name to them. }
   KnownReasons: array[0..41] of string = (
-    '', 'parser changed', 'ir executor', 'ir executor: ', 'no code',
-    'not decoded: ',
+    '', 'parser changed', 'ir executor', 'ir executor: ', 'no code', 'not decoded: ',
     'x86-64 only', 'no script or parser', 'empty script',
     'unsupported element', 'unsupported method kind ',
     'parametric ', 'parametric function ',
@@ -430,13 +429,13 @@ begin
   try
     P.AddVariable('x', X);
     for I := 0 to 2 do Inputs[I] := I + 1;
-    { First a formula the accelerator takes: the array is filled with numbers }
+    { First a formula the accelerator does take: the array is filled with numbers }
     Check('an accepted formula is computed', P.ExecuteMany('x * 10', X, Inputs, Outputs));
     CheckDouble('and the first answer is right', Outputs[0], 10);
     {
-      Now one the accelerator declines. What is checked is not only that it was
-      computed, but that the answer agrees with the ordinary parser: a fallback
-      that gives a different answer is worse than no fallback at all.
+      Now one it turns down. What is checked is not only that the count went
+      through, but that it agrees with ordinary parsing: a retreat that gives a
+      different answer is worse than no retreat at all.
     }
     Hits := P.HitCount;
     Ok := P.ExecuteMany('Max(x, 2)', X, Inputs, Outputs);
@@ -453,9 +452,9 @@ begin
       CheckDouble(Format('bulk answer %d matches the ordinary one', [I]), Outputs[I], Plain[I]);
     Check('the fallback is not counted as an accelerator hit', P.HitCount = Hits, Format('  hits %d -> %d', [Hits, P.HitCount]));
     {
-      And the point of the whole thing: a calculation that never happened must
-      not leave somebody else's numbers behind. The formula here is deliberately
-      broken - the answers must hold "not a number", not the tens left over from
+      And the thing all this is for: a count that never happened must leave no
+      numbers of somebody else's behind. The formula is knowingly bad - the
+      answers are obliged to hold "not a number" rather than tens left over from
       the first formula.
     }
     Ok := P.ExecuteMany('Max(x, ', X, Inputs, Outputs);
@@ -463,6 +462,61 @@ begin
     for I := 0 to 2 do
       Check(Format('answer %d is not left over from before', [I]), IsNan(Outputs[I]), Format('  %g', [Outputs[I]]));
   finally
+    P.Free;
+  end;
+end;
+
+{
+  Compiled code runs under the parser's exception mask.
+
+  This is the THIRD way into an evaluation, and it is not an internal one:
+  jit/USAGE.md recommends compiling with CompileScript and then running the
+  compiled object from as many threads as you like. Neither the machine code nor
+  the interpreter of the intermediate form touches the mask, so on a thread with
+  a narrowed mask division by zero raised where the library promises infinity -
+  on the very path the documentation recommends.
+
+  The mask is narrowed here on purpose. A console program of this studio starts
+  with everything masked, so a check written "as it comes" would be green on any
+  code at all.
+}
+procedure CompiledCodeRunsUnderTheParserMask;
+var
+  P: TJitParser;
+  X: Double;
+  Script: TScript;
+  Compiled: TJitScript;
+  Was, Host: TFPUExceptionMask;
+  Value: Double;
+  Note: string;
+begin
+  BeginSection('compiled code runs under the parser mask');
+  Was := GetExceptionMask;
+  Host := [exDenormalized, exUnderflow, exPrecision];
+  P := TJitParser.Create(nil);
+  Script := nil;
+  Compiled := nil;
+  try
+    P.AddVariable('x', X);
+    X := 0;
+    P.StringToScript('1 / x', Script);
+    Compiled := P.CompileScript(Script);
+    Check('the formula reached a compiled form', Compiled.Ready, Compiled.Reason);
+    SetExceptionMask(Host);
+    Note := '';
+    Value := 0;
+    try
+      Value := Compiled.Execute;
+    except
+      on E: Exception do Note := E.ClassName + ': ' + E.Message;
+    end;
+    Check('nothing was raised', Note = '', Note);
+    Check('the answer is infinity', IsInfinite(Value), Format('%g', [Value]));
+    Check('the host mask came back', GetExceptionMask = Host, 'mask changed');
+  finally
+    SetExceptionMask(Was);
+    Compiled.Free;
+    Script := nil;
     P.Free;
   end;
 end;
@@ -478,6 +532,7 @@ begin
   TurningTheAcceleratorOff;
   ACrampedBufferIsRefused;
   AVariableWiderThanDouble;
+  CompiledCodeRunsUnderTheParserMask;
   NoSpareExecutorBesideWorkingCode;
   BulkAnswersOrSaysItDidNot;
   ExitCode := TestSummary;

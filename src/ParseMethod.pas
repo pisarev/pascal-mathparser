@@ -54,6 +54,7 @@ type
   private
     FContainer: TVariableContainer;
     FSync: TRTLCriticalSection;
+    FDerivScript: TScript;
   protected
     property Container: TVariableContainer read FContainer write FContainer;
   public
@@ -4085,7 +4086,6 @@ var
   Handle: NativeInt;
   E: Extended;
   AValue, BValue, CValue: TValue;
-  Script: TScript;
 begin
   Enter(FSync);
   try
@@ -4124,20 +4124,19 @@ begin
           vtValueRef:
             AssignValue(BFunction.Method.Variable.VariableRef, Operation(BValue, MakeExtended(E), otSubtract));
         end;
-        Script := nil;
         try
-          P.StringToScript(DequoteDouble(PA[0].Text, P.FData.FA[P.DerivHandle].Name, P.Bracket), Script);
-          P.SetRedirectCategory(Script, Header.RedirectCategory);
-          AValue := P.ExecuteScript(Script)^;
+          P.StringToScriptInto(DequoteDouble(PA[0].Text, P.FData.FA[P.DerivHandle].Name, P.Bracket),
+            FDerivScript);
+          P.SetRedirectCategory(FDerivScript, Header.RedirectCategory);
+          AValue := P.ExecuteScript(FDerivScript)^;
           case BFunction.Method.Variable.VariableType of
             vtValue:
               BFunction.Method.Variable.Variable^ := Operation(BValue, MakeExtended(E), otAdd);
             vtValueRef:
               AssignValue(BFunction.Method.Variable.VariableRef, Operation(BValue, MakeExtended(E), otAdd));
           end;
-          CValue := P.ExecuteScript(Script)^;
+          CValue := P.ExecuteScript(FDerivScript)^;
         finally
-          Script := nil;
         end;
       finally
         case BFunction.Method.Variable.VariableType of

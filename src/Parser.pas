@@ -238,7 +238,6 @@ type
     property NotifyArray: TNotifyArray read FNotifyArray write FNotifyArray;
     property Method: TMethod read FMethod write FMethod;
     property TextData[const Text: string]: TTextData read GetTextData;
-    property ExceptionMask: TFPUExceptionMask read FExceptionMask write FExceptionMask;
     property ConstantList: TFlexibleList read FConstantList write FConstantList;
     property FInternal: PFunction read GetFInternal;
     property InternalHandle: NativeInt read FInternalHandle;
@@ -247,6 +246,7 @@ type
     property OArray: {$IFDEF DELPHI_10.2}TArray<NativeInt>{$ELSE}TNativeIntDynArray{$ENDIF} read FOArray write FOArray;
   public
     constructor Create(AOwner: TComponent); override;
+    property ExceptionMask: TFPUExceptionMask read FExceptionMask write FExceptionMask;
     destructor Destroy; override;
     function Connect(const ABeforeFunction: TFunctionEvent;
       const AAddressee: TCustomAddressee): TFunctionEvent; virtual;
@@ -494,6 +494,7 @@ type
       const AAddressee: TCustomAddressee): TFunctionEvent; override;
     procedure StringToScript(const Text: string; out Script: TScript; out Error: TError); overload; override;
     procedure StringToScript(const Text: string; out Script: TScript); overload; override;
+    procedure StringToScriptInto(const Text: string; var Script: TScript);
     procedure StringToScript(const Text: string); reintroduce; overload;
     procedure StringToScript; reintroduce; overload;
     procedure OptimizeScript(const Source: TScript; out Target: TScript); overload; override;
@@ -2438,13 +2439,9 @@ begin
   Result := @Header.Value;
   Frame.Previous := CurrentExecuteFrame;
   Frame.Parser := Self;
-  Mask := [];
-  Root := not Assigned(Frame.Previous);
-  if Root then
-  begin
-    Mask := GetExceptionMask;
-    if Mask <> FExceptionMask then SetExceptionMask(FExceptionMask);
-  end;
+  Mask := GetExceptionMask;
+  Root := Mask <> FExceptionMask;
+  if Root then SetExceptionMask(FExceptionMask);
   CurrentExecuteFrame := @Frame;
   try
     try
@@ -2462,7 +2459,7 @@ begin
     end;
   finally
     CurrentExecuteFrame := Frame.Previous;
-    if Root and (Mask <> FExceptionMask) then SetExceptionMask(Mask);
+    if Root then SetExceptionMask(Mask);
   end;
 end;
 
@@ -3906,6 +3903,24 @@ function TParser.ScriptToString(const Script: TScript; const Delimiter: string; 
   const TypeMode: TRetrieveMode): string;
 begin
   Result := InternalDecompile(NativeInt(Script), Delimiter, False, ABracket, TypeMode);
+end;
+
+procedure TParser.StringToScriptInto(const Text: string; var Script: TScript);
+var
+  Fresh: TScript;
+begin
+  if FCached and Assigned(FCache.Rawscript) then
+  begin
+    Enter(FCache.Rawscript.Lock^);
+    try
+      if FCache.Rawscript.FindInto(Text, Script) then Exit;
+    finally
+      Leave(FCache.Rawscript.Lock^);
+    end;
+  end;
+  Fresh := nil;
+  StringToScript(Text, Fresh);
+  Script := Fresh;
 end;
 
 procedure TParser.StringToScript(const Text: string; out Script: TScript);

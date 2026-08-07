@@ -219,6 +219,65 @@ begin
   Other.Free;
 end;
 
+{ 3 }
+
+{
+  PINNING A KNOWN LIMITATION, not a check that something works.
+
+  Deriv takes a derivative by shifting: it saves the variable, writes x-eps into
+  it, evaluates, writes x+eps, evaluates, and puts the old value back. While
+  that exchange is going on the variable is SHARED, and a neighbouring thread
+  reading it with an ordinary ExecuteScript sees the shifted value. The lock
+  around Deriv does not protect against that and never did: it is taken by the
+  Deriv and Parse methods only, and a plain evaluation does not ask for it.
+
+  The check below holds the first thread INSIDE the derivative and shows that
+  the second one reads x-eps instead of x. It is green on correct code because
+  it records what is, and it will go red if the behaviour changes - at which
+  point the contract in the README has to be corrected too, rather than the
+  change quietly celebrated.
+
+  The arrangement under which this does not happen is documented: every thread
+  gets its OWN variable through redirection. That is checked separately, in
+  ThreadShareTest: four threads, six thousand evaluations each, one parser, all
+  answers right.
+
+  The real cure is to stop moving the shared variable and give the two
+  evaluations of the derivative their own x-eps and x+eps. That changes the
+  algorithm of Deriv itself and so belongs to a separate piece of work.
+}
+procedure DerivPublishesItsShiftedVariable;
+var
+  Held: TWorker;
+  Spent: LongWord;
+  Seen: Double;
+begin
+  BeginSection('a known limitation: Deriv shows the variable while it is shifted');
+  Holder.FInside := False;
+  Holder.FRelease.Open := False;
+  AssignDouble(SharedValue, 5);
+  Held := TWorker.Create(nil);
+  Held.FParser := Shared;
+  Held.FText := 'Deriv("hold(0) * x", "x")';
+  Held.FRounds := 1;
+  Held.Start;
+  Spent := 0;
+  while not Holder.FInside and (Spent < 10000) do
+  begin
+    Sleep(2);
+    Inc(Spent, 2);
+  end;
+  Check('the derivative is held in the middle', Holder.FInside, 'never got there');
+  Seen := GetDouble(SharedValue);
+  Check('the neighbouring thread sees NOT the original 5 but the shifted value', Abs(Seen - 5) > 1E-9,
+    Format('%g', [Seen]));
+  Check('the shift is exactly eps, not garbage', Abs(Abs(Seen - 5) - 0.001) < 1E-9, Format('shift %g', [Abs(Seen - 5)]));
+  Holder.FRelease.Open := True;
+  Check('the derivative finished once released', Waiting(@Held.FEnded, 5000), 'never arrived');
+  Check('and put the variable back', Abs(GetDouble(SharedValue) - 5) < 1E-9, Format('%g', [GetDouble(SharedValue)]));
+  Held.Free;
+end;
+
 begin
   try
     Holder := THolder.Create;
@@ -238,6 +297,7 @@ begin
       try
         ParseDoesNotHoldTheLockWhileRunning;
         IndependentParsersDoNotQueue;
+        DerivPublishesItsShiftedVariable;
       finally
         for I := 0 to Workers - 1 do Parsers[I].Free;
       end;

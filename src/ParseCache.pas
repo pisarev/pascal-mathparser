@@ -42,6 +42,7 @@ type
     procedure Add(const Text: string; const Script: TScript); virtual;
     procedure Clear; override;
     function Find(const Text: string): TScript; virtual;
+    function FindInto(const Text: string; var Script: TScript): Boolean; virtual;
     property Data[const Index: NativeInt]: PCacheData read GetCacheData;
   end;
 
@@ -55,6 +56,7 @@ type
     constructor Create(AOwner: TComponent); override;
     procedure Add(const Text: string; const Script: TScript); override;
     function Find(const Text: string): TScript; override;
+    function FindInto(const Text: string; var Script: TScript): Boolean; override;
   published
     property MinCountToCache default Cache2MinCountToCache;
     property MaxCountToCache default Cache2MaxCountToCache;
@@ -80,6 +82,7 @@ type
     procedure Clear; virtual;
     procedure WriteScriptType; virtual;
     function Find(const Text: string): TScript; virtual;
+    function FindInto(const Text: string; var Script: TScript): Boolean; virtual;
     property Lock: PRTLCriticalSection read FLock write FLock;
   published
     property ScriptType: TScriptType read FScriptType write SetScriptType default DefaultScriptType;
@@ -110,8 +113,6 @@ function MakeData(const Script: TScript): TCacheData;
 begin
   Result.Script := Copy(Script);
 end;
-
-{ TCache1 }
 
 procedure TCache1.Add(const Text: string; const Script: TScript);
 var
@@ -157,6 +158,29 @@ begin
   List.List.Clear;
 end;
 
+function TCache1.FindInto(const Text: string; var Script: TScript): Boolean;
+var
+  I, Size: NativeInt;
+  CD: PCacheData;
+begin
+  Result := False;
+  if not Enabled then Exit;
+  I := List.List.IndexOf(Text);
+  if I >= 0 then
+  begin
+    CD := Data[I];
+    if Assigned(CD) and Assigned(CD.Script) then
+    begin
+      Size := Length(CD.Script);
+      if Length(Script) <> Size then SetLength(Script, Size);
+      Move(CD.Script[0], Script[0], Size);
+      Result := True;
+    end;
+    if SmartCache then MatchCount := MakeInteger(MatchCount.Signed32 + 1);
+  end;
+  Setup;
+end;
+
 function TCache1.Find(const Text: string): TScript;
 var
   I: NativeInt;
@@ -199,8 +223,6 @@ begin
   end;
 end;
 
-{ TCache2 }
-
 procedure TCache2.Add(const Text: string; const Script: TScript);
 begin
   if Enabled and FindParser and (TParser(Parser).UpdateCount = 0) then
@@ -212,6 +234,28 @@ begin
   inherited;
   MinCountToCache := Cache2MinCountToCache;
   MaxCountToCache := Cache2MaxCountToCache;
+end;
+
+function TCache2.FindInto(const Text: string; var Script: TScript): Boolean;
+var
+  S: string;
+  ValueArray: TValueArray;
+  ValueIndex: NativeInt;
+begin
+  Result := False;
+  if not Enabled or not FindParser then Exit;
+  ValueArray := nil;
+  try
+    S := MakeTemplate(TParser(Parser), Text, @ValueArray);
+    Result := inherited FindInto(S, Script);
+    if Result then
+    begin
+      ValueIndex := 0;
+      WriteValue(NativeInt(Script), ValueIndex, ValueArray, ScriptType);
+    end;
+  finally
+    ValueArray := nil;
+  end;
 end;
 
 function TCache2.Find(const Text: string): TScript;
@@ -239,8 +283,6 @@ begin
       end;
     end;
 end;
-
-{ TParseCache }
 
 procedure TParseCache.Add(const Text: string; const Script: TScript);
 begin
@@ -285,6 +327,12 @@ function TParseCache.Find(const Text: string): TScript;
 begin
   Result := FCache1.Find(Text);
   if not Assigned(Result) then Result := FCache2.Find(Text);
+end;
+
+function TParseCache.FindInto(const Text: string; var Script: TScript): Boolean;
+begin
+  Result := FCache1.FindInto(Text, Script);
+  if not Result then Result := FCache2.FindInto(Text, Script);
 end;
 
 procedure TParseCache.SetName(const NewName: TComponentName);

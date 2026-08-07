@@ -199,6 +199,46 @@ begin
   Check('after both disarms there is no limit', ParseLoopLeft = 0, Format('%d', [ParseLoopLeft]));
 end;
 
+{ 1b }
+
+{
+  A run inside a run does not silence the cancellation of the outer one.
+
+  A nested ArmLoopGuard with a budget of its own but WITHOUT a flag of its own
+  used to write nil into ParseBreak - and the owner who had asked the work to
+  stop went unheard for the whole of the inner run. An inner run may replace the
+  budget; it may not replace the cancellation, which is about all of the work
+  rather than about a measure.
+
+  This check differs from its neighbour in exactly one thing: there the nested
+  count runs WITHOUT a guard of its own, here it runs with one. That is why the
+  first version of the neighbouring check let this defect through.
+}
+procedure NestedArmingKeepsTheOuterCancel;
+var
+  Note: string;
+  Outer2, Inner2: TLoopGuard;
+begin
+  BeginSection('a nested run does not silence the cancellation of the outer one');
+  Stop := False;
+  ArmLoopGuard(Outer2, 0, @Stop);
+  try
+    ArmLoopGuard(Inner2, 100000);
+    try
+      Check('the inner run did not lose somebody else''s flag', ParseBreak = @Stop);
+      Stop := True;
+      Note := Run(Outer, Endless);
+      Check('the endless loop was stopped by the outer run''s flag', Pos('stopped', LowerCase(Note)) > 0, Note);
+    finally
+      DisarmLoopGuard(Inner2);
+    end;
+  finally
+    DisarmLoopGuard(Outer2);
+  end;
+  Stop := False;
+  Check('after both are disarmed there is no flag', ParseBreak = nil);
+end;
+
 { 2 }
 
 {
@@ -282,6 +322,7 @@ begin
         Holder.FInner.StringToScript(InnerTen, Holder.FScript);
         BurnedBudgetLeaksToStranger;
         NestedArmingRestoresTheOuterOne;
+        NestedArmingKeepsTheOuterCancel;
         BudgetIsSharedWithNestedOnPurpose;
         CancelIsInheritedOnPurpose;
       finally

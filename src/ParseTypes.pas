@@ -463,7 +463,7 @@ procedure ArmLoopGuard(out Saved: TLoopGuard; const Turns: NativeInt; const Flag
 begin
   Saved.Flag := ParseBreak;
   Saved.Left := ParseLoopLeft;
-  ParseBreak := Flag;
+  if Assigned(Flag) then ParseBreak := Flag;
   ParseLoopLeft := Turns;
 end;
 

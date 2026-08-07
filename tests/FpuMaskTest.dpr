@@ -70,11 +70,37 @@ type
     procedure Done; override;
   end;
 
+type
+  { Holder of a formula function: it calls a NESTED parser that has a mask of its own. }
+  THolder = class
+  private
+    FInner: TMathParser;
+    FNote: string;
+  public
+    function Inner(const Header: PScriptHeader; const AFunction: PFunction; const AType: PType;
+      const PA: TParameterArray): TValue;
+  end;
+
 var
   P: TMathParser;
+  Inner: TMathParser;
+  Holder: THolder;
+  InnerHandle: TFunctionHandle;
   Runners: array [0 .. 7] of TRunner;
   RunnerCount: Integer;
   I: Integer;
+
+function THolder.Inner(const Header: PScriptHeader; const AFunction: PFunction; const AType: PType;
+  const PA: TParameterArray): TValue;
+begin
+  FNote := '';
+  Result := MakeDouble(0);
+  try
+    Result := MakeDouble(FInner.AsDouble('1 / 0'));
+  except
+    on E: Exception do FNote := E.ClassName + ': ' + E.Message;
+  end;
+end;
 
 procedure TRunner.Work;
 var
@@ -181,6 +207,49 @@ begin
   Check('the answer is NaN', IsNan(R.FValue), Format('%g', [R.FValue]));
 end;
 
+{ 4 }
+
+{
+  A nested parser installs ITS OWN mask instead of inheriting somebody else's.
+
+  The test for "is this the outermost evaluation" used to ask whether any frame
+  existed in the thread. A parser called from inside the evaluation of ANOTHER
+  parser therefore saw a foreign frame, concluded it was nested, and never
+  installed its own mask at all - while its ExceptionMask property could say
+  something different, and silently mean nothing.
+
+  Here the inner parser has its mask narrowed down to the host one: it MUST get
+  an exception on division by zero, because that is what it asked for, even
+  though the outer parser is holding a full mask at that moment.
+}
+procedure NestedParserInstallsItsOwnMask;
+var
+  Value: Double;
+  Note: string;
+begin
+  BeginSection('a nested parser installs its own mask');
+  Inner := TMathParser.Create(nil);
+  try
+    Inner.ExceptionMask := HostMask;
+    Holder.FInner := Inner;
+    Holder.FNote := '';
+    Note := '';
+    Value := 0;
+    try
+      Value := P.AsDouble('inner(0)');
+    except
+      on E: Exception do Note := E.ClassName;
+    end;
+    Check('the outer evaluation ran to the end', Note = '', Note);
+    Check('the inner parser got ITS OWN exception', Pos('EZeroDivide', Holder.FNote) > 0, Holder.FNote);
+    Check('and handed a zero back out rather than a number', Value = 0, Format('%g', [Value]));
+    Check('after the evaluation the host mask is in place', GetExceptionMask = HostMask, MaskText(GetExceptionMask));
+  finally
+    Inner.Free;
+    Holder.FInner := nil;
+  end;
+end;
+
 begin
   try
     {
@@ -189,12 +258,16 @@ begin
     }
     SetExceptionMask(HostMask);
     P := TMathParser.Create(nil);
+    Holder := THolder.Create;
     try
+      P.AddFunction('inner', InnerHandle, fkMethod, MakeFunctionMethod(Holder.Inner, 1, pkValue), False);
       LivingParserDoesNotHoldTheMask;
       FormulaKeepsItsContract;
       ForeignThreadGetsTheNumber;
+      NestedParserInstallsItsOwnMask;
     finally
       P.Free;
+      Holder.Free;
     end;
     Check('after the parser is freed the host mask is unchanged', GetExceptionMask = HostMask, MaskText(GetExceptionMask));
   except
