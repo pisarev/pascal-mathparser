@@ -1728,8 +1728,7 @@ begin
   New(FTData);
   ZeroMemory(FTData, SizeOf(TTypeData));
   FPData := MakeData(POperatorArray);
-  FExceptionMask := GetExceptionMask;
-  SetExceptionMask([exInvalidOp, exDenormalized, exZeroDivide, exOverflow, exUnderflow, exPrecision]);
+  FExceptionMask := [exInvalidOp, exDenormalized, exZeroDivide, exOverflow, exUnderflow, exPrecision];
   FConstantList := TFlexibleList.Create(Self);
   BeginUpdate;
   try
@@ -1906,7 +1905,6 @@ begin
   end;
   FOArray := nil;
   FNotifyArray := nil;
-  SetExceptionMask(FExceptionMask);
   {$IFNDEF FPC}
   DeallocateHWnd(FWindowHandle);
   {$ENDIF}
@@ -2432,12 +2430,21 @@ var
   Header: PScriptHeader;
   Value: TValue;
   Frame: TExecuteFrame;
+  Mask: TFPUExceptionMask;
+  Root: Boolean;
 begin
   Notify;
   Header := PScriptHeader(Index);
   Result := @Header.Value;
   Frame.Previous := CurrentExecuteFrame;
   Frame.Parser := Self;
+  Mask := [];
+  Root := not Assigned(Frame.Previous);
+  if Root then
+  begin
+    Mask := GetExceptionMask;
+    if Mask <> FExceptionMask then SetExceptionMask(FExceptionMask);
+  end;
   CurrentExecuteFrame := @Frame;
   try
     try
@@ -2455,6 +2462,7 @@ begin
     end;
   finally
     CurrentExecuteFrame := Frame.Previous;
+    if Root and (Mask <> FExceptionMask) then SetExceptionMask(Mask);
   end;
 end;
 

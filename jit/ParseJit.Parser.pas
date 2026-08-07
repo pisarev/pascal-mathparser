@@ -229,9 +229,23 @@ begin
   inherited;
 end;
 
+procedure ArmMask(const Want: TFPUExceptionMask; out Saved: TFPUExceptionMask; out Changed: Boolean);
+begin
+  Saved := GetExceptionMask;
+  Changed := Saved <> Want;
+  if Changed then SetExceptionMask(Want);
+end;
+
+procedure DisarmMask(const Saved: TFPUExceptionMask; const Changed: Boolean);
+begin
+  if Changed then SetExceptionMask(Saved);
+end;
+
 function TJitParser.AsDouble(const Text: string): Double;
 var
   Code: TJitEntry;
+  Saved: TFPUExceptionMask;
+  Changed: Boolean;
 begin
   if FEnabled then
   begin
@@ -239,7 +253,12 @@ begin
     if Assigned(Code) and Code.Ready then
     begin
       Inc(FHitCount);
-      Result := Code.Execute;
+      ArmMask(ExceptionMask, Saved, Changed);
+      try
+        Result := Code.Execute;
+      finally
+        DisarmMask(Saved, Changed);
+      end;
       Exit;
     end;
     Inc(FMissCount);
@@ -295,6 +314,8 @@ var
   Code: TJitEntry;
   Script: TScript;
   I: Integer;
+  Saved: TFPUExceptionMask;
+  Changed: Boolean;
 begin
   Result := False;
   if Length(Inputs) > Length(Outputs) then Exit;
@@ -302,10 +323,15 @@ begin
   Code := GetCode(Text);
   if Assigned(Code) and Code.Ready then
   begin
-    for I := Low(Inputs) to High(Inputs) do
-    begin
-      Variable := Inputs[I];
-      Outputs[I] := Code.Execute;
+    ArmMask(ExceptionMask, Saved, Changed);
+    try
+      for I := Low(Inputs) to High(Inputs) do
+      begin
+        Variable := Inputs[I];
+        Outputs[I] := Code.Execute;
+      end;
+    finally
+      DisarmMask(Saved, Changed);
     end;
     Inc(FHitCount, Length(Inputs));
     Exit(True);

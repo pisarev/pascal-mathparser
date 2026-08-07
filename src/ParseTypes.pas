@@ -306,6 +306,15 @@ threadvar
   ParseBreak: PBoolean;
   ParseLoopLeft: NativeInt;
 
+type
+  TLoopGuard = record
+    Flag: PBoolean;
+    Left: NativeInt;
+  end;
+
+procedure ArmLoopGuard(out Saved: TLoopGuard; const Turns: NativeInt; const Flag: PBoolean = nil);
+procedure DisarmLoopGuard(const Saved: TLoopGuard);
+
 implementation
 
 uses
@@ -448,6 +457,20 @@ end;
 function MakeFunctionMethod(const Variable: TValueRef; const Handle: PNativeInt): TFunctionMethod;
 begin
   Result := MakeFunctionMethod(MakeFunctionVariable(Variable, Handle));
+end;
+
+procedure ArmLoopGuard(out Saved: TLoopGuard; const Turns: NativeInt; const Flag: PBoolean);
+begin
+  Saved.Flag := ParseBreak;
+  Saved.Left := ParseLoopLeft;
+  ParseBreak := Flag;
+  ParseLoopLeft := Turns;
+end;
+
+procedure DisarmLoopGuard(const Saved: TLoopGuard);
+begin
+  ParseBreak := Saved.Flag;
+  ParseLoopLeft := Saved.Left;
 end;
 
 function MakePriority(const Priority: TFunctionPriority; const Coverage: TPriorityCoverage): TPriority;

@@ -247,34 +247,50 @@ this library learned the hard way:
 program that already runs its loops to completion is unaffected.
 
 ```pascal
-ParseLoopLeft := 1000;
-Note := '';
+ArmLoopGuard(Guard, 1000);
 try
-  P.AsDouble('While(1 = 1, Set("cnt", cnt + 1))');
-except
-  on E: Exception do Note := E.Message;
+  Note := '';
+  try
+    P.AsDouble('While(1 = 1, Set("cnt", cnt + 1))');
+  except
+    on E: Exception do Note := E.Message;
+  end;
+finally
+  DisarmLoopGuard(Guard);
 end;
 Writeln(Format('%s stopped it, cnt reached %.0f', [Copy(Note, 1, 10), GetDouble(Cnt)]));
 ```
 
 That prints `Loop limit stopped it, cnt reached 999`: the guard is read before
 each turn, so the thousandth read is the one that stops a loop that has run 999
-times. `ParseBreak` is the other half - it points at a flag someone else raises,
-a worker thread's `Stopped` typically, and is read at the same place, so a
-formula that spins from the very first turn still stops. Inside WebAssembly the
+times. The cancellation flag is the other half - pass it as the third argument
+of `ArmLoopGuard`, a worker thread's `Stopped` typically. It is read at the same
+place, so a formula that spins from the very first turn still stops. Inside WebAssembly the
 budget is the only way out at all, since a module cannot be interrupted from
 outside. `nil` and zero mean no guard.
 
 A spent budget is not the same as no budget: once it runs out, every further
-loop in that thread fails at once until a new budget is set. Otherwise a single
-aborted evaluation would silently lift the limit for everything after it.
+loop in that run fails at once. Otherwise a single aborted evaluation would
+silently lift the limit for everything after it - one point of a curve would
+abort on the limit and the next would spin forever.
+
+That is why the guard is armed in a pair. `DisarmLoopGuard` puts back whatever
+was there before, so a spent budget stays spent for the rest of your run and
+stops existing the moment the run ends. Without the pair it outlived the run:
+the exhausted state is written as a negative number in a thread variable, and
+the next piece of code in that thread - a different parser, a later button
+press, something that never armed a guard at all - was refused on an honest ten
+turn loop. Arming nests, too: a formula that calls `Parse` may arm a budget of
+its own, and disarming it hands the outer one back rather than clearing the
+thread.
 
 Both guards are thread-local. One parser is normally shared by several threads,
 and a field on the object would let one thread's cancellation tear down the
-others. Inside a thread they are shared by every nested evaluation, so a formula
-function that evaluates another formula spends from the same budget and watches
-the same flag. Set them at the boundary of the outermost call; setting them again
-from inside a running formula is not supported.
+others. Inside a thread they are shared by every nested evaluation, and that is
+deliberate: a formula function that evaluates another formula spends from the
+same budget and watches the same flag. A budget per evaluation would be no
+budget at all, since a nested loop can hang a page exactly as well as an outer
+one.
 
 ## Known traps
 
@@ -296,6 +312,14 @@ evaluation configuration has been frozen. Complete all function, variable and
 type registration, redirects, event-handler assignment and relevant property
 changes before starting worker threads. Do not modify or destroy the parser
 while an evaluation is active.
+
+The floating point exception mask belongs to the thread, and the library treats
+it that way: an evaluation installs its own mask - everything masked, so that
+division by zero answers infinity instead of raising - and puts the caller's
+mask back when it returns. A program that wants exceptions in its own arithmetic
+keeps getting them, and a worker thread that never created the parser still gets
+the documented answer. The mask an evaluation installs is the `ExceptionMask`
+property; narrow it if you would rather have the exceptions inside formulas too.
 
 A `TScript` is a mutable execution image, not immutable bytecode. Evaluation
 writes intermediate and final values into the script headers. The same script

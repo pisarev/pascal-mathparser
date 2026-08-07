@@ -53,6 +53,7 @@ type
   TMethod = class(TCustomMethod)
   private
     FContainer: TVariableContainer;
+    FSync: TRTLCriticalSection;
   protected
     property Container: TVariableContainer read FContainer write FContainer;
   public
@@ -487,9 +488,6 @@ type
 const
   TypeError1 = '%s type found, but %s type expected for %s function parameter with index %d';
   TypeError2 = '%s type is not applicable for %s function parameter with index %d';
-
-var
-  MethodSync: TRTLCriticalSection;
 
 procedure Check(const AFunction: PFunction; const PA: TParameterArray; const ParamCount: Integer;
   const Relationship: TValueRelationship = vrEqual); overload;
@@ -4046,6 +4044,11 @@ constructor TMethod.Create(const AParser: TObject);
 begin
   inherited;
   FContainer := TVariableContainer.Create;
+  {$IFDEF FPC}
+  InitCriticalSection(FSync);
+  {$ELSE}
+  InitializeCriticalSection(FSync);
+  {$ENDIF}
 end;
 
 function TMethod.DeleteMethod(const Header: PScriptHeader; const AFunction: PFunction; const AType: PType;
@@ -4084,7 +4087,7 @@ var
   AValue, BValue, CValue: TValue;
   Script: TScript;
 begin
-  Enter(MethodSync);
+  Enter(FSync);
   try
     Check(AFunction, PA, DerivParameterMinCount, DerivParameterMaxCount);
     Check(FParser, AFunction, 0, PA[0].THandle, True);
@@ -4145,12 +4148,17 @@ begin
       Result := Operation(Operation(CValue, AValue, otSubtract), Operation(MakeExtended(E), MakeByte(2), otMultiply), otDivide);
     until True;
   finally
-    Leave(MethodSync);
+    Leave(FSync);
   end;
 end;
 
 destructor TMethod.Destroy;
 begin
+  {$IFDEF FPC}
+  DoneCriticalSection(FSync);
+  {$ELSE}
+  DeleteCriticalSection(FSync);
+  {$ENDIF}
   FContainer.Free;
   inherited;
 end;
@@ -6166,22 +6174,22 @@ var
   P: TParser;
   Script: TScript;
 begin
-  Enter(MethodSync);
+  Check(AFunction, PA, ParseParameterCount);
+  if Length(PA) > 1 then
+    Check(FParser, AFunction, 1, PA[1].THandle, False);
+  P := TParser(FParser);
+  Script := nil;
   try
-    Check(AFunction, PA, ParseParameterCount);
-    if Length(PA) > 1 then
-      Check(FParser, AFunction, 1, PA[1].THandle, False);
-    P := TParser(FParser);
-    Script := nil;
+    Enter(FSync);
     try
       P.StringToScript(DequoteDouble(PA[0].Text, P.FData.FA[P.DerivHandle].Name, P.Bracket), Script);
       PScriptHeader(Script).RedirectCategory := Header.RedirectCategory;
-      Result := P.ExecuteScript(Script)^;
     finally
-      Script := nil;
+      Leave(FSync);
     end;
+    Result := P.ExecuteScript(Script)^;
   finally
-    Leave(MethodSync);
+    Script := nil;
   end;
 end;
 
@@ -8502,19 +8510,5 @@ begin
   Check(Parser, AFunction, PA, False);
   AssignInteger(Result, YearsBetween(GetDouble(PA[0].Value), GetDouble(PA[1].Value)));
 end;
-
-initialization
-  {$IFDEF FPC}
-  InitCriticalSection(MethodSync);
-  {$ELSE}
-  InitializeCriticalSection(MethodSync);
-  {$ENDIF}
-
-finalization
-  {$IFDEF FPC}
-  DoneCriticalSection(MethodSync);
-  {$ELSE}
-  DeleteCriticalSection(MethodSync);
-  {$ENDIF}
 
 end.

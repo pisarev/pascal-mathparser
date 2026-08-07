@@ -17,18 +17,23 @@ var
   P: TMathParser;
   Cnt: TValue;
   Note: string;
+  Guard: TLoopGuard;
 begin
   P := TMathParser.Create(nil);
   try
     AssignDouble(Cnt, 0);
     P.AddVariable('cnt', Cnt);
     { show }
-    ParseLoopLeft := 1000;
-    Note := '';
+    ArmLoopGuard(Guard, 1000);
     try
-      P.AsDouble('While(1 = 1, Set("cnt", cnt + 1))');
-    except
-      on E: Exception do Note := E.Message;
+      Note := '';
+      try
+        P.AsDouble('While(1 = 1, Set("cnt", cnt + 1))');
+      except
+        on E: Exception do Note := E.Message;
+      end;
+    finally
+      DisarmLoopGuard(Guard);
     end;
     Writeln(Format('%s stopped it, cnt reached %.0f', [Copy(Note, 1, 10), GetDouble(Cnt)]));
     { show done }

@@ -35,7 +35,7 @@ cd "$HERE"
 RUN=""
 [ -z "$DISPLAY" ] && command -v xvfb-run >/dev/null && RUN="xvfb-run -a"
 
-TARGETS="${@:-ParserBugTests ThreadWaitTest JitDump JitBench JitParserTest JitContractTest PublicApiTest DocumentedSyntaxTest JitRedirectTest DemoSpeed BigScript MathFamilyTest C31Console}"
+TARGETS="${@:-ParserBugTests ThreadWaitTest JitDump JitBench JitParserTest JitContractTest PublicApiTest DocumentedSyntaxTest JitRedirectTest DemoSpeed BigScript MathFamilyTest LoopScopeTest FpuMaskTest MethodLockTest C31Console}"
 
 # Two ways to build, and the difference matters.
 #
