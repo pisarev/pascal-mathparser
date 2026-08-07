@@ -25,7 +25,7 @@
     </CompilerOptions>
     <Description Value="MathParser: a compiler and interpreter of mathematical expressions (core)"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="0" Release="5"/>
+    <Version Major="1" Minor="0" Release="6"/>
     <Files>
       <Item>
         <Filename Value="..\..\src\Parser.pas"/>
