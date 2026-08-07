@@ -30,7 +30,7 @@ Set-Location $PSScriptRoot
 
 if (-not (Test-Path $Fpc)) { Write-Host "FPC not found: $Fpc"; exit 1 }
 
-$Targets = if ($args.Count -gt 0) { $args } else { @('ParserBugTests', 'JitParserTest', 'JitContractTest', 'PublicApiTest', 'DocumentedSyntaxTest', 'JitRedirectTest', 'ThreadWaitTest', 'ThreadSafetyTest', 'ThreadShareTest', 'ExitRoutingTest', 'LoopGuardTest', 'C31Console') }
+$Targets = if ($args.Count -gt 0) { $args } else { @('ParserBugTests', 'JitParserTest', 'JitContractTest', 'PublicApiTest', 'DocumentedSyntaxTest', 'JitRedirectTest', 'ThreadWaitTest', 'ThreadSafetyTest', 'ThreadShareTest', 'ExitRoutingTest', 'LoopGuardTest', 'MathFamilyTest', 'C31Console') }
 $Failed = 0
 
 # Two ways to build, the same as on the Linux side.

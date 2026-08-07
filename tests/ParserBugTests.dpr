@@ -117,6 +117,7 @@ procedure TestWaveB;
 var
   Value: TValue;
   P: Pointer;
+  Bound: Double;
 begin
   BeginSection('Wave B: x64 correctness');
   DirtyStack;
@@ -135,8 +136,17 @@ begin
   Check('B#6 AssignPointer keeps full pointer width', Pointer(GetNativeUInt(Value)) = P, UIntToStr(GetNativeUInt(Value)));
   CheckFormula('B#20 MaxInteger is Int32 bound', 'MaxInteger', 2147483647);
   CheckFormula('B#20 MinInteger is Int32 bound', 'MinInteger', -2147483648);
-  CheckFormula('B#20 MaxNativeInt is platform bound', 'MaxNativeInt', Double(High(NativeInt)));
-  CheckFormula('B#20 MinNativeInt is platform bound', 'MinNativeInt', Double(Low(NativeInt)));
+  { The bound is turned into a floating value by ASSIGNMENT, not by writing
+    Double(...). In Pascal, Double(X) applied to an integer is a cast of the
+    BITS: 0x7FFFFFFFFFFFFFFF read as a number is NaN, 0x8000000000000000 is
+    minus zero. Free Pascal 3.2.2 reads the notation exactly that way, while
+    3.3.1 and Delphi convert the value - so the check was comparing its
+    expectation against garbage, staying green wherever the compiler was
+    kind to it. }
+  Bound := High(NativeInt);
+  CheckFormula('B#20 MaxNativeInt is platform bound', 'MaxNativeInt', Bound);
+  Bound := Low(NativeInt);
+  CheckFormula('B#20 MinNativeInt is platform bound', 'MinNativeInt', Bound);
 end;
 
 procedure TestWaveC;

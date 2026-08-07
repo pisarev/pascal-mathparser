@@ -116,7 +116,12 @@ begin
   else if Assigned(Code) and Code.Ready then
     Result := ''
   else if Assigned(Executor) and Executor.Ready then
-    Result := 'ir executor'
+  begin
+    if Assigned(Code) and (Code.Reason <> '') then
+      Result := 'ir executor: ' + Code.Reason
+    else
+      Result := 'ir executor';
+  end
   else if Assigned(Code) then
     Result := Code.Reason
   else if Assigned(Executor) then

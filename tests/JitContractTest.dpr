@@ -40,8 +40,9 @@ const
     exist here, comparing against 'stale', a word the code never says.
 
     Entries ending in a space are prefixes: the engine appends a name to them. }
-  KnownReasons: array[0..40] of string = (
-    '', 'parser changed', 'ir executor', 'no code', 'not decoded: ',
+  KnownReasons: array[0..41] of string = (
+    '', 'parser changed', 'ir executor', 'ir executor: ', 'no code',
+    'not decoded: ',
     'x86-64 only', 'no script or parser', 'empty script',
     'unsupported element', 'unsupported method kind ',
     'parametric ', 'parametric function ',

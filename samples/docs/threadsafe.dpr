@@ -11,7 +11,11 @@ program ThreadSafe;
 { expect: 4 workers, 0 wrong }
 {$APPTYPE CONSOLE}
 
-uses SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, Thread;
+uses
+  { On Unix the thread driver has to come first: without it the program dies
+    at startup rather than where it starts a thread. }
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, Thread;
 
 type
   TWorker = class(TThread)

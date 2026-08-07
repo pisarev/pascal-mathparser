@@ -25,7 +25,7 @@
     </CompilerOptions>
     <Description Value="MathParser accelerator: IR, executor and x86-64 machine code generator"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="0" Release="4"/>
+    <Version Major="1" Minor="0" Release="5"/>
     <Files>
       <Item>
         <Filename Value="..\..\jit\ParseJit.Decoder.pas"/>

@@ -90,9 +90,16 @@ functions over a parser it owns, which is what the program at the top uses.
 This works on every target, console programs on Linux included. It did not always:
 the owned `TCalculator` uses a synchronising timer, and under FPC that timer was
 built from the widgetset, so a console program refused to link. The timer now runs
-on a plain thread, and the library needs neither the LCL nor `LazUtils` - the RTL
-is enough. All six samples under `samples/docs` are compiled and run by both
-matrices, on Windows and Linux.
+on a plain thread, and the core compiles against the RTL alone. All six samples
+under `samples/docs` are compiled and run by both matrices, on Windows and Linux -
+console programs, no widgetset anywhere.
+
+Two units ask for more when you leave them at their defaults: `Thread` routes an
+exception raised in a worker through `Application.HandleException`, and
+`BlobManager` stores images as `TGraphic`. That is why the Lazarus package lists
+the LCL. Define `NOFORMS` and `NOGRAPHICS` and both step aside - that is exactly
+what the console matrices and the WebAssembly build do, and it is the honest
+answer to "does this drag the LCL in": only if you want those two features.
 
 ## The accelerator
 
@@ -191,17 +198,25 @@ whole example is in `samples/docs/extend.dpr`.
 ## Building
 
 Add `src` to the project search path, and `jit` as well if you want the
-accelerator. There is nothing else to install: the library depends only on the
-RTL.
+accelerator. Nothing else is needed for a console build.
 
 | | |
 |---|---|
-| Delphi | 37.0 (Delphi 13) is what the matrix runs, win32 and win64 |
-| Free Pascal | 3.2.2 and 3.3.1 are what the matrix runs, win64 and linux64 |
+| Delphi | 37.0 (Delphi 13), win32 and win64 |
+| Free Pascal | 3.2.2 and 3.3.1, win64 and linux64 |
 | Accelerator | x86-64 only; elsewhere the interpreter answers |
 
-Older compilers are likely to work and are not claimed to: the table lists what
-is actually built and run before a release, nothing more.
+Every line of that table is a matrix that runs before a release, not a guess.
+Older compilers are likely to work and are not claimed to.
+
+On Free Pascal 3.2.2 one thing is narrower. Function references - `reference to
+function` - arrived in 3.3.1, so on 3.2.2 the iterator callbacks in `MemoryUtils`
+are method pointers instead: you pass a method where you would otherwise pass an
+anonymous function. Nothing else changes, and nothing inside the library uses
+those callbacks. Nine functions that 3.2.2 lacks in its `Math` unit - `ArcCot`,
+`ArcCotH`, `ArcCsc`, `ArcCscH`, `ArcSec`, `ArcSecH`, `CotH`, `CscH`, `SecH` -
+travel with the library, taken verbatim from the 3.3.1 runtime so the values
+agree to the last bit. `tests/MathFamilyTest.dpr` is what keeps them agreeing.
 
 ## Tests
 

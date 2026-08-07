@@ -35,7 +35,7 @@ cd "$HERE"
 RUN=""
 [ -z "$DISPLAY" ] && command -v xvfb-run >/dev/null && RUN="xvfb-run -a"
 
-TARGETS="${@:-ParserBugTests ThreadWaitTest JitDump JitBench JitParserTest JitContractTest PublicApiTest DocumentedSyntaxTest JitRedirectTest DemoSpeed BigScript C31Console}"
+TARGETS="${@:-ParserBugTests ThreadWaitTest JitDump JitBench JitParserTest JitContractTest PublicApiTest DocumentedSyntaxTest JitRedirectTest DemoSpeed BigScript MathFamilyTest C31Console}"
 
 # Two ways to build, and the difference matters.
 #
@@ -50,12 +50,25 @@ TARGETS="${@:-ParserBugTests ThreadWaitTest JitDump JitBench JitParserTest JitCo
 # library. That is proved by building, not assumed.
 NEEDS_LCL=" ParserBugTests ThreadWaitTest "
 
+# The widgetset folder inside the LCL. Naming one is a guess: a Lazarus
+# build carries gtk2, gtk3, qt5 or nogui, and the Interfaces unit lives in
+# whichever it is. A hardwired name reported a missing unit on a healthy
+# machine, and the refusal read like a defect in the code. Take the first
+# folder that actually holds the unit.
+WIDGETSET=""
+for W in gtk2 gtk3 qt5 qt6 nogui; do
+  if [ -f "$LCL/$W/interfaces.ppu" ]; then WIDGETSET="$LCL/$W"; break; fi
+done
+if [ -z "$WIDGETSET" ]; then
+  echo "WARNING: no widgetset with an Interfaces unit under $LCL"
+fi
+
 FAILED=0
 for T in $TARGETS; do
   echo "=== BUILD $T ==="
   rm -f "$OUT/$T" "$OUT_CONSOLE/$T"
   if [[ "$NEEDS_LCL" == *" $T "* ]]; then
-    fpc -MDelphi -O2 -Sh -B -Fu"$SRC" -Fu"$JIT" -Fu"$LCL" -Fu"$LCL/gtk3" -Fu"$LU" \
+    fpc -MDelphi -O2 -Sh -B -Fu"$SRC" -Fu"$JIT" -Fu"$LCL" -Fu"$WIDGETSET" -Fu"$LU" \
         -Fi"$SRC" -FU"$OUT" -FE"$OUT" "$T.dpr" 2>&1 \
       | grep -E 'Error:|Fatal:' | head -20
   else

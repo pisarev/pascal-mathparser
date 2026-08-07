@@ -527,6 +527,76 @@ uses
   {$ENDIF}
   {$ENDIF}
 
+{$IFDEF FPC}
+{$IF FPC_FULLVERSION < 30301}
+function ArcCot(X: Extended): Extended;
+begin
+  if X = 0 then
+    Result := 0.5 * Pi
+  else
+    Result := ArcTan(1 / X);
+end;
+
+function ArcCotH(X: Extended): Extended;
+begin
+  Result := 0.5 * Ln((X + 1.0) / (X - 1.0));
+end;
+
+function ArcCscH(X: Extended): Extended;
+begin
+  Result := Ln((1.0 / X) + Sqrt(1.0 / Sqr(X) + 1.0));
+end;
+
+function ArcSec(X: Extended): Extended;
+begin
+  Result := ArcCos(1 / X);
+end;
+
+function ArcSecH(X: Extended): Extended;
+begin
+  Result := Ln((1 + Sqrt(1.0 - Sqr(X))) / X);
+end;
+
+function ArcCsc(X: Extended): Extended;
+begin
+  Result := ArcSin(1 / X);
+end;
+
+function SecH(const X: Extended): Extended;
+var
+  Ex: Extended;
+begin
+  Ex := Exp(X);
+  Result := 2 / (Ex + 1 / Ex);
+end;
+
+function CscH(const X: Extended): Extended;
+var
+  Ex: Extended;
+begin
+  Ex := Exp(X);
+  Result := 2 / (Ex - 1 / Ex);
+end;
+
+function CotH(const X: Extended): Extended;
+var
+  E2: Extended;
+begin
+  if X < 0 then
+  begin
+    E2 := Exp(2 * X);
+    if E2 = 1 then Exit(1 / X);
+    Result := (1 + E2) / (E2 - 1);
+  end
+  else begin
+    E2 := Exp(-2 * X);
+    if E2 = 1 then Exit(1 / X);
+    Result := (1 + E2) / (1 - E2);
+  end;
+end;
+{$IFEND}
+{$ENDIF}
+
 procedure Check(const AFunction: PFunction; const PA: TParameterArray; const ParamCount: Integer;
   const Relationship: TValueRelationship);
 begin

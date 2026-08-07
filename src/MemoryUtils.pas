@@ -13,6 +13,9 @@ unit MemoryUtils;
 {$I Directives.inc}
 {$IFDEF FPC}
 {$MODE Delphi}
+{$IF FPC_FULLVERSION < 30301}
+{$DEFINE NOCLOSURES}
+{$IFEND}
 {$ENDIF}
 
 interface
@@ -163,10 +166,22 @@ type
       TIterator = record
       public
         type
+          {$IFDEF NOCLOSURES}
+          TEmpty<T> = function(const Value: T; const P: Pointer = nil): Boolean of object;
+          {$ELSE}
           TEmpty<T> = reference to function(const Value: T; const P: Pointer = nil): Boolean;
+          {$ENDIF}
+          {$IFDEF NOCLOSURES}
+          TAlter<T> = function(var AValue, BValue: T; const P: Pointer = nil): Boolean of object;
+          {$ELSE}
           TAlter<T> = reference to function(var AValue, BValue: T; const P: Pointer = nil): Boolean;
+          {$ENDIF}
+          {$IFDEF NOCLOSURES}
+          TCycle<T> = function(var Value: T; const Index: Integer; const P: Pointer = nil): Boolean of object;
+          {$ELSE}
           TCycle<T> = reference to function(var Value: T; const Index: Integer;
             const P: Pointer = nil): Boolean;
+          {$ENDIF}
         class function ForEach<T>(const Target: TArray<T>; const Empty: TEmpty<T>; const Alter: TAlter<T>;
           const P: Pointer = nil): Integer; overload; static;
         class function ForEach<T>(const Target: TArray<T>; const Cycle: TCycle<T>;
@@ -202,7 +217,11 @@ type
       D: TArrayData;
     type
       P = ^T;
+      {$IFDEF NOCLOSURES}
+      TCompare = function(const AValue, BValue: P): Boolean of object;
+      {$ELSE}
       TCompare = reference to function(const AValue, BValue: P): Boolean;
+      {$ENDIF}
     function Lo: Integer;
     function Hi: Integer;
     function At(const Index: Integer): P;
@@ -231,8 +250,6 @@ type
   end;
 
   PMatrix = ^TMatrix;
-
-  { TMatrix }
 
   TMatrix = record
   private
@@ -273,10 +290,23 @@ type
     procedure SetFlag(const X, Y: Integer; Value: Boolean);
   public
     type
+      {$IFDEF NOCLOSURES}
+      TCycle = function(const X, Y: Integer; const Step: Integer; const P: Pointer): Boolean of object;
+      {$ELSE}
       TCycle = reference to function(const X, Y: Integer; const Step: Integer; const P: Pointer): Boolean;
+      {$ENDIF}
+      {$IFDEF NOCLOSURES}
+      TCompare = function(const X, Y: Integer; const Value: Pointer; const Step: Integer; var Stop: Boolean;
+        const P: Pointer): Boolean of object;
+      {$ELSE}
       TCompare = reference to function(const X, Y: Integer; const Value: Pointer; const Step: Integer;
         var Stop: Boolean; const P: Pointer): Boolean;
+      {$ENDIF}
+      {$IFDEF NOCLOSURES}
+      TStop = function(const Step: Integer; const P: Pointer): Boolean of object;
+      {$ELSE}
       TStop = reference to function(const Step: Integer; const P: Pointer): Boolean;
+      {$ENDIF}
     var
       CustomData: Pointer;
     class function Make(const Size: TSize): TMatrix; overload; static;
@@ -891,8 +921,6 @@ begin
   Result := FloatUnion.Float32;
 end;
 
-{ TArrayRec.TIterator }
-
 class function TArrayRec.TIterator.ForEach<T>(const Target: TArray<T>; const Cycle: TCycle<T>;
   const P: Pointer): Boolean;
 var
@@ -949,8 +977,6 @@ begin
   ForEach<T>(Target, Empty, Alter, P);
   Result := Target;
 end;
-
-{ TArrayRec }
 
 class function TArrayRec.Add<T>(var Target: TArray<T>; const Value: T): Integer;
 begin
@@ -1043,8 +1069,6 @@ begin
   Result := Pack<T>(TIterator.Iterate<T>(Copy(Target), Empty, Alter, P), Empty, P);
 end;
 
-{ TVector<T> }
-
 function TVector<T>.Add(const Value: T): Integer;
 begin
   D.Count := Length(A);
@@ -1094,6 +1118,20 @@ begin
   Result := not Assigned(A);
 end;
 
+{$IFDEF NOCLOSURES}
+function TVector<T>.Find(const Compare: TCompare): P;
+var
+  I: Integer;
+  Item: P;
+begin
+  Result := nil;
+  for I := Lo to Hi do
+  begin
+    Item := At(I);
+    if not Assigned(Result) or Compare(Item, Result) then Result := Item;
+  end;
+end;
+{$ELSE}
 function TVector<T>.Find(const Compare: TCompare): P;
 begin
   Result := nil;
@@ -1102,12 +1140,12 @@ begin
     var
       Target: ^TVector<T>.P absolute P;
     begin
-      if not Assigned(Target^) or Compare(@Value, Target^) then
-        Target^ := @Value;
+      if not Assigned(Target^) or Compare(@Value, Target^) then Target^ := @Value;
       Result := True;
     end,
     @Result);
 end;
+{$ENDIF}
 
 function TVector<T>.Find(const Value: T; const Compare: TCompare): Integer;
 var
@@ -1188,16 +1226,13 @@ begin
   A := TArrayRec.Union<T>(A, Empty, Alter, P);
 end;
 
-{ TMatrix }
-
 function TMatrix.Check: Boolean;
 var
   I, J: Integer;
 begin
   if Length(RawData) = 0 then Exit(False);
   J := Length(RawData[0]);
-  for I := 1 to Length(RawData) - 1 do
-    if Length(RawData[I]) <> J then Exit(False);
+  for I := 1 to Length(RawData) - 1 do if Length(RawData[I]) <> J then Exit(False);
   Result := True;
 end;
 
@@ -1442,8 +1477,7 @@ begin
   Result.Reset;
   if not Matrix.Check then Exit;
   Result.RawData := System.Copy(Matrix.RawData);
-  for I := 0 to Length(Matrix.RawData) - 1 do
-    Result.RawData[I] := System.Copy(Matrix.RawData[I]);
+  for I := 0 to Length(Matrix.RawData) - 1 do Result.RawData[I] := System.Copy(Matrix.RawData[I]);
   Result.BitsRebuild;
 end;
 
@@ -2025,8 +2059,7 @@ begin
   if (Rect.Left < 0) or (Rect.Top < 0) or (Rect.Right <= Rect.Left) or (Rect.Bottom <= Rect.Top) then
     Exit;
   if Rect.Bottom > VSize then Exit;
-  for I := Rect.Top to Rect.Bottom - 1 do
-    if Rect.Right > Length(RawData[I]) then Exit;
+  for I := Rect.Top to Rect.Bottom - 1 do if Rect.Right > Length(RawData[I]) then Exit;
   RowCount := Rect.Bottom - Rect.Top;
   ColCount := Rect.Right - Rect.Left;
   Result := TMatrix.Make(ColCount, RowCount);
@@ -4222,8 +4255,7 @@ procedure QSort(const Target: Pointer; Min, Max: Integer; const Compare: TSortCo
   end;
 
 begin
-  if Assigned(Compare) and Assigned(Exchange) and (Min < Max) then
-    Sort(Min, Max);
+  if Assigned(Compare) and Assigned(Exchange) and (Min < Max) then Sort(Min, Max);
 end;
 
 function NativeIntSortCompare(const AIndex, BIndex: Integer;

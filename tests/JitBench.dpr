@@ -11,9 +11,11 @@ program JitBench;
 {$B-}
 
 uses
-  Classes,
+  { The thread driver comes FIRST: units are initialised in the order they
+    are listed, and Classes standing ahead of it gets to touch threading
+    before the driver is up. }
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
-  SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Decoder,
+  Classes, SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Decoder,
   ParseJit.Executor, ParseJit.CodeGen, TestKit in 'TestKit.pas';
 
 var
@@ -91,7 +93,16 @@ procedure Report(const Name: string; const Base, Fast: Double; const Count: Inte
 var
   Plain: TFormatSettings;
 begin
+  { TFormatSettings.Invariant arrived in Free Pascal only in 3.3.1. For an
+    older compiler the same set is put together by hand: the one thing that
+    matters here is a dot as the decimal separator. }
+  {$IF Defined(FPC) and (FPC_FULLVERSION < 30301)}
+  Plain := DefaultFormatSettings;
+  Plain.DecimalSeparator := '.';
+  Plain.ThousandSeparator := #0;
+  {$ELSE}
   Plain := TFormatSettings.Invariant;
+  {$IFEND}
   Rows.Add(Format('%s'#9'%.1f'#9'%.1f'#9'%d', [Name, Base, Fast, Count], Plain));
 end;
 
