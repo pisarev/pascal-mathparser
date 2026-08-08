@@ -73,7 +73,11 @@ begin
     for I := 0 to High(Inputs) do
       Inputs[I] := I / 1000;
 
-    P.ExecuteMany('x * x * 3 + 1', X, Inputs, Outputs);
+    if not P.ExecuteMany('x * x * 3 + 1', X, Inputs, Outputs) then
+    begin
+      Writeln('the bulk call refused, the outputs hold NaN');
+      Halt(1);
+    end;
     Writeln(Outputs[High(Outputs)]:0:2);
   finally
     P.Free;
@@ -85,13 +89,21 @@ Whatever does not compile is answered by the base parser, and the answer is
 always the same. `CodeReason(Text)` tells you why a particular formula was
 declined.
 
-**The result of `ExecuteMany` has to be checked.** It is the one call that
-reports a refusal to the caller: on `False` it does not touch the output array,
-and a caller who trusted it gets zeros instead of numbers. That is exactly how
-the defect found on 2026-07-27 showed itself: the generation of the cache entry
-was stamped before the script was compiled, so the first formula of any parser
-stayed on the interpreter forever, and bulk mode on it quietly returned `False`.
-`../tests/JitContractTest.dpr` now stands guard over this.
+**The result of `ExecuteMany` has to be checked, and you have to know what it
+means.** The output array is touched ALWAYS: the first thing the call does is
+fill it with "not a number". So `False` does not mean your data survived
+untouched - it means the array holds NaN.
+
+`False` happens in two cases: the output array is shorter than the input one,
+and the formula does not parse. A formula the code generator turns down is NOT a
+refusal - it is evaluated the ordinary way and returns `True` just as machine
+code does. `MachineCount` and `ExecutorCount` tell the two apart, and
+`CodeReason` names the reason for the retreat.
+
+The defect found on 2026-07-27 was a different thing: the generation of the
+cache entry was stamped before the script was compiled, so the first formula of
+any parser stayed on the interpreter forever.
+`../tests/JitContractTest.dpr` stands guard over that.
 
 ## What compiles to machine code
 
@@ -114,8 +126,9 @@ stayed on the interpreter forever, and bulk mode on it quietly returned `False`.
   drift away from the interpreter.
 - Not compiled: `for`, `tryexcept` and `tryfinally`, `new` and `delete`,
   functions that take a parameter block (`mean`, `poly`, `min`, `max`), string
-  operations, variables of non-numeric types, scripts with a redirect category.
-  The base parser answers all of these.
+  operations, variables of non-numeric types. The base parser answers all of
+  these. Scripts with a redirect category are compiled: the redirect chain is
+  resolved while building.
 - The code cache is invalidated automatically on notifications from the parser
   (`ntCompile`, functions and types added or removed); `ClearCode` is there for
   the manual case.

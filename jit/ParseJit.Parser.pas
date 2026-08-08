@@ -21,14 +21,18 @@ interface
 
 uses
   {$IFDEF FPC}
-  SysUtils, Math, Classes, FastList, Notifier, ParseTypes, Parser, ValueTypes, ValueUtils,
-  ParseJit.Decoder, ParseJit.CodeGen, ParseJit.Executor;
+  SysUtils, Math, Classes, FastList, Notifier, ParseTypes, Parser, ThreadUtils,
+  ValueTypes, ValueUtils, ParseJit.Decoder, ParseJit.CodeGen, ParseJit.Executor;
   {$ELSE}
+  {$IFDEF DELPHI_XE7}WinApi.Windows,{$ELSE}Windows,{$ENDIF}
   System.SysUtils, System.Math, System.Classes, FastList, Notifier, ParseTypes,
-  Parser, ValueTypes, ValueUtils, ParseJit.Decoder, ParseJit.CodeGen, ParseJit.Executor;
+  Parser, ThreadUtils, ValueTypes, ValueUtils, ParseJit.Decoder, ParseJit.CodeGen,
+  ParseJit.Executor;
   {$ENDIF}
 
 type
+  EJitOrphan = class(Exception);
+
   TJitParser = class;
 
   TJitEntry = class
@@ -61,6 +65,10 @@ type
     FGeneration: Int64;
     FMachineCount: Int64;
     FExecutorCount: Int64;
+    FIssued: TList;
+    FIssuedLock: TRTLCriticalSection;
+    procedure Issue(const Entry: TJitEntry);
+    procedure Withdraw(const Entry: TJitEntry);
     function GetCode(const Text: string): TJitEntry;
   public
     constructor Create(AOwner: TComponent); override;
@@ -85,6 +93,9 @@ type
     property LookupCount: Int64 read FLookupCount;
   end;
 
+const
+  JitOrphanMessage = 'the parser that compiled this script is gone';
+
 implementation
 
 uses
@@ -92,6 +103,8 @@ uses
 
 destructor TJitEntry.Destroy;
 begin
+  if Assigned(Owner) then Owner.Withdraw(Self);
+  Owner := nil;
   Code.Free;
   Executor.Free;
   inherited;
@@ -99,7 +112,8 @@ end;
 
 function TJitEntry.Fresh: Boolean;
 begin
-  if Assigned(Owner) and (Owner.Generation <> Generation) then Exit(False);
+  if not Assigned(Owner) then Exit(False);
+  if Owner.Generation <> Generation then Exit(False);
   if Assigned(Code) and Code.Ready then Exit(Code.Decoder.Valid);
   if Assigned(Executor) and Executor.Ready then Exit(Executor.Decoder.Valid);
   Result := True;
@@ -112,7 +126,9 @@ end;
 
 function TJitEntry.Reason: string;
 begin
-  if not Fresh then
+  if not Assigned(Owner) then
+    Result := JitOrphanMessage
+  else if not Fresh then
     Result := 'parser changed'
   else if Assigned(Code) and Code.Ready then
     Result := ''
@@ -149,10 +165,9 @@ var
   Changed: Boolean;
   Want: TFPUExceptionMask;
 begin
-  if Owner is TJitParser then
-    Want := TJitParser(Owner).EvaluationMask
-  else
-    Want := [exInvalidOp, exDenormalized, exZeroDivide, exOverflow, exUnderflow, exPrecision];
+  if not Assigned(Owner) then
+    raise EJitOrphan.Create(JitOrphanMessage);
+  Want := Owner.EvaluationMask;
   ArmMask(Want, Saved, Changed);
   try
     if Assigned(Code) and Code.Ready then
@@ -169,15 +184,60 @@ begin
   inherited;
   FList := TFastList.Create;
   FList.CaseSensitive := True;
+  FIssued := TList.Create;
+  {$IFDEF FPC}
+  InitCriticalSection(FIssuedLock);
+  {$ELSE}
+  InitializeCriticalSection(FIssuedLock);
+  {$ENDIF}
   FEnabled := True;
   FGeneration := 1;
 end;
 
 destructor TJitParser.Destroy;
+var
+  I: Integer;
 begin
   ClearCode;
+  Enter(FIssuedLock);
+  try
+    for I := 0 to FIssued.Count - 1 do TJitEntry(FIssued[I]).Owner := nil;
+    FIssued.Clear;
+  finally
+    Leave(FIssuedLock);
+  end;
+  FIssued.Free;
+  {$IFDEF FPC}
+  DoneCriticalSection(FIssuedLock);
+  {$ELSE}
+  DeleteCriticalSection(FIssuedLock);
+  {$ENDIF}
   FList.Free;
   inherited;
+end;
+
+procedure TJitParser.Issue(const Entry: TJitEntry);
+begin
+  Enter(FIssuedLock);
+  try
+    FIssued.Add(Entry);
+  finally
+    Leave(FIssuedLock);
+  end;
+end;
+
+procedure TJitParser.Withdraw(const Entry: TJitEntry);
+var
+  At: Integer;
+begin
+  if not Assigned(FIssued) then Exit;
+  Enter(FIssuedLock);
+  try
+    At := FIssued.IndexOf(Entry);
+    if At >= 0 then FIssued.Delete(At);
+  finally
+    Leave(FIssuedLock);
+  end;
 end;
 
 procedure TJitParser.ClearCode;
@@ -301,6 +361,7 @@ begin
   Result := TJitScript.Create;
   Result.Owner := Self;
   Result.Generation := FGeneration;
+  Issue(Result);
   Inc(FCompileCount);
   {$IFDEF CPUX64}
   Result.Code := TJitCode.Create(Self);

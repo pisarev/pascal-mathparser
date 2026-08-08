@@ -521,6 +521,87 @@ begin
   end;
 end;
 
+{
+  A parser must outlive the script it handed out, and that is a CONTRACT rather
+  than a wish.
+
+  The previous version of this check claimed the opposite - that the script is
+  self-contained - and stayed green because it took the formula x * 2: that one
+  goes into machine code and holds no assumptions about redirection. A script
+  has several references to its parser, and clearing Owner covers one:
+
+    TJitDecoder.FParser  - Valid asks the parser for functions and redirections
+                           on every assumption, and Fresh goes exactly there;
+    TJitExecutor         - copies Method0/Method1/Method2 into its own steps,
+                           that is pointers to METHODS OF THE PARSER's OBJECTS,
+                           and calls them;
+    TJitExecutor.FHeader - looks into the original script and makes no copy.
+
+  So the check takes TWO formulas: one that goes to machine code and one the
+  emitter turns down, which then goes to the executor. On the second one the old
+  code read freed memory. The expectation now is one: once the parser is gone,
+  the script REFUSES rather than evaluating.
+}
+procedure CompiledScriptRefusesWithoutItsParser;
+
+  procedure OneScript(const Text: string; const Machine: Boolean);
+  var
+    P: TJitParser;
+    Compiled: TJitScript;
+    Script: TScript;
+    X: Double;
+    Note: string;
+    Value: Double;
+  begin
+    X := 3;
+    P := TJitParser.Create(nil);
+    Compiled := nil;
+    Script := nil;
+    try
+      P.AddVariable('x', X);
+      P.StringToScript(Text, Script);
+      Compiled := P.CompileScript(Script);
+      Check('built: ' + Text, Assigned(Compiled) and Compiled.Ready, Compiled.Reason);
+      Check('the level this check needs', (P.MachineCount > 0) = Machine,
+        Format('%d machine, %d executor', [P.MachineCount, P.ExecutorCount]));
+      Value := Compiled.Execute;
+      Check('evaluates while the parser is alive', not IsNan(Value), Format('%g', [Value]));
+    finally
+      Script := nil;
+      P.Free;
+    end;
+    { The parser is gone. From here on only refusal, and no reading of the dead. }
+    Check('the owner was cleared: ' + Text, not Assigned(Compiled.Owner), 'the pointer is still there');
+    Note := '';
+    try
+      Check('does not consider itself usable', not Compiled.Ready, 'considers itself usable without a parser');
+    except
+      on E: Exception do Note := E.ClassName + ': ' + E.Message;
+    end;
+    Check('Ready raised nothing', Note = '', Note);
+    Note := '';
+    Value := 0;
+    try
+      Value := Compiled.Execute;
+    except
+      on E: EJitOrphan do Note := 'orphan';
+      on E: Exception do Note := E.ClassName + ': ' + E.Message;
+    end;
+    Check('Execute refused with the named exception: ' + Text, Note = 'orphan', Format('%s, returned %g', [Note, Value]));
+    Compiled.Free;
+  end;
+
+begin
+  BeginSection('without its own parser a script refuses instead of evaluating');
+  { The machine path: arithmetic the emitter takes. }
+  OneScript('x * 2', True);
+  {
+    The executor path: the emitter turns round down, but the intermediate stage
+    takes it - and that stage is the one holding pointers to the parser methods.
+  }
+  OneScript('round(x)', False);
+end;
+
 begin
   Writeln('=== JIT contract: machine code really runs ===');
   FirstFormulaOnAFreshParser;
@@ -535,5 +616,6 @@ begin
   CompiledCodeRunsUnderTheParserMask;
   NoSpareExecutorBesideWorkingCode;
   BulkAnswersOrSaysItDidNot;
+  CompiledScriptRefusesWithoutItsParser;
   ExitCode := TestSummary;
 end.

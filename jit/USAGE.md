@@ -101,7 +101,7 @@ begin
   SetLength(Outputs, 1000000);
   // ... fill Inputs ...
   if not P.ExecuteMany('x * x * 3 + 1', X, Inputs, Outputs) then
-    ; // the formula is not supported: evaluate it the ordinary way
+    ; // it did not parse, or the output array is shorter: it holds NaN
 end;
 ```
 
@@ -126,9 +126,10 @@ trusted it gets zeros instead of numbers.
 
 `for`, `tryexcept` and `tryfinally`, `new` and `delete`, functions that take a
 parameter block (`mean`, `poly`, `min`, `max`), string operations, variables of
-non-numeric types, integer constants above 2^53, scripts with a redirect
-category. On 32-bit builds there is no machine code at all - the intermediate
-stage works instead (IR walking, 4.5-8.8x).
+non-numeric types, integer constants above 2^53. Scripts with a redirect
+category are compiled - the chain is resolved while building, and there is a
+section on it below. On 32-bit builds there is no machine code at all - the
+intermediate stage works instead (IR walking, 4.5-8.8x).
 
 ## Useful details
 
@@ -148,7 +149,9 @@ stage works instead (IR walking, 4.5-8.8x).
   itself on notifications from the parser, but needless clearing costs a
   recompilation.
 - A compiled script (`TJitScript`) is yours to hold and to free when it is no
-  longer needed; it is tied to the script it was built from.
+  longer needed. It is tied to the script it was built from and to the parser
+  that built it: once the parser is gone the object can still be freed, but not
+  evaluated with.
 - The accelerator computes in Double. If you need integer semantics on large
   numbers (beyond 2^53), use the ordinary parser.
 
@@ -184,7 +187,8 @@ and the address of the final variable goes into the code. The conditions are:
 - every thread gets **its own copy of the script** with its own category;
 - **building happens after all the preparation**. Any change to the parser -
   adding a variable, `Notify(ntCompile)` - invalidates code built earlier;
-- the built object is yours; hold it for as long as you need it.
+- the built object is yours, but it is bound to its parser: holding it and
+  freeing it without the parser is fine, evaluating with it is not. See below.
 
 ```pascal
 Script := Copy(Source);
@@ -207,6 +211,23 @@ somewhere else, `Ready` goes out and `Reason` says `parser changed`.
 So there is one rule: **check `Ready` before using it**, and on a refusal
 evaluate with the parser. Then the answer is always right, and as fast as it can
 be.
+
+## Lifetime: a script is bound to its parser
+
+`TJitScript` is bound to the parser that built it. Outliving that parser is
+allowed - the object can be held, inspected and freed. Evaluating with it once
+the parser is gone is not: `Ready` goes out, `Reason` says `the parser that
+compiled this script is gone`, and `Execute` raises `EJitOrphan`.
+
+This is not caution. Built code holds more than one reference to the parser: the
+check on redirection assumptions asks its table of functions, and the executor
+for the intermediate representation keeps pointers to methods of its objects.
+Neither of those outlives the parser, so evaluating afterwards would not be a
+refusal but a read of freed memory.
+
+What the contract does not promise: destroying the parser must not run at the
+same time as a call into `TJitScript` or its own destruction. That is about two
+threads in one moment, not about order - the order is free.
 
 ## What the accelerator can do with variables
 

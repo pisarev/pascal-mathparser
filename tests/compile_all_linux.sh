@@ -7,6 +7,15 @@
 # Modules marked windows, delphi or never in PLATFORMS.tsv are not counted as
 # breakage. Everything else has to build.
 [ -n "${FPC_ENV:-}" ] && [ -f "${FPC_ENV}" ] && source "${FPC_ENV}"
+# The Lazarus folder is asked of lazbuild rather than guessed. A hard-wired
+# /usr/lib/lazarus is not right everywhere: the package also installs it into
+# /usr/share/lazarus/<version>, and then the LCL is not found - the build stops
+# on "Can't find unit Interfaces". That reads like a defect in the code while
+# the fault is in the path.
+if [ -z "${LAZ:-}" ]; then
+  LAZBUILD=$(command -v lazbuild 2>/dev/null)
+  [ -n "$LAZBUILD" ] && LAZ=$(dirname "$(readlink -f "$LAZBUILD")")
+fi
 LAZ=${LAZ:-/usr/lib/lazarus}
 HERE=$(cd "$(dirname "$0")" && pwd)
 

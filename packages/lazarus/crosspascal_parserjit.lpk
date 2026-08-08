@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <Package Version="5">
-    <PathDelim Value="\"/>
+    <PathDelim Value="/"/>
     <Name Value="crosspascal_parserjit"/>
     <Author Value="Yuriy Pisarev"/>
     <CompilerOptions>
       <Version Value="11"/>
-      <PathDelim Value="\"/>
+      <PathDelim Value="/"/>
       <SearchPaths>
-        <IncludeFiles Value="..\..\src"/>
-        <OtherUnitFiles Value="..\..\jit;..\..\src"/>
-        <UnitOutputDir Value="lib\$(TargetCPU)-$(TargetOS)"/>
+        <IncludeFiles Value="../../src"/>
+        <OtherUnitFiles Value="../../jit;../../src"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -25,22 +25,22 @@
     </CompilerOptions>
     <Description Value="MathParser accelerator: IR, executor and x86-64 machine code generator"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="0" Release="8"/>
+    <Version Major="1" Minor="0" Release="9"/>
     <Files>
       <Item>
-        <Filename Value="..\..\jit\ParseJit.Decoder.pas"/>
+        <Filename Value="../../jit/ParseJit.Decoder.pas"/>
         <UnitName Value="ParseJit.Decoder"/>
       </Item>
       <Item>
-        <Filename Value="..\..\jit\ParseJit.Executor.pas"/>
+        <Filename Value="../../jit/ParseJit.Executor.pas"/>
         <UnitName Value="ParseJit.Executor"/>
       </Item>
       <Item>
-        <Filename Value="..\..\jit\ParseJit.CodeGen.pas"/>
+        <Filename Value="../../jit/ParseJit.CodeGen.pas"/>
         <UnitName Value="ParseJit.CodeGen"/>
       </Item>
       <Item>
-        <Filename Value="..\..\jit\ParseJit.Parser.pas"/>
+        <Filename Value="../../jit/ParseJit.Parser.pas"/>
         <UnitName Value="ParseJit.Parser"/>
       </Item>
     </Files>

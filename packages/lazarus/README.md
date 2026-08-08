@@ -1,8 +1,12 @@
 # Working in Lazarus and FPC
 
-The parser library and the accelerator build and run under FPC 3.3.1
-(x86_64-win64), machine code generation included. Verified by a full run of the
-test suite.
+The parser library and the accelerator build and run under FPC 3.2.2 and 3.3.1,
+machine code generation included. Verified by a full run of the test suite: 467
+checks on 3.3.1 (x86_64-win64), 454 on 3.2.2 (x86_64-linux) - the difference is
+the programs that are not there on Linux. No failures on either.
+
+The stable 3.2.2 is named first on purpose: the project has to build for someone
+who has not installed trunk.
 
 ## Packages
 

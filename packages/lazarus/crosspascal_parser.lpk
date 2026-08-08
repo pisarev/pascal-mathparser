@@ -1,16 +1,16 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <Package Version="5">
-    <PathDelim Value="\"/>
+    <PathDelim Value="/"/>
     <Name Value="crosspascal_parser"/>
     <Author Value="Yuriy Pisarev"/>
     <CompilerOptions>
       <Version Value="11"/>
-      <PathDelim Value="\"/>
+      <PathDelim Value="/"/>
       <SearchPaths>
-        <IncludeFiles Value="..\..\src"/>
-        <OtherUnitFiles Value="..\..\src"/>
-        <UnitOutputDir Value="lib\$(TargetCPU)-$(TargetOS)"/>
+        <IncludeFiles Value="../../src"/>
+        <OtherUnitFiles Value="../../src"/>
+        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -25,179 +25,191 @@
     </CompilerOptions>
     <Description Value="MathParser: a compiler and interpreter of mathematical expressions (core)"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="0" Release="8"/>
+    <Version Major="1" Minor="0" Release="9"/>
     <Files>
       <Item>
-        <Filename Value="..\..\src\Parser.pas"/>
+        <Filename Value="../../src/Parser.pas"/>
         <UnitName Value="Parser"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseMethod.pas"/>
+        <Filename Value="../../src/ParseMethod.pas"/>
         <UnitName Value="ParseMethod"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseUtils.pas"/>
+        <Filename Value="../../src/ParseUtils.pas"/>
         <UnitName Value="ParseUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseTypes.pas"/>
+        <Filename Value="../../src/ParseTypes.pas"/>
         <UnitName Value="ParseTypes"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseConsts.pas"/>
+        <Filename Value="../../src/ParseConsts.pas"/>
         <UnitName Value="ParseConsts"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseErrors.pas"/>
+        <Filename Value="../../src/ParseErrors.pas"/>
         <UnitName Value="ParseErrors"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseExecution.pas"/>
+        <Filename Value="../../src/ParseExecution.pas"/>
         <UnitName Value="ParseExecution"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseValidator.pas"/>
+        <Filename Value="../../src/ParseValidator.pas"/>
         <UnitName Value="ParseValidator"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseCommon.pas"/>
+        <Filename Value="../../src/ParseCommon.pas"/>
         <UnitName Value="ParseCommon"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseMessages.pas"/>
+        <Filename Value="../../src/ParseMessages.pas"/>
         <UnitName Value="ParseMessages"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseManager.pas"/>
+        <Filename Value="../../src/ParseManager.pas"/>
         <UnitName Value="ParseManager"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseValueList.pas"/>
+        <Filename Value="../../src/ParseValueList.pas"/>
         <UnitName Value="ParseValueList"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ParseCache.pas"/>
+        <Filename Value="../../src/ParseCache.pas"/>
         <UnitName Value="ParseCache"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\Cache.pas"/>
+        <Filename Value="../../src/Cache.pas"/>
         <UnitName Value="Cache"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ItemCache.pas"/>
+        <Filename Value="../../src/ItemCache.pas"/>
         <UnitName Value="ItemCache"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\FlagCache.pas"/>
+        <Filename Value="../../src/FlagCache.pas"/>
         <UnitName Value="FlagCache"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\Calculator.pas"/>
+        <Filename Value="../../src/Calculator.pas"/>
         <UnitName Value="Calculator"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\CalcUtils.pas"/>
+        <Filename Value="../../src/CalcUtils.pas"/>
         <UnitName Value="CalcUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\VariableUtils.pas"/>
+        <Filename Value="../../src/VariableUtils.pas"/>
         <UnitName Value="VariableUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ValueUtils.pas"/>
+        <Filename Value="../../src/ValueUtils.pas"/>
         <UnitName Value="ValueUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ValueTypes.pas"/>
+        <Filename Value="../../src/ValueTypes.pas"/>
         <UnitName Value="ValueTypes"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ValueConsts.pas"/>
+        <Filename Value="../../src/ValueConsts.pas"/>
         <UnitName Value="ValueConsts"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ValueErrors.pas"/>
+        <Filename Value="../../src/ValueErrors.pas"/>
         <UnitName Value="ValueErrors"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\Notifier.pas"/>
+        <Filename Value="../../src/Notifier.pas"/>
         <UnitName Value="Notifier"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\Connector.pas"/>
+        <Filename Value="../../src/Connector.pas"/>
         <UnitName Value="Connector"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\EventUtils.pas"/>
+        <Filename Value="../../src/EventUtils.pas"/>
         <UnitName Value="EventUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\FastList.pas"/>
+        <Filename Value="../../src/FastList.pas"/>
         <UnitName Value="FastList"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\FlexibleList.pas"/>
+        <Filename Value="../../src/FlexibleList.pas"/>
         <UnitName Value="FlexibleList"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\BlobManager.pas"/>
+        <Filename Value="../../src/BlobManager.pas"/>
         <UnitName Value="BlobManager"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ZUtils.pas"/>
+        <Filename Value="../../src/ZUtils.pas"/>
         <UnitName Value="ZUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\MemoryUtils.pas"/>
+        <Filename Value="../../src/MemoryUtils.pas"/>
         <UnitName Value="MemoryUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\TextUtils.pas"/>
+        <Filename Value="../../src/TextUtils.pas"/>
         <UnitName Value="TextUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\TextBuilder.pas"/>
+        <Filename Value="../../src/TextBuilder.pas"/>
         <UnitName Value="TextBuilder"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\TextTypes.pas"/>
+        <Filename Value="../../src/TextTypes.pas"/>
         <UnitName Value="TextTypes"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\TextConsts.pas"/>
+        <Filename Value="../../src/TextConsts.pas"/>
         <UnitName Value="TextConsts"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\NumberUtils.pas"/>
+        <Filename Value="../../src/NumberUtils.pas"/>
         <UnitName Value="NumberUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\NumberConsts.pas"/>
+        <Filename Value="../../src/NumberConsts.pas"/>
         <UnitName Value="NumberConsts"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\SearchUtils.pas"/>
+        <Filename Value="../../src/SearchUtils.pas"/>
         <UnitName Value="SearchUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\FileUtils.pas"/>
+        <Filename Value="../../src/FileUtils.pas"/>
         <UnitName Value="FileUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\Thread.pas"/>
+        <Filename Value="../../src/Thread.pas"/>
         <UnitName Value="Thread"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\SyncThread.pas"/>
+        <Filename Value="../../src/SyncThread.pas"/>
         <UnitName Value="SyncThread"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\ThreadUtils.pas"/>
+        <Filename Value="../../src/ThreadUtils.pas"/>
         <UnitName Value="ThreadUtils"/>
       </Item>
       <Item>
-        <Filename Value="..\..\src\WinMem.pas"/>
+        <Filename Value="../../src/WinMem.pas"/>
         <UnitName Value="WinMem"/>
+      </Item>
+      <Item>
+        <Filename Value="../../src/BaseTypes.pas"/>
+        <UnitName Value="BaseTypes"/>
+      </Item>
+      <Item>
+        <Filename Value="../../src/ExactTimer.pas"/>
+        <UnitName Value="ExactTimer"/>
+      </Item>
+      <Item>
+        <Filename Value="../../src/ScriptFormat.pas"/>
+        <UnitName Value="ScriptFormat"/>
       </Item>
     </Files>
     <RequiredPkgs>

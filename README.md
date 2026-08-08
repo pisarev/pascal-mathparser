@@ -220,8 +220,11 @@ agree to the last bit. `tests/MathFamilyTest.dpr` is what keeps them agreeing.
 
 ## Tests
 
-`tests/build.ps1` builds and runs everything under Delphi on both word sizes;
-`tests/build_fpc.ps1` and `tests/build_parser_linux.sh` do the same under FPC.
+`tests/build.ps1` builds and runs the battery under Delphi. Two of the targets
+run on both word sizes - that is where a 32-bit answer once differed from the
+64-bit one - and the rest are 64-bit, which is where the code generator lives.
+`tests/build_fpc.ps1` runs the battery under FPC on 64-bit Windows, and
+`tests/build_parser_linux.sh` runs it on Linux.
 `ci/check-windows.ps1` and `ci/check-linux.sh` run the whole matrix, including a
 per-unit compile that catches conditional branches nothing else reaches, the
 documentation samples, and the Linux side at two locales.
