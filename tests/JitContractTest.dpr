@@ -419,6 +419,8 @@ var
   Inputs: array[0..2] of Double;
   Outputs: array[0..2] of Double;
   Plain: array[0..2] of Double;
+  Short: array[0..1] of Double;
+  Long: array[0..4] of Double;
   Script: TScript;
   Hits: Int64;
   I: Integer;
@@ -461,6 +463,40 @@ begin
     Check('a formula that does not parse is refused', not Ok);
     for I := 0 to 2 do
       Check(Format('answer %d is not left over from before', [I]), IsNan(Outputs[I]), Format('  %g', [Outputs[I]]));
+    {
+      Next, two kinds of output that are not the size of the input. Up to
+      here only the refusal on equal lengths was checked, and the contract
+      that a refusal always means one thing rested on reading the code
+      rather than on a run.
+
+      A short output: the whole of it is filled. A caller who did not look
+      at the result has to see "not a number", not tens from the previous
+      formula.
+    }
+    for I := 0 to 1 do Short[I] := 777;
+    Ok := P.ExecuteMany('x * 10', X, Inputs, Short);
+    Check('a short output is refused', not Ok);
+    for I := 0 to 1 do
+      Check(Format('short answer %d is not left over', [I]), IsNan(Short[I]), Format('  %g', [Short[I]]));
+    {
+      A long output: the input region is filled, and the tail past it is
+      the memory of the caller - it is left alone on a refusal and on a
+      success alike.
+    }
+    for I := 0 to 4 do Long[I] := 777;
+    Ok := P.ExecuteMany('Max(x, ', X, Inputs, Long);
+    Check('a long output does not rescue a formula that does not parse', not Ok);
+    for I := 0 to 2 do
+      Check(Format('long answer %d is not left over', [I]), IsNan(Long[I]), Format('  %g', [Long[I]]));
+    for I := 3 to 4 do
+      CheckDouble(Format('the tail past the inputs survives a refusal, %d', [I]), Long[I], 777);
+    for I := 0 to 4 do Long[I] := 777;
+    Ok := P.ExecuteMany('x * 10', X, Inputs, Long);
+    Check('a long output is computed', Ok);
+    for I := 0 to 2 do
+      CheckDouble(Format('long answer %d is right', [I]), Long[I], (I + 1) * 10);
+    for I := 3 to 4 do
+      CheckDouble(Format('the tail past the inputs survives a success, %d', [I]), Long[I], 777);
   finally
     P.Free;
   end;

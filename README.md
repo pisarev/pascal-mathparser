@@ -123,8 +123,9 @@ end;
 ```
 
 `TJitParser` descends from `TMathParser`, so one variable holds either engine and
-nothing else in your code changes. Whatever the compiler declines it hands back
-to the interpreter without a word, so the answer is never fast but wrong, and
+nothing else in your code changes. Whatever the compiler declines falls to the
+stage below it - the intermediate one, and the interpreter behind that - without
+a word, so the answer is never fast but wrong, and
 `CodeReason` tells you why in one phrase. See [jit/README.md](jit/README.md).
 
 ## Syntax that surprises people
@@ -153,8 +154,10 @@ Case never separates two names. `Sin`, `sin` and `SIN` are one built-in, and a
 variable registered as `Rate` also answers to `rate`; registering a second
 `rate` beside it is refused rather than shadowing it.
 
-There are 199 registered names, from `sin` to `weeksbetween`, and you can add
-your own. `if` is lazy, so `if(x <> 0, 1 / x, 0)` is safe. `parse` compiles a
+There are 163 functions you can call, from `sin` to `weeksbetween`, and you can
+add your own; the table holds 249 names in all, the rest being operators written
+as signs, constants, and the words that drive the parser itself. `if` is lazy,
+so `if(x <> 0, 1 / x, 0)` is safe. `parse` compiles a
 formula while the outer one is running, and `deriv` differentiates symbolically.
 
 ## Adding your own function
@@ -236,8 +239,8 @@ Three test files are about contracts rather than answers, which is a distinction
 this library learned the hard way:
 
 - `JitContractTest.dpr` asserts that machine code really ran. Comparing values
-  cannot see a silently declined formula, because the interpreter then answers
-  and the answer is correct.
+  cannot see a silently declined formula, because a stage below then answers and
+  the answer is correct.
 - `PublicApiTest.dpr` calls the library the way a stranger does, from outside the
   compiled unit, which is the only way the `NativeInt` trap above is visible.
 - `DocumentedSyntaxTest.dpr` runs every claim this file makes about the language.
