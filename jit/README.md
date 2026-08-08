@@ -143,6 +143,14 @@ any parser stayed on the interpreter forever.
 ## Tests
 
 `../tests/build.ps1` builds and runs the lot: the library regression on win32
-and win64 (75 checks), the redirection contract (47), the documented syntax
-(34), the fuzzer against the interpreter (34), the machine-code contract (26),
-the public API from the outside (23), plus the IR dump and the benchmarks.
+and win64 (ParserBugTests: 75), the redirection contract (JitRedirectTest: 47),
+the documented syntax (DocumentedSyntaxTest: 34), the fuzzer against the
+interpreter (JitParserTest: 48), the machine-code contract (JitContractTest: 80),
+the public API from the outside (PublicApiTest: 23), plus the IR dump and the
+benchmarks.
+
+The numbers in brackets are not typed in: the run prints them, the same script
+writes them to `tests/counts.tsv`, and a release check compares every claim
+written this way against that file. Left to a human they rotted quietly - the
+machine-code contract stood at 26 in the documentation while the run had long
+been giving 80.

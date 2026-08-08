@@ -19,6 +19,8 @@ $Jit = if ($env:PARSER_JIT) { $env:PARSER_JIT }
        else { (Resolve-Path (Join-Path $PSScriptRoot '..\jit')).Path }
 
 $FailedRuns = 0
+# How many checks each program gave: filled as we go, written to counts.tsv.
+$Counts = @{}
 
 # Both word sizes: ParserBugTests is the library regression, JitRedirectTest is
 # the redirection contract.
@@ -45,9 +47,15 @@ foreach ($Target in @('win32', 'win64')) {
 foreach ($Target in @('win32', 'win64')) {
     foreach ($Test in @('ParserBugTests', 'JitRedirectTest')) {
         Write-Host "=== RUN $Test $Target ==="
-        & (Join-Path $PSScriptRoot "out\$Target\$Test.exe")
+        $Output = & (Join-Path $PSScriptRoot "out\$Target\$Test.exe") 2>&1
+        $Output | Out-Host
         Write-Host "exit=$LASTEXITCODE"
         if ($LASTEXITCODE -ne 0) { $FailedRuns++ }
+        # Taken from win64: everything else in counts.tsv is measured there too.
+        if ($Target -eq 'win64') {
+            $Line = $Output | Where-Object { $_ -match '^TOTAL:\s*(\d+)' } | Select-Object -Last 1
+            if ($Line -and $Line -match '^TOTAL:\s*(\d+)') { $Counts[$Test] = [int]$Matches[1] }
+        }
     }
 }
 
@@ -67,10 +75,30 @@ foreach ($Test in @('JitDump', 'JitBench', 'JitParserTest', 'JitContractTest', '
     & (Join-Path $Bin 'dcc64.exe') -B -Q ('-U' + $Src + ';' + $Jit + ';' + $Rtl) ('-I' + $Src) ('-E' + $Out) ('-N0' + (Join-Path $Out 'dcu')) '-NSSystem;System.Win;WinApi;Vcl' (Join-Path $PSScriptRoot "$Test.dpr")
     if ($LASTEXITCODE -ne 0) { throw "build failed: $Test" }
     Write-Host "=== RUN $Test ==="
-    & (Join-Path $Out "$Test.exe")
+    $Output = & (Join-Path $Out "$Test.exe") 2>&1
+    $Output | Out-Host
     Write-Host "exit=$LASTEXITCODE"
     if ($LASTEXITCODE -ne 0) { $FailedRuns++ }
+    <#
+      The number of checks comes from the run rather than being typed by hand.
+
+      By hand it rotted: the documentation promised 26 checks of the machine-code
+      contract while the run was already giving 80. Nobody saw it for years,
+      because there was nothing to compare the number against. Now the run leaves
+      it here, and a release check compares every claim marked that way against
+      this file.
+    #>
+    $Line = $Output | Where-Object { $_ -match '^TOTAL:\s*(\d+)' } | Select-Object -Last 1
+    if ($Line -and $Line -match '^TOTAL:\s*(\d+)') { $Counts[$Test] = [int]$Matches[1] }
 }
+
+$CountsFile = Join-Path $PSScriptRoot 'counts.tsv'
+$Tab = [char]9
+$Lines = @('# How many checks the run gave. Written by build.ps1, not edited by hand.')
+$Lines += ('# program' + $Tab + 'checks')
+foreach ($k in ($Counts.Keys | Sort-Object)) { $Lines += ($k + $Tab + $Counts[$k]) }
+Set-Content -Path $CountsFile -Value $Lines -Encoding UTF8
+Write-Host "=== COUNTS -> $CountsFile ($($Counts.Count) programs) ==="
 
 Write-Host "=== DONE: failed runs: $FailedRuns ==="
 exit $FailedRuns

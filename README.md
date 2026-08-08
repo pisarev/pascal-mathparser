@@ -42,8 +42,14 @@ With the optional accelerator on top, the same formulas run between nine and a
 hundred times faster, depending on what they do. The
 [measured table](https://pisarev.github.io/mathparser-live/accelerator.html) says
 which is which, how many runs each row was averaged over, and what exactly was
-compared - the numbers live in one place and are produced by programs that ship
-with this repository, so nothing here can quietly drift away from them.
+compared. Those are the current Delphi numbers, and they come from one file the
+benchmark programs write - `build/bench.tsv` in the site repository - rather than
+from anybody's typing.
+
+Other tables in this repository are other runs, and each says which: the one in
+`jit/README.md` names the program that produced it and the date, the one beside
+the Lazarus packages is Free Pascal rather than Delphi. Numbers that describe a
+past release are allowed to stay, as long as they are named as past.
 
 One `AsDouble` call, start to finish, averaged over a million runs. These are the
 numbers printed by `tests/JitParserTest.dpr` on the machine that prepared this
@@ -201,7 +207,12 @@ whole example is in `samples/docs/extend.dpr`.
 ## Building
 
 Add `src` to the project search path, and `jit` as well if you want the
-accelerator. Nothing else is needed for a console build.
+accelerator. On Delphi that is all a console build needs.
+
+Free Pascal without the LCL needs three more things, and the Linux matrix in
+`tests/build_parser_linux.sh` uses exactly them: `-dNOFORMS -dNOGRAPHICS` to
+leave the GUI out, `src/compat` ahead of `src` for the stand-in units the RTL
+does not carry there, and `-Fi src` for the includes.
 
 | | |
 |---|---|

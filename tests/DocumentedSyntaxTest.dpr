@@ -5,6 +5,7 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 program DocumentedSyntaxTest;
 
 {$APPTYPE CONSOLE}
@@ -23,13 +24,33 @@ uses
   added to another, that "!" was a postfix factorial, and that names were case
   sensitive. Nothing contradicted them, because nothing ran them.
 
-  The rule this file encodes: a sentence in the README or on a reference page is
-  either checked here or it is not published.
+  What this file does NOT guarantee, and once said it did: that every sentence
+  in the README or on a reference page is checked here. It never could. The
+  checks below are about the SEMANTICS OF THE LANGUAGE - what the engine accepts,
+  what it refuses, what a name means. Everything else the documentation claims is
+  guarded elsewhere, and the division is worth naming so that nobody leans on the
+  wrong one:
+
+    this file            the semantic properties of the language listed below;
+    the roster check      every name in the roster below is registered - and
+                          nothing about the number the documentation prints;
+    the names probe       the published counts, taken from the parser itself
+                          rather than from a list kept by hand;
+    the examples gate     every marked executable example on a published page,
+                          run through the parser.
+
+  The promise was not merely too wide, it was wrong here: this file carried a
+  roster of 199 names and a check labelled "the size the documentation prints",
+  while the documentation had moved to 163 callable names out of 249. The check
+  stayed green because it compares the list with itself.
 }
 
 const
-  { Every built-in name, taken from ParseConsts. The count is the number the
-    documentation is allowed to print. }
+  { Every built-in name, taken from ParseConsts. What is checked against it is
+    that the parser accepts each one - nothing about how many names the
+    documentation prints. That number comes from a probe of the parser itself,
+    because a list kept here by hand is exactly what fell behind: it holds 199
+    while the parser answers to 249. }
   BuiltInNames: array[0..198] of string = (
     'abs', 'and', 'arccos', 'arccosh', 'arccotan', 'arccotanh', 'arccsc',
     'arccsch', 'arcsec', 'arcsech', 'arcsin', 'arcsinh', 'arctan',
@@ -192,13 +213,13 @@ begin
     else
       Missing := Missing + ' ' + BuiltInNames[I];
   Check('every name in the roster is registered', Missing = '', '  missing:' + Missing);
-  Check('the roster has the size the documentation prints', Known = Length(BuiltInNames),
+  Check('every name in the roster is accepted', Known = Length(BuiltInNames),
     Format('  known=%d roster=%d', [Known, Length(BuiltInNames)]));
   Writeln(Format('  built-in names verified: %d', [Known]));
 end;
 
 begin
-  Writeln('=== every claim the documentation makes, run against the engine ===');
+  Writeln('=== what the documentation says the language does, run against the engine ===');
   P := TMathParser.Create(nil);
   try
     P.AddVariable('x', X);

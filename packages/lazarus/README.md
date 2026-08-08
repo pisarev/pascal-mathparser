@@ -39,9 +39,11 @@ with the `FPC_EXE` and `LAZARUS_DIR` environment variables.
 
 ## Results under FPC (x86_64-win64)
 
-Every test is green: the library regression 75 checks, redirection 47,
-documented syntax 34, the fuzzer against the interpreter 34, the machine-code
-contract 26, the public API 23, the `WaitFor` contract 6.
+Every test is green. The counts below are from the Free Pascal run of the
+matrix, which is a different run from the Delphi one and has counts of its own:
+the library regression 75 checks, redirection 47, documented syntax 34, the
+fuzzer against the interpreter 48, the machine-code contract 80, the public API
+23, the `WaitFor` contract 6.
 
 Machine code is generated under FPC as well, and the speedups are even higher
 than on Delphi because the base interpreter there is slower:

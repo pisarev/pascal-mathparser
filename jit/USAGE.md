@@ -52,8 +52,13 @@ FParser.OptimizeScript(Script);
 for I := 1 to FRepeatCount do FParser.ExecuteScript(Script);
 ```
 
-To have machine code do the work, three edits are needed: the parser class, the
-compilation of the script, and the call inside the loop:
+To put the accelerator on the job, three edits are needed: the parser class,
+the compilation of the script, and the call inside the loop. `Ready` means the
+accelerator has prepared an executable stage - machine code, or the portable
+intermediate one; `Execute` goes through machine code where it is ready and
+through the intermediate stage otherwise. That the intermediate stage usually
+measures faster than the interpreter is a benchmark fact, not part of the
+`Ready` contract:
 
 ```pascal
 var
@@ -63,10 +68,10 @@ var
 FParser.StringToScript(edFormula.Text, Script);
 FParser.OptimizeScript(Script);
 
-Compiled := FParser.CompileScript(Script);       // compile to machine code
+Compiled := FParser.CompileScript(Script);       // prepare an executable stage
 try
   if Compiled.Ready then
-    for I := 1 to FRepeatCount do Compiled.Execute        // native
+    for I := 1 to FRepeatCount do Compiled.Execute        // machine code where there is any
   else
     for I := 1 to FRepeatCount do FParser.ExecuteScript(Script);   // as before
 finally
