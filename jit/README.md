@@ -90,9 +90,16 @@ always the same. `CodeReason(Text)` tells you why a particular formula was
 declined.
 
 **The result of `ExecuteMany` has to be checked, and you have to know what it
-means.** The output array is touched ALWAYS: the first thing the call does is
-fill it with "not a number". So `False` does not mean your data survived
-untouched - it means the array holds NaN.
+means.** The first thing the call does is fill with "not a number" everything it
+could have written: the whole output array when it is shorter than the input
+one, the input range otherwise. The tail of a longer output array is left alone.
+So `False` does not mean your data survived untouched - it means that range holds
+NaN.
+
+It was not always so. Before 1.0.9 a refusal had two meanings: a short output
+array left the caller data untouched, a formula that did not parse left NaN
+behind - and the contract could not be stated in one sentence, which is how three
+places in the documentation came to disagree.
 
 `False` happens in two cases: the output array is shorter than the input one,
 and the formula does not parse. A formula the code generator turns down is NOT a

@@ -359,20 +359,25 @@ end;
 function TJitParser.CompileScript(const Script: TScript): TJitScript;
 begin
   Result := TJitScript.Create;
-  Result.Owner := Self;
-  Result.Generation := FGeneration;
-  Issue(Result);
-  Inc(FCompileCount);
-  {$IFDEF CPUX64}
-  Result.Code := TJitCode.Create(Self);
-  Result.Code.Compile(Script);
-  {$ENDIF}
-  if Assigned(Result.Code) and Result.Code.Ready then Inc(FMachineCount);
-  if not Result.Ready then
-  begin
-    Result.Executor := TJitExecutor.Create(Self);
-    Result.Executor.Prepare(Script);
-    Inc(FExecutorCount);
+  try
+    Result.Owner := Self;
+    Result.Generation := FGeneration;
+    Issue(Result);
+    Inc(FCompileCount);
+    {$IFDEF CPUX64}
+    Result.Code := TJitCode.Create(Self);
+    Result.Code.Compile(Script);
+    {$ENDIF}
+    if Assigned(Result.Code) and Result.Code.Ready then Inc(FMachineCount);
+    if not Result.Ready then
+    begin
+      Result.Executor := TJitExecutor.Create(Self);
+      Result.Executor.Prepare(Script);
+      Inc(FExecutorCount);
+    end;
+  except
+    Result.Free;
+    raise;
   end;
 end;
 
@@ -398,8 +403,8 @@ var
   Changed: Boolean;
 begin
   Result := False;
+  for I := Low(Outputs) to Min(High(Inputs), High(Outputs)) do Outputs[I] := NaN;
   if Length(Inputs) > Length(Outputs) then Exit;
-  for I := Low(Inputs) to High(Inputs) do Outputs[I] := NaN;
   Code := GetCode(Text);
   if Assigned(Code) and Code.Ready then
   begin

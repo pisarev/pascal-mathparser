@@ -101,15 +101,17 @@ begin
   SetLength(Outputs, 1000000);
   // ... fill Inputs ...
   if not P.ExecuteMany('x * x * 3 + 1', X, Inputs, Outputs) then
-    ; // it did not parse, or the output array is shorter: it holds NaN
+    ; // it did not parse, or the output is shorter: whatever the call could
+    ;  // have written holds NaN
 end;
 ```
 
 That gives 121x to 141x over the ordinary path.
 
 **Check the result.** `ExecuteMany` is the one call that reports a refusal to
-the caller: on `False` it does not touch the output array, and a caller who
-trusted it gets zeros instead of numbers.
+the caller. On `False` everything it could have written holds "not a number", so
+a caller who trusts the return value and reads on gets NaN rather than stale
+numbers - which is the point.
 
 ## What machine code supports
 
@@ -129,7 +131,7 @@ parameter block (`mean`, `poly`, `min`, `max`), string operations, variables of
 non-numeric types, integer constants above 2^53. Scripts with a redirect
 category are compiled - the chain is resolved while building, and there is a
 section on it below. On 32-bit builds there is no machine code at all - the
-intermediate stage works instead (IR walking, 4.5-8.8x).
+intermediate stage works instead (IR walking, 1.4-3.7x).
 
 ## Useful details
 

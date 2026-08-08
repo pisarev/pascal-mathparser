@@ -204,7 +204,7 @@ accelerator. Nothing else is needed for a console build.
 |---|---|
 | Delphi | 37.0 (Delphi 13), win32 and win64 |
 | Free Pascal | 3.2.2 and 3.3.1, win64 and linux64 |
-| Accelerator | x86-64 only; elsewhere the interpreter answers |
+| Accelerator | machine code on x86-64; elsewhere the intermediate stage walks it, with the interpreter behind both |
 
 Every line of that table is a matrix that runs before a release, not a guess.
 Older compilers are likely to work and are not claimed to.

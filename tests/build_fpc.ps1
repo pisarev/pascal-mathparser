@@ -28,7 +28,13 @@ New-Item -ItemType Directory -Force $Out | Out-Null
 New-Item -ItemType Directory -Force $OutConsole | Out-Null
 Set-Location $PSScriptRoot
 
-if (-not (Test-Path $Fpc)) { Write-Host "FPC not found: $Fpc"; exit 1 }
+# Test-Path looks for a FILE, not a command: given a bare "fpc.exe" it checks
+# the current folder and answers no, even when the compiler is plainly on PATH.
+# Both are asked - the command name and an explicit path.
+if (-not (Get-Command $Fpc -ErrorAction SilentlyContinue) -and -not (Test-Path $Fpc)) {
+    Write-Host "FPC not found: $Fpc"
+    exit 1
+}
 
 $Targets = if ($args.Count -gt 0) { $args } else { @('ParserBugTests', 'JitParserTest', 'JitContractTest', 'PublicApiTest', 'DocumentedSyntaxTest', 'JitRedirectTest', 'ThreadWaitTest', 'ThreadSafetyTest', 'ThreadShareTest', 'ExitRoutingTest', 'LoopGuardTest', 'LoopScopeTest', 'FpuMaskTest', 'MethodLockTest', 'MathFamilyTest', 'C31Console') }
 $Failed = 0
