@@ -2981,7 +2981,7 @@ begin
                           if Parameter then
                             Write(icString)
                           else begin
-                            Error := MakeError(etStringError, StringError);
+                            Error := MakeError(etStringError, Format(StringError, [BItem.Text]));
                             Exit;
                           end;
                       else

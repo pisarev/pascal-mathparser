@@ -38,8 +38,9 @@ to a contiguous byte array and runs a linear pass with no allocations. On top of
 that it caches by *shape*: once `2 + 3` has been compiled, `5 + 7` reuses the
 same script and only writes the numbers into a copy.
 
-With the optional accelerator on top, the same formulas run between nine and a
-hundred times faster, depending on what they do. The
+With the optional accelerator on top, the same formulas run 9x to 167x faster,
+depending on what they do - the ends of that range are the slowest and the
+fastest row of the measured table, not a guess. The
 [measured table](https://pisarev.github.io/mathparser-live/accelerator.html) says
 which is which, how many runs each row was averaged over, and what exactly was
 compared. Those are the current Delphi numbers, and they come from one file the
@@ -87,8 +88,12 @@ evaluation to see the new value.
 
 Ask for the type you want and the conversion happens on the way out:
 `AsInteger`, `AsDouble`, `AsExtended`, `AsBoolean`, `AsString`, `AsDateTime`.
-`AsString` converts the answer to text; a quoted literal inside an expression is
-rejected, since the language is arithmetic rather than string handling.
+`AsString` converts the answer to text. The language itself is arithmetic rather
+than string handling, and that shows up in two ways. Pascal-style single quotes
+are refused outright: the parser answers `contains reserved character`. A
+double-quoted literal standing on its own is refused as well. But double quotes
+are how text reaches the functions that read text - `Parse("2 + 3")` evaluates
+to 5.
 
 If a single answer is all you need, `CalcUtils` has the same calls as plain
 functions over a parser it owns, which is what the program at the top uses.
@@ -319,8 +324,10 @@ one.
   64-bit Windows, so the last bit of a long chain can differ between targets.
 - `TJitParser` keeps a cache of compiled formulas and writes it without a lock, so
   one accelerating parser belongs to one thread. To evaluate in parallel, compile
-  the scripts up front with `CompileScript` and run the compiled `TJitScript` from
-  as many threads as you like - see [jit/USAGE.md](jit/USAGE.md).
+  the scripts up front with `CompileScript` and run the compiled `TJitScript`:
+  executing it does not modify it, so several threads may run one script - as far
+  as the variables it reads and the functions it calls are themselves safe to use
+  that way. See [jit/USAGE.md](jit/USAGE.md).
 
 ## Thread safety
 

@@ -111,7 +111,10 @@ begin
 end;
 ```
 
-That gives 121x to 141x over the ordinary path.
+That gives 116x to 167x over the ordinary path: those are what bulk mode gives in
+the canonical measurement - 116x on `x * 2 + 1` and 167x on a polynomial. The
+numbers come from `bench.tsv`, which the benchmark programs write themselves;
+nobody types them.
 
 **Check the result.** `ExecuteMany` is the one call that reports a refusal to
 the caller. On `False` everything it could have written holds "not a number", so
@@ -136,7 +139,9 @@ parameter block (`mean`, `poly`, `min`, `max`), string operations, variables of
 non-numeric types, integer constants above 2^53. Scripts with a redirect
 category are compiled - the chain is resolved while building, and there is a
 section on it below. On 32-bit builds there is no machine code at all - the
-intermediate stage works instead (IR walking, 1.4-3.7x).
+intermediate stage works instead - IR walking. How much faster than the
+interpreter is stated once, by a measurement, in `README.md`; the figure is not
+repeated here.
 
 ## Useful details
 
@@ -173,12 +178,17 @@ list.
 The plain `TMathParser` does not suffer from this: once everything is
 registered, evaluating a ready script is thread-safe.
 
-To evaluate in parallel, do what the plotting component does - and no locks are
-needed for it:
+To evaluate in parallel:
 
 - compile the scripts up front, in one thread, with `CompileScript`;
-- run the ready `TJitScript` from as many threads as you like - evaluation does
-  not change it.
+- executing a ready `TJitScript` does not modify it, so one script may run on
+  several threads at once. But only as far as everything it reaches allows that:
+  the variables it reads have to be safe to read concurrently, and so does every
+  function it calls. Both are yours, not the library's.
+
+The wording is deliberately narrow. "Run it from as many threads as you like" is
+not true of the library as a whole: what evaluation leaves unchanged is the
+script, not the things it touches.
 
 ## Parallel evaluation: redirecting variables
 

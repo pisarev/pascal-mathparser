@@ -46,15 +46,23 @@ fuzzer against the interpreter 48, the machine-code contract 80, the public API
 23, the `WaitFor` contract 6.
 
 Machine code is generated under FPC as well, and the speedups are even higher
-than on Delphi because the base interpreter there is slower:
+than on Delphi because the base interpreter there is slower.
+
+The numbers below are the output of JitParserTest built with FPC. That is a
+separate run, not the one behind the table in `../../jit/README.md`, and its
+numbers are its own. The run file itself stays in the development monorepo; it
+is not part of this repository.
 
 | Scenario | base parser | with the accelerator | speedup |
 |---|---:|---:|---:|
-| `x * 2 + 1` | 1240 ns | 37.3 ns | **33x** |
-| a degree-3 polynomial | 2621 ns | 55.3 ns | **47x** |
-| a sin/cos/sqrt/exp/ln chain | 3300 ns | 134 ns | **25x** |
-| one turn of a script loop | 4638 ns | 23.4 ns | **199x** |
-| bulk evaluation over an array | 1179 ns | 8.7 ns | **136x** |
+| one turn of a script loop | 4342 ns | 17.9 ns | **242x** |
+| bulk `x * 2 + 1` over an array | 1201 ns | 18.5 ns | **65x** |
+| bulk polynomial over an array | 2387 ns | 31.8 ns | **75x** |
+
+The table used to carry three more rows - `x * 2 + 1`, a polynomial and a
+sin/cos/sqrt/exp/ln chain through `AsDouble`. The run file does not contain them,
+so there is nothing to confirm them with and they are gone. They come back when
+the run writes them.
 
 ## What had to be fixed for FPC
 

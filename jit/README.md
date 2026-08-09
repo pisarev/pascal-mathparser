@@ -20,9 +20,10 @@ cent. Nothing here is typed in by hand.
 | bulk evaluation of a polynomial over an array | 2070 ns | 13.9 ns | **149x** |
 
 On FPC/Lazarus (x86_64-win64) the same machine code is generated, and the ratios
-are higher because the baseline interpreter is slower there: `x*2+1` 33x, the
-polynomial 47x, a loop turn **199x**, bulk mode 136x. Details and package
-installation are in `../packages/lazarus/README.md`.
+are higher because the baseline interpreter is slower there. That is a DIFFERENT
+run with numbers of its own: they are given as one table in
+`../packages/lazarus/README.md`, along with package installation. They are not
+repeated here on purpose - the repetition had already drifted from the original.
 
 On Win32, and on any platform without the emitter, an IR-walking stage takes
 over: 1.4x to 3.7x on the same formulas, with no machine code involved. Measured
@@ -38,7 +39,7 @@ with the base parser.
 | Unit | What it does |
 |---|---|
 | `ParseJit.Decoder.pas` | Reads a `TScript` into a linear IR of ten opcodes, binds functions and variables statically, infers the value class, and can dump what it built |
-| `ParseJit.Executor.pas` | Walks that IR without the byte stream or the type matrices. Portable, 2x to 3x, and the fallback for anything the code generator declines |
+| `ParseJit.Executor.pas` | Walks that IR without the byte stream or the type matrices. Portable, and the fallback for anything the code generator declines. How much faster than the interpreter is stated above, once, by a measurement - the figure is not repeated here |
 | `ParseJit.CodeGen.pas` | Emits x86-64 SSE2: constants, `Double` variables, `*`, `/`, term signs, brackets, and direct calls to sin, cos, tan, sqrt, sqr, ln, exp, abs, arctan |
 | `ParseJit.Parser.pas` | `TJitParser`: an `AsDouble` that looks the same, a cache of compiled code, the bulk `ExecuteMany`, counters and diagnostics |
 
@@ -127,7 +128,8 @@ any parser stayed on the interpreter forever.
 ## Limitations of the current version
 
 - The emitter is x86-64 only (Delphi and FPC). On 32-bit builds the IR stage
-  takes over automatically (1.4-3.7x), and the interpreter remains the last line.
+  takes over automatically - how much faster than the interpreter is stated above,
+  once, by a measurement. The interpreter remains the last line.
 - Everything is computed in `Double`. Integer constants past the exact range of
   the mantissa, 2^53, are not compiled - such a script goes back down rather than
   drift away from the interpreter.
