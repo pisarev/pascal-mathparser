@@ -19,11 +19,12 @@ cent. Nothing here is typed in by hand.
 | bulk evaluation of `x * 2 + 1` over an array | 968 ns | 7.7 ns | **125x** |
 | bulk evaluation of a polynomial over an array | 2070 ns | 13.9 ns | **149x** |
 
-On FPC/Lazarus (x86_64-win64) the same machine code is generated, and the ratios
-are higher because the baseline interpreter is slower there. That is a DIFFERENT
-run with numbers of its own: they are given as one table in
+On FPC/Lazarus (x86_64-win64) the same machine code is generated. That is a
+DIFFERENT run with numbers of its own: they are given as one table in
 `../packages/lazarus/README.md`, along with package installation. They are not
-repeated here on purpose - the repetition had already drifted from the original.
+repeated here on purpose - the repetition had already drifted from the original,
+and two different runs cannot be compared with each other: different programs,
+different scenarios, and no comparable measurement was ever made.
 
 On Win32, and on any platform without the emitter, an IR-walking stage takes
 over: 1.4x to 3.7x on the same formulas, with no machine code involved. Measured

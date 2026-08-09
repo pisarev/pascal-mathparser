@@ -45,13 +45,20 @@ the library regression 75 checks, redirection 47, documented syntax 34, the
 fuzzer against the interpreter 48, the machine-code contract 80, the public API
 23, the `WaitFor` contract 6.
 
-Machine code is generated under FPC as well, and the speedups are even higher
-than on Delphi because the base interpreter there is slower.
+Machine code is generated under FPC as well.
 
 The numbers below are the output of JitParserTest built with FPC. That is a
-separate run, not the one behind the table in `../../jit/README.md`, and its
-numbers are its own. The run file itself stays in the development monorepo; it
-is not part of this repository.
+separate run, and they describe that run only.
+
+They are not compared with the table in `../../jit/README.md`. That is a
+different program over a different set of scenarios, with a signature of its
+own, and no comparable measurement - one machine, one commit, one set of
+inputs, one harness - has been made. This paragraph used to say "the speedups
+are even higher than on Delphi": the numbers were right and the conclusion
+drawn from them was wrong - only the loop turn is higher, bulk mode is lower.
+
+The run file itself stays in the development monorepo; it is not part of this
+repository.
 
 | Scenario | base parser | with the accelerator | speedup |
 |---|---:|---:|---:|
