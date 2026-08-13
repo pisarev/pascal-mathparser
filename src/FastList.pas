@@ -249,7 +249,8 @@ uses
   BlobManager, MemoryUtils, NumberUtils, RTLConsts, TypInfo, TextUtils;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
-  System.SysUtils, System.RTLConsts, System.TypInfo, BlobManager, MemoryUtils, NumberUtils, TextUtils;
+  System.SysUtils, System.RTLConsts, System.TypInfo, BlobManager, MemoryUtils, NumberUtils,
+  TextUtils;
   {$ELSE}
   SysUtils, RTLConsts, TypInfo, BlobManager, MemoryUtils, NumberUtils, TextUtils;
   {$ENDIF}

@@ -956,7 +956,8 @@ uses
   {$IFDEF DELPHI_XE7}
   System.DateUtils, System.UITypes, System.Variants, Connector, FlagCache, ItemCache,
   NumberConsts, NumberUtils, ParseCommon, ParseExecution, ParseManager, ParseMessages,
-  ParseUtils, ParseValidator, ScriptFormat, TextUtils, ThreadUtils, ValueConsts, ValueUtils;
+  ParseUtils, ParseValidator, ScriptFormat, TextUtils, ThreadUtils, ValueConsts,
+  ValueUtils;
   {$ELSE}
   DateUtils, Connector, FlagCache, ItemCache, NumberConsts, NumberUtils, ParseCommon,
   ParseExecution, ParseManager, ParseMessages, ParseUtils, ParseValidator, ScriptFormat,

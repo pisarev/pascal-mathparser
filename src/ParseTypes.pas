@@ -21,7 +21,8 @@ uses
   SysUtils, Types, FlexibleList, MemoryUtils, TextTypes, ValueTypes;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
-  System.SysUtils, System.Types, BaseTypes, FlexibleList, MemoryUtils, TextTypes, ValueTypes;
+  System.SysUtils, System.Types, BaseTypes, FlexibleList, MemoryUtils, TextTypes,
+  ValueTypes;
   {$ELSE}
   SysUtils, Types, FlexibleList, MemoryUtils, TextTypes, ValueTypes;
   {$ENDIF}

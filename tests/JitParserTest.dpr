@@ -5,15 +5,15 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 program JitParserTest;
 
 {$APPTYPE CONSOLE}
 {$B-}
 
 uses
-  { The thread driver comes FIRST: units are initialised in the order they
-    are listed, and Classes standing ahead of it gets to touch threading
-    before the driver is up. }
+  { The thread driver comes FIRST: units start up in the order they are declared, and
+    Classes, standing earlier, gets to touch threads before it. }
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
   Classes, SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Decoder,
   ParseJit.CodeGen, ParseJit.Parser, TestKit in 'TestKit.pas';
@@ -66,10 +66,10 @@ begin
 end;
 
 {
-  A machine-readable report, in the same format as JitBench: name, nanoseconds
-  before and after, number of repeats. The showcase page takes its numbers from
-  here rather than keeping a copy of its own: three copies from three different
-  runs once drifted apart, and all three were presented as current.
+  A machine-readable report in the same format as JitBench: name, nanoseconds before
+  and after, number of repeats. The showcase page takes the numbers from here rather
+  than keeping a copy of its own: three copies from different runs once diverged,
+  and all three were served as the current ones.
 }
 var
   Rows: TStringList;
@@ -79,9 +79,12 @@ var
   Plain: TFormatSettings;
 begin
   if not Assigned(Rows) then Exit;
-  { TFormatSettings.Invariant arrived in Free Pascal only in 3.3.1. For an
-    older compiler the same set is put together by hand: the one thing that
-    matters here is a dot as the decimal separator. }
+  {
+    TFormatSettings.Invariant appeared in Free Pascal only in 3.3.1. For an older
+    compiler the same set is built by hand: what matters here is a single property,
+    the dot as the separator of the fractional part.
+
+  }
   {$IF Defined(FPC) and (FPC_FULLVERSION < 30301)}
   Plain := DefaultFormatSettings;
   Plain.DecimalSeparator := '.';
@@ -106,16 +109,8 @@ begin
   T0 := Now64;
   for I := 1 to Repeats do Jit.AsDouble(Formula);
   TJit := Elapsed(T0);
-  Writeln(
-    Format(
-      'loop iteration           base %8.1f ns   jit %7.1f ns   speedup %6.2fx',
-      [
-        TBase / Repeats / Iterations * 1E9,
-        TJit / Repeats / Iterations * 1E9,
-        TBase / TJit
-      ]
-    )
-  );
+  Writeln(Format('loop iteration           base %8.1f ns   jit %7.1f ns   speedup %6.2fx',
+    [TBase / Repeats / Iterations * 1E9, TJit / Repeats / Iterations * 1E9, TBase / TJit]));
   Report(Format('native/loop, %d iterations', [Iterations]), TBase / Repeats * 1E9, TJit / Repeats * 1E9, Repeats);
   Flush(Output);
 end;
@@ -148,7 +143,7 @@ begin
   Flush(Output);
 end;
 
-{ a generator of random arithmetic formulas for bulk comparison }
+{ a generator of random arithmetic formulas for mass comparison }
 function RandomFormula(const Depth: Integer): string;
 var
   Kind: Integer;
@@ -176,6 +171,9 @@ var
   I, Compiled, Declined, Raised, Errors: Integer;
   Formula: string;
   A, B: Double;
+  {$IFNDEF CPUX64}
+  Taken: Int64;
+  {$ENDIF}
 begin
   RandSeed := 20260720;
   Compiled := 0;
@@ -189,14 +187,34 @@ begin
       XBase := 1.5 + I * 0.01;
       XJit := XBase;
       A := Base.AsDouble(Formula);
+      {$IFDEF CPUX64}
       if Jit.CodeReason(Formula) <> '' then
       begin
-        { the accelerator declining a formula is ordinary, and not an error }
+        { a refusal from the accelerator is ordinary and not an error: it does not take everything }
         Inc(Declined);
         Continue;
       end;
       B := Jit.AsDouble(Formula);
       Inc(Compiled);
+      {$ELSE}
+      { Outside x86-64 CodeReason is NEVER empty: there is no machine code here at all.
+        Filtering by it is not allowed, the comparison would not happen once, and a set of
+        three thousand formulas would keep quiet and report green.
+
+        The level is taken from the counter of the interpreter rather than the executor:
+        the set of formulas is small and repeats are frequent, while ExecutorCount grows
+        only on the first compilation, and on repeats that is a cache hit. By it the
+        accelerator appeared to have taken 1426 out of 3000, while the ones it did not
+        take were only 31. }
+      Taken := Jit.MissCount;
+      B := Jit.AsDouble(Formula);
+      if Jit.MissCount > Taken then
+      begin
+        Inc(Declined);
+        Continue;
+      end;
+      Inc(Compiled);
+      {$ENDIF}
       if IsNaN(A) and IsNaN(B) then Continue;
       if IsInfinite(A) and IsInfinite(B) then Continue;
       if not SameValue(A, B, Max(Abs(A), 1) * 1E-12) then
@@ -207,10 +225,10 @@ begin
       end;
     except
       {
-        A throw is NOT a skip. It used to be counted together with the
-        accelerator's refusals, and in that common heap it meant nothing: a
-        formula the interpreter answers and the accelerator falls over on is a
-        disagreement, not a "we did not take it".
+        A throw is NOT a skip. It used to be counted together with refusals from the
+        accelerator, and in the common heap it meant nothing: a formula the interpreter
+        answers and the accelerator falls over on is a discrepancy, not a "did not take".
+
       }
       on E: Exception do
       begin
@@ -222,16 +240,22 @@ begin
   end;
   Check(Format('fuzz diff: %d compiled, %d declined, %d raised, %d mismatches', [Compiled, Declined, Raised, Errors]), Errors = 0);
   {
-    A floor under the number compiled. Without it the set is worth nothing: if
-    the accelerator stops taking formulas at all, Compiled becomes zero, there
-    are no disagreements to find, and the check stays green - reporting success
-    where nothing was checked.
+    A floor under the number compiled. Without it the set is worth nothing: if the
+    accelerator stops taking formulas at all, Compiled becomes zero, there will be no
+    discrepancies at all, and the check will stay green, reporting success where
+    nothing has been checked.
 
-    Half, with a wide margin: today's run takes all three thousand out of three
-    thousand. The floor guards against a collapse, not against wobble.
+    Half, with a wide margin downwards: today's run takes all three thousand out of
+    three thousand. The floor guards against a collapse, not against fluctuation.
+
   }
+  {$IFDEF CPUX64}
   Check(Format('at least half of the formulas reached machine code (%d of %d)', [Compiled, Count]),
     Compiled * 2 >= Count);
+  {$ELSE}
+  Check(Format('at least half of the formulas were answered by the accelerator (%d of %d)', [Compiled, Count]),
+    Compiled * 2 >= Count);
+  {$ENDIF}
   Check(Format('nothing raised where the interpreter answered (%d)', [Raised]), Raised = 0);
 end;
 
@@ -267,16 +291,15 @@ begin
     Check('bulk supported', Jit.ExecuteMany('x * 10 + 1', XJit, Inputs, Outputs));
     Check('bulk values', (Abs(Outputs[0] - 11) < 1E-9) and (Abs(Outputs[4] - 51) < 1E-9), Format('%.1f..%.1f', [Outputs[0], Outputs[4]]));
     {
-      This used to say "if you cannot, do not compute": a formula the
-      accelerator declines was not computed at all. That turned out to be
-      harmful - the ordinary parser evaluates it perfectly well, and the caller
-      was told "no" about a formula the very same parser answers on the next
-      line.
+      What used to stand here was "if you cannot do it, do not compute": a formula the
+      accelerator refuses was not computed at all. That turned out to be harmful, the
+      ordinary parse computes it perfectly well, and the caller got a "no" about a
+      formula the same parser answers a line below.
 
-      The new contract: True means "the answers are filled in", whatever
-      computed them. Both that and the agreement with the ordinary parser are
-      checked - a fallback that gives a DIFFERENT answer is worse than no
-      fallback at all.
+      The new contract: True means "the answers are filled in", by whatever they were
+      computed. Both that and the match with the ordinary parse are checked: a departure
+      that gives a DIFFERENT answer is worse than no departure.
+
     }
     Check('the accelerator does decline this one', Jit.CodeReason('mean(1, 2, x)') <> '', Jit.CodeReason('mean(1, 2, x)'));
     Check('bulk computes it anyway', Jit.ExecuteMany('mean(1, 2, x)', XJit, Inputs, Outputs));
@@ -287,10 +310,10 @@ begin
         Format('%.6f', [Outputs[I]]));
     end;
     {
-      A formula that does not parse at all, on the other hand, must be refused -
-      and must NOT leave the previous numbers in the answers: a calculation that
-      never happened, carrying somebody else's numbers, looks exactly like one
-      that did.
+      A formula that does not parse at all, however, has to be rejected, and it has to
+      LEAVE NO earlier numbers in the answers: a computation that did not happen, with
+      somebody else's numbers, looks like one that did.
+
     }
     Check('bulk refuses a formula that does not parse', not Jit.ExecuteMany('mean(1, 2, ', XJit, Inputs, Outputs));
     for I := 0 to 4 do
@@ -311,15 +334,9 @@ begin
     SameCase('x >= 3');
     SameCase('x <= 2');
     SameCase('x <> 3');
-    Writeln(
-      '  reasons: if -> "',
-      Jit.CodeReason('if(x > 2, 10, 20)'),
-      '"; while -> "',
-      Jit.CodeReason('set("k", 0) + while(get("k") < 5, set("k", get("k") + 1)) + get("k")'),
-      '"; get -> "',
-      Jit.CodeReason('get("k")'),
-      '"'
-    );
+    Writeln('  reasons: if -> "', Jit.CodeReason('if(x > 2, 10, 20)'), '"; while -> "',
+      Jit.CodeReason('set("k", 0) + while(get("k") < 5, set("k", get("k") + 1)) + get("k")'), '"; get -> "',
+      Jit.CodeReason('get("k")'), '"');
     BeginSection('J5: unsigned and typed variables');
     Base.AddVariable('uw', UBase);
     Jit.AddVariable('uw', UJit);
@@ -361,18 +378,8 @@ begin
     BenchBulk('x * 2 + 1', 500000);
     BenchBulk('x * x * x * 3 + x * x * 2 + x * 7 + 11', 500000);
     Writeln;
-    Writeln(
-      Format(
-        'jit stats: compiles=%d hits=%d misses=%d inline=%d lookups=%d',
-        [
-          Jit.CompileCount,
-          Jit.HitCount,
-          Jit.MissCount,
-          Jit.InlineCount,
-          Jit.LookupCount
-        ]
-      )
-    );
+    Writeln(Format('jit stats: compiles=%d hits=%d misses=%d inline=%d lookups=%d',
+      [Jit.CompileCount, Jit.HitCount, Jit.MissCount, Jit.InlineCount, Jit.LookupCount]));
     Writeln('tier-down reasons: mean -> ', Jit.CodeReason('mean(1, 2, 3)'), '; if -> ', Jit.CodeReason('if(x > 0, x * 2, 0 - x)'));
     Failed := TestSummary;
   finally

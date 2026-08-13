@@ -61,7 +61,7 @@ type
     FReady: Boolean;
     FReason: string;
     procedure RunScript(var Index: Integer; var Value: TValue);
-    procedure RunTerm(var Index: Integer; var Value: TValue);
+    procedure RunTerm(var Index: Integer; var Value: TValue; const OneStep: Boolean);
     procedure ReadOperand(var Index: Integer; var Value: TValue);
     function Build: Boolean;
   public
@@ -268,20 +268,22 @@ begin
         RunScript(Index, Value);
         Inc(Index);
       end;
-    skCall: RunTerm(Index, Value);
+
+    skCall: RunTerm(Index, Value, True);
   else
     Value := EmptyValue;
     Inc(Index);
   end;
 end;
 
-procedure TJitExecutor.RunTerm(var Index: Integer; var Value: TValue);
+procedure TJitExecutor.RunTerm(var Index: Integer; var Value: TValue; const OneStep: Boolean);
 var
   LValue, RValue: TValue;
   Step: PJitStep;
 begin
   Value := EmptyValue;
   while (Index < FCount) and (FSteps[Index].Kind <> skTermEnd) do
+  begin
     if FSteps[Index].Kind = skCall then
     begin
       LValue := Value;
@@ -312,6 +314,8 @@ begin
     end
     else
       ReadOperand(Index, Value);
+    if OneStep then Break;
+  end;
 end;
 
 procedure TJitExecutor.RunScript(var Index: Integer; var Value: TValue);
@@ -326,7 +330,7 @@ begin
   begin
     Sign := FSteps[Index].Sign;
     Inc(Index);
-    RunTerm(Index, TermValue);
+    RunTerm(Index, TermValue, False);
     Inc(Index);
     if First and (Sign = 0) then
       Value := TermValue

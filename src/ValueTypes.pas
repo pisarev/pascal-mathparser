@@ -41,9 +41,11 @@ type
     vtExtended);
 
   PValue = ^TValue;
+
   {$IFDEF FPC}{$PACKRECORDS 8}{$ENDIF}
   TValue = record
     ValueType: TValueType;
+    Reserved: array[0..6] of Byte;
     case Byte of
       0: (ByteArray: array[0..9] of Byte);
       1: (Unsigned8: Byte);
@@ -65,6 +67,7 @@ type
       17: (LongRec: LongRec);
       18: (Int64Rec: Int64Rec);
       19: (NativeIntRec: NativeIntRec);
+      20: (Filler: array[0..15] of Byte);
   end;
 
   PValueArray = ^TValueArray;

@@ -9,8 +9,8 @@
       <PathDelim Value="/"/>
       <SearchPaths>
         <IncludeFiles Value="../../src"/>
-        <OtherUnitFiles Value="../../jit;../../src"/>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+        <OtherUnitFiles Value="../../jit"/>
+        <UnitOutputDirectory Value="jit_lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
       <Parsing>
         <SyntaxOptions>
@@ -22,10 +22,13 @@
           <OptimizationLevel Value="2"/>
         </Optimizations>
       </CodeGeneration>
+      <Other>
+        <CustomOptions Value="-dNOFORMS -dNOGRAPHICS"/>
+      </Other>
     </CompilerOptions>
     <Description Value="MathParser accelerator: IR, executor and x86-64 machine code generator"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="0" Release="9"/>
+    <Version Major="1" Minor="1" Release="0"/>
     <Files>
       <Item>
         <Filename Value="../../jit/ParseJit.Decoder.pas"/>

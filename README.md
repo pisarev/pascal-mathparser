@@ -101,16 +101,22 @@ functions over a parser it owns, which is what the program at the top uses.
 This works on every target, console programs on Linux included. It did not always:
 the owned `TCalculator` uses a synchronising timer, and under FPC that timer was
 built from the widgetset, so a console program refused to link. The timer now runs
-on a plain thread, and the core compiles against the RTL alone. All six samples
+on a plain thread, and the core compiles against the RTL alone. All eight samples
 under `samples/docs` are compiled and run by both matrices, on Windows and Linux -
 console programs, no widgetset anywhere.
 
 Two units ask for more when you leave them at their defaults: `Thread` routes an
 exception raised in a worker through `Application.HandleException`, and
-`BlobManager` stores images as `TGraphic`. That is why the Lazarus package lists
-the LCL. Define `NOFORMS` and `NOGRAPHICS` and both step aside - that is exactly
-what the console matrices and the WebAssembly build do, and it is the honest
-answer to "does this drag the LCL in": only if you want those two features.
+`BlobManager` stores images as `TGraphic`. Both stand behind `NOFORMS` and
+`NOGRAPHICS`, and the Lazarus packages set those two defines themselves. So the
+packages require no LCL, install without it, and a console project built against
+them needs no `Interfaces` in its uses clause. Delphi is untouched by any of
+this: it builds from the sources, where neither define is set and `TGraphic` is
+the VCL one.
+
+Want those two features under Lazarus? Drop the defines from
+`packages/lazarus/crosspascal_parser.lpk` and add the LCL to its required
+packages. Nothing else about the package changes.
 
 ## The accelerator
 
@@ -219,10 +225,19 @@ Free Pascal without the LCL needs three more things, and the Linux matrix in
 leave the GUI out, `src/compat` ahead of `src` for the stand-in units the RTL
 does not carry there, and `-Fi src` for the includes.
 
+Under Lazarus you need none of it by hand: the packages in `packages/lazarus`
+set the defines themselves and add `src/compat` on the targets whose runtime has
+no unit of that name - which is why they do not add it on Windows, where it
+would stand in front of the system one. Install `crosspascal_parser.lpk`, add
+`crosspascal_parserjit.lpk` for the accelerator, and a console project needs
+nothing else. The projects in `samples/docs` are set up that way - open any
+`.lpi` and build it.
+
 | | |
 |---|---|
-| Delphi | 37.0 (Delphi 13), win32 and win64 |
-| Free Pascal | 3.2.2 and 3.3.1, win64 and linux64 |
+| Delphi 37.0 (Delphi 13) | win32, win64 |
+| Free Pascal 3.2.2 | win32, win64, linux64 |
+| Free Pascal 3.3.1 | win64 |
 | Accelerator | machine code on x86-64; elsewhere the intermediate stage walks it, with the interpreter behind both |
 
 Every line of that table is a matrix that runs before a release, not a guess.
@@ -242,8 +257,10 @@ agree to the last bit. `tests/MathFamilyTest.dpr` is what keeps them agreeing.
 `tests/build.ps1` builds and runs the battery under Delphi. Two of the targets
 run on both word sizes - that is where a 32-bit answer once differed from the
 64-bit one - and the rest are 64-bit, which is where the code generator lives.
-`tests/build_fpc.ps1` runs the battery under FPC on 64-bit Windows, and
-`tests/build_parser_linux.sh` runs it on Linux.
+`tests/build_fpc.ps1` runs the battery under FPC on Windows - point `FPC_EXE` at
+a 32-bit compiler and it runs there too, which is a separate installation rather
+than a switch, because FPC will not target i386 from a host whose `Extended` is
+`Double`. `tests/build_parser_linux.sh` runs it on Linux.
 `ci/check-windows.ps1` and `ci/check-linux.sh` run the whole matrix, including a
 per-unit compile that catches conditional branches nothing else reaches, the
 documentation samples, and the Linux side at two locales.

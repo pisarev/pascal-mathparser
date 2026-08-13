@@ -131,7 +131,8 @@ implementation
 
 uses
   {$IFDEF FPC}
-  Messages, Math, ParseMessages, Parser, SysUtils, TextConsts, TextUtils, ValueConsts, ValueUtils;
+  Messages, Math, ParseMessages, Parser, SysUtils, TextConsts, TextUtils, ValueConsts,
+  ValueUtils;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
   WinApi.Windows, WinApi.Messages, System.Math, ParseMessages, Parser, SysUtils,

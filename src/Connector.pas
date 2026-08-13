@@ -21,7 +21,8 @@ uses
   SysUtils, Classes, EventUtils, Notifier, Parser, ParseTypes, ValueTypes;
   {$ELSE}
   {$IFDEF DELPHI_10.2}
-  System.SysUtils, System.Classes, BaseTypes, EventUtils, Notifier, Parser, ParseTypes, ValueTypes;
+  System.SysUtils, System.Classes, BaseTypes, EventUtils, Notifier, Parser, ParseTypes,
+  ValueTypes;
   {$ELSE}
   SysUtils, Classes, EventUtils, Notifier, Parser, ParseTypes, ValueTypes;
   {$ENDIF}

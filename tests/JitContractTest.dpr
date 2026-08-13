@@ -89,7 +89,13 @@ begin
     Check('a compiled formula reports no reason', P.CodeReason('x * x * 3 + 1') = '',
       Format('  reason="%s"', [P.CodeReason('x * x * 3 + 1')]));
     {$ELSE}
-    Check('off x86-64 the interpreter answers', P.MissCount > 0);
+    { Not the interpreter: the IR executor. This branch said "interpreter" from
+      the days before that tier existed, and nothing re-ran it - there was no
+      32-bit matrix. The demand here is stronger than the old one, not weaker:
+      the call is accelerated, and not one of them falls back. }
+    Check('off x86-64 the IR executor answers, and nothing falls back',
+      (P.HitCount = 1) and (P.MissCount = 0) and (P.MachineCount = 0) and (P.ExecutorCount = 1),
+      Format('  hits=%d misses=%d machine=%d executor=%d', [P.HitCount, P.MissCount, P.MachineCount, P.ExecutorCount]));
     {$ENDIF}
   finally
     P.Free;
@@ -113,7 +119,19 @@ begin
       early decline would show up here as five misses rather than one. }
     Check('all five calls used the compiled code', P.HitCount = 5, Format('  hits=%d misses=%d', [P.HitCount, P.MissCount]));
     {$ELSE}
-    Check('off x86-64 every call goes to the interpreter', P.MissCount = 5);
+    Check(
+      'off x86-64 all five calls went to the IR executor',
+      (P.HitCount = 5) and (P.MissCount = 0) and (P.MachineCount = 0),
+      Format(
+        '  hits=%d misses=%d machine=%d executor=%d',
+        [
+          P.HitCount,
+          P.MissCount,
+          P.MachineCount,
+          P.ExecutorCount
+        ]
+      )
+    );
     {$ENDIF}
   finally
     P.Free;
@@ -140,13 +158,12 @@ begin
       When it returns False it leaves the output array untouched, so a caller
       who trusts it gets zeros rather than numbers. }
     Ok := P.ExecuteMany('x * x * 3 + 1', X, Inputs, Outputs);
-    {$IFDEF COMPILES_TO_MACHINE_CODE}
+    { Bulk once declined where there was no emitter, and this check demanded the
+      decline. The IR executor took bulk over since, so the demand is now the
+      same on every target: accepted, and the outputs written. }
     Check('bulk evaluation was accepted', Ok);
     CheckDouble('the last output was written', Outputs[2], 49);
     CheckDouble('the first output was written', Outputs[0], 4);
-    {$ELSE}
-    Check('off x86-64 bulk evaluation declines', not Ok);
-    {$ENDIF}
   finally
     P.Free;
   end;
@@ -314,7 +331,14 @@ begin
   }
   Check('every size answers correctly', Wrong = 0, Format('  wrong answers=%d', [Wrong]));
   Check('cramped sizes are refused rather than run', Slipped < 393, Format('  sizes that compiled=%d of 393', [Slipped]));
+  {$IFDEF COMPILES_TO_MACHINE_CODE}
   Check('the limit was actually reached', Slipped > 0, Format('  sizes that compiled=%d', [Slipped]));
+  {$ELSE}
+  { Where there is no emitter the limit has nothing to cut, so the third demand
+    turns into its opposite - and stays a demand: not one size may claim machine
+    code. The first two hold unchanged. }
+  Check('off x86-64 no size reaches machine code', Slipped = 0, Format('  sizes that compiled=%d', [Slipped]));
+  {$ENDIF}
 end;
 
 procedure AVariableWiderThanDouble;
@@ -325,9 +349,10 @@ var
 begin
   BeginSection('a variable of type Extended');
   {
-    Extended is not the same width everywhere. On Windows it is eight bytes and
-    identical to Double; with Free Pascal on Linux it is the eighty bit type of
-    the x87 unit and occupies ten. The emitter used to load such a variable with
+    Extended is not the same width everywhere. On Win64 it is eight bytes and
+    identical to Double; a 32-bit Free Pascal build gives the eighty bit type of
+    the x87 unit and occupies ten - on Linux and on Windows alike. The emitter
+    used to load such a variable with
     movsd - eight bytes - in both cases. Where the type is wider that reads the
     mantissa alone and calls it a number: not a rounding difference, a different
     value entirely.
@@ -344,12 +369,20 @@ begin
     Wide := 3.14159265358979;
     CheckDouble('and pi comes back as pi', P.AsDouble('w + 0'), 3.14159265358979);
     Reason := P.CodeReason('w * 10');
+    {$IFDEF COMPILES_TO_MACHINE_CODE}
     if SizeOf(Extended) = SizeOf(Double) then
       Check('where Extended is eight bytes machine code takes it', Reason = '',
         '  reason=' + Reason)
     else
       Check('where Extended is wider machine code declines it', Pos('variable type', Reason) > 0,
         Format('  SizeOf(Extended)=%d reason=%s', [SizeOf(Extended), Reason]));
+    {$ELSE}
+    { Where there is no emitter at all the decline is reported a level higher and
+      the width of the variable never comes up. Both answers above were still
+      right, and on this platform that is the whole of the contract. }
+    Check('off x86-64 the reason names the missing emitter, not the variable', (Reason <> '') and (Pos('variable type', Reason) = 0),
+      Format('  SizeOf(Extended)=%d reason=%s', [SizeOf(Extended), Reason]));
+    {$ENDIF}
   finally
     P.Free;
   end;
@@ -431,13 +464,14 @@ begin
   try
     P.AddVariable('x', X);
     for I := 0 to 2 do Inputs[I] := I + 1;
-    { First a formula the accelerator does take: the array is filled with numbers }
+    { First a formula the accelerator takes: the array is filled with numbers }
     Check('an accepted formula is computed', P.ExecuteMany('x * 10', X, Inputs, Outputs));
     CheckDouble('and the first answer is right', Outputs[0], 10);
     {
-      Now one it turns down. What is checked is not only that the count went
-      through, but that it agrees with ordinary parsing: a retreat that gives a
-      different answer is worse than no retreat at all.
+      Now the one it refuses. What is checked is not only that it computed, but also
+      that the result matches the ordinary parse: a departure that gives a different
+      answer is worse than no departure.
+
     }
     Hits := P.HitCount;
     Ok := P.ExecuteMany('Max(x, 2)', X, Inputs, Outputs);
@@ -454,24 +488,23 @@ begin
       CheckDouble(Format('bulk answer %d matches the ordinary one', [I]), Outputs[I], Plain[I]);
     Check('the fallback is not counted as an accelerator hit', P.HitCount = Hits, Format('  hits %d -> %d', [Hits, P.HitCount]));
     {
-      And the thing all this is for: a count that never happened must leave no
-      numbers of somebody else's behind. The formula is knowingly bad - the
-      answers are obliged to hold "not a number" rather than tens left over from
-      the first formula.
+      And the point of it all: a computation that did not happen must leave no numbers
+      of somebody else. The formula is deliberately unusable, so the answers have to
+      keep "not a number" rather than the tens from the first formula.
+
     }
     Ok := P.ExecuteMany('Max(x, ', X, Inputs, Outputs);
     Check('a formula that does not parse is refused', not Ok);
     for I := 0 to 2 do
       Check(Format('answer %d is not left over from before', [I]), IsNan(Outputs[I]), Format('  %g', [Outputs[I]]));
     {
-      Next, two kinds of output that are not the size of the input. Up to
-      here only the refusal on equal lengths was checked, and the contract
-      that a refusal always means one thing rested on reading the code
-      rather than on a run.
+      Next come two kinds of output that do not match the size of the input. Up to this
+      point only the refusal on equal lengths was checked, and the contract "a refusal
+      means one and the same thing" rested on reading the code rather than on a run.
 
-      A short output: the whole of it is filled. A caller who did not look
-      at the result has to see "not a number", not tens from the previous
-      formula.
+      A short output: all of it is filled in. A caller who did not look at the result
+      has to see "not a number" rather than the tens from the previous formula.
+
     }
     for I := 0 to 1 do Short[I] := 777;
     Ok := P.ExecuteMany('x * 10', X, Inputs, Short);
@@ -479,9 +512,9 @@ begin
     for I := 0 to 1 do
       Check(Format('short answer %d is not left over', [I]), IsNan(Short[I]), Format('  %g', [Short[I]]));
     {
-      A long output: the input region is filled, and the tail past it is
-      the memory of the caller - it is left alone on a refusal and on a
-      success alike.
+      A long output: the area of the input is filled in, while the tail beyond it is
+      somebody else's memory and is not touched, neither on a refusal nor on success.
+
     }
     for I := 0 to 4 do Long[I] := 777;
     Ok := P.ExecuteMany('Max(x, ', X, Inputs, Long);
@@ -558,25 +591,24 @@ begin
 end;
 
 {
-  A parser must outlive the script it handed out, and that is a CONTRACT rather
+  The parser has to outlive the script it produced, and that is a CONTRACT rather
   than a wish.
 
-  The previous version of this check claimed the opposite - that the script is
-  self-contained - and stayed green because it took the formula x * 2: that one
-  goes into machine code and holds no assumptions about redirection. A script
-  has several references to its parser, and clearing Owner covers one:
+  The earlier version of this check claimed the opposite, as if the script were
+  self-contained, and it went green because it took the formula x * 2: that one goes
+  into machine code and holds no assumptions about redirection. The script has
+  several references to the parser, and clearing Owner is not enough:
 
-    TJitDecoder.FParser  - Valid asks the parser for functions and redirections
-                           on every assumption, and Fresh goes exactly there;
-    TJitExecutor         - copies Method0/Method1/Method2 into its own steps,
-                           that is pointers to METHODS OF THE PARSER's OBJECTS,
-                           and calls them;
-    TJitExecutor.FHeader - looks into the original script and makes no copy.
+    TJitDecoder.FParser  Valid asks the parser about functions and redirections
+                         for every assumption, and Fresh goes exactly there;
+    TJitExecutor         copies Method0/Method1/Method2 into its own steps, that is
+                         pointers to METHODS OF OBJECTS of the parser, and calls them;
+    TJitExecutor.FHeader looks into the original script and makes no copy.
 
-  So the check takes TWO formulas: one that goes to machine code and one the
-  emitter turns down, which then goes to the executor. On the second one the old
-  code read freed memory. The expectation now is one: once the parser is gone,
-  the script REFUSES rather than evaluating.
+  So the check takes TWO formulas: one for the machine and one the emitter does not
+  take, which goes to the executor. On the second one the earlier code read freed
+  memory. There is one expectation now: after the death of the parser the script
+  REFUSES rather than computes.
 }
 procedure CompiledScriptRefusesWithoutItsParser;
 
@@ -597,24 +629,33 @@ procedure CompiledScriptRefusesWithoutItsParser;
       P.AddVariable('x', X);
       P.StringToScript(Text, Script);
       Compiled := P.CompileScript(Script);
-      Check('built: ' + Text, Assigned(Compiled) and Compiled.Ready, Compiled.Reason);
-      Check('the level this check needs', (P.MachineCount > 0) = Machine,
-        Format('%d machine, %d executor', [P.MachineCount, P.ExecutorCount]));
+      Check('compiled: ' + Text, Assigned(Compiled) and Compiled.Ready, Compiled.Reason);
+      {$IFDEF COMPILES_TO_MACHINE_CODE}
+      Check('the level is the one the check needs', (P.MachineCount > 0) = Machine,
+        Format('machine %d, executor %d', [P.MachineCount, P.ExecutorCount]));
+      {$ELSE}
+      { Outside x86-64 there is no machine code generator at all, and the requested level
+        is out of reach by construction rather than by the properties of the script. The
+        requirement does not disappear because of that: there must be no machine code, and
+        the executor has to take the script for itself. }
+      Check('the level is the one the check needs', (P.MachineCount = 0) and (P.ExecutorCount > 0),
+        Format('machine %d, executor %d', [P.MachineCount, P.ExecutorCount]));
+      {$ENDIF}
       Value := Compiled.Execute;
-      Check('evaluates while the parser is alive', not IsNan(Value), Format('%g', [Value]));
+      Check('computes while the parser is alive', not IsNan(Value), Format('%g', [Value]));
     finally
       Script := nil;
       P.Free;
     end;
-    { The parser is gone. From here on only refusal, and no reading of the dead. }
-    Check('the owner was cleared: ' + Text, not Assigned(Compiled.Owner), 'the pointer is still there');
+    { The parser is gone. From here on only a refusal, and no reading of the dead. }
+    Check('owner cleared: ' + Text, not Assigned(Compiled.Owner), 'the pointer is still there');
     Note := '';
     try
-      Check('does not consider itself usable', not Compiled.Ready, 'considers itself usable without a parser');
+      Check('does not consider itself ready', not Compiled.Ready, 'considers itself ready without a parser');
     except
       on E: Exception do Note := E.ClassName + ': ' + E.Message;
     end;
-    Check('Ready raised nothing', Note = '', Note);
+    Check('Ready did not throw', Note = '', Note);
     Note := '';
     Value := 0;
     try
@@ -628,12 +669,13 @@ procedure CompiledScriptRefusesWithoutItsParser;
   end;
 
 begin
-  BeginSection('without its own parser a script refuses instead of evaluating');
+  BeginSection('without its parser the script refuses rather than computes');
   { The machine path: arithmetic the emitter takes. }
   OneScript('x * 2', True);
   {
-    The executor path: the emitter turns round down, but the intermediate stage
-    takes it - and that stage is the one holding pointers to the parser methods.
+    The executor path: the emitter does not take round, while the intermediate stage
+    does, and that is the one holding the pointers to the methods of the parser.
+
   }
   OneScript('round(x)', False);
 end;

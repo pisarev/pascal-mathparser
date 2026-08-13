@@ -488,9 +488,9 @@ end;
 
 function Parse(const Source: TMemoryStream; const Target: TStrings; const CharCount: Integer): Boolean;
 
-  procedure Move(var Target: string; const Source: string; const Index: Int64; var Size: Int64);
+  procedure Move(var Target: string; const Source: string; const Index: NativeInt; var Size: NativeInt);
   var
-    I, J: Int64;
+    I, J: NativeInt;
   begin
     I := Length(Source) * SizeOf(Char);
     J := (Index + I - SizeOf(Char)) div SizeOf(Char);
@@ -503,14 +503,14 @@ function Parse(const Source: TMemoryStream; const Target: TStrings; const CharCo
   end;
 
 var
-  I, J, K, Size: Int64;
+  I, J, K, Size: NativeInt;
   S, Number: string;
 begin
   Target.Clear;
   Result := Source.Size > 0;
   if Result then
   begin
-    J := Int64(Source.Memory);
+    J := NativeInt(Source.Memory);
     K := 1;
     I := Source.Size * NumberLength;
     Size := I + (I div CharCount - 1) * Length(LB);
@@ -568,8 +568,6 @@ begin
   Result := Assigned(Target);
 end;
 
-{ TCustomBlobManager }
-
 procedure TCustomBlobManager.AssignTo(Dest: TPersistent);
 var
   Stream: TMemoryStream;
@@ -616,8 +614,6 @@ begin
   CommonNameList.EndUpdate;
   HiddenNameList.EndUpdate;
 end;
-
-{ TBlobManager }
 
 function TBlobManager.CheckItem(const Stream: TStream; const ItemKind: TItemKind;
   const Index: Integer): Boolean;
@@ -1140,7 +1136,8 @@ end;
 
 function TBlobManager.ReadHeader(const Stream: TStream; const ItemKind: TItemKind): Boolean;
 var
-  I, J, K: Int64;
+  I: NativeInt;
+  J, K: Int64;
   H: PHeader;
 begin
   Result := ReadValue(Stream, J, SizeOf(J)) and (J >= 0) and (J <= Stream.Size);
@@ -1318,8 +1315,7 @@ begin
       if FAutoFree then
         DeleteHeader(K);
     end;
-    for K := Low(TItemKind) to High(TItemKind) do
-      WriteNameList(Target, K, Reference[K]);
+    for K := Low(TItemKind) to High(TItemKind) do WriteNameList(Target, K, Reference[K]);
   finally
     for K := Low(TItemKind) to High(TItemKind) do Reference[K] := nil;
   end;
@@ -1452,12 +1448,13 @@ procedure TBlobManager.WriteHeader(const Stream: TStream; const ItemKind: TItemK
   var Reference: TArray<Int64>);
 var
   L: TFastList;
-  I, J: Int64;
+  I: NativeInt;
+  J, Count: Int64;
 begin
   L := NameList[ItemKind];
-  I := L.Count;
-  Stream.Write(I, SizeOf(I));
-  SetLength(Reference, I);
+  Count := L.Count;
+  Stream.Write(Count, SizeOf(Count));
+  SetLength(Reference, Count);
   for I := 0 to L.Count - 1 do
   begin
     Stream.Write(Item[L, I].Kind, SizeOf(Item[L, I].Kind));
@@ -1490,7 +1487,8 @@ procedure TBlobManager.WriteNameList(const Stream: TMemoryStream; const ItemKind
   const Reference: TArray<Int64>);
 var
   L: TFastList;
-  I, J, K: Int64;
+  I: NativeInt;
+  J, K: Int64;
 begin
   L := NameList[ItemKind];
   J := Stream.Size;

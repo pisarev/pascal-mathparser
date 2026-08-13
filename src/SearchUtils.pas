@@ -21,7 +21,8 @@ uses
   Classes, SysUtils, MemoryUtils, Types, TextConsts, ThreadUtils;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
-  WinApi.Windows, System.Classes, System.SysUtils, MemoryUtils, Types, TextConsts, ThreadUtils;
+  WinApi.Windows, System.Classes, System.SysUtils, MemoryUtils, Types, TextConsts,
+  ThreadUtils;
   {$ELSE}
   Windows, Classes, SysUtils, MemoryUtils, Types, TextConsts, ThreadUtils;
   {$ENDIF}

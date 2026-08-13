@@ -10,8 +10,19 @@
       <SearchPaths>
         <IncludeFiles Value="../../src"/>
         <OtherUnitFiles Value="../../src"/>
-        <UnitOutputDirectory Value="lib/$(TargetCPU)-$(TargetOS)"/>
+        <UnitOutputDirectory Value="parser_lib/$(TargetCPU)-$(TargetOS)"/>
       </SearchPaths>
+      <Conditionals Value="// src/compat is added OUTSIDE Windows only.
+//
+// There Messages comes from the LCL, and without a stand-in the package would
+// have to drag the widgetset in. On Windows Messages is in the RTL, and putting
+// ours in its place is not allowed: it lands in the package output directory,
+// travels to the consumer through UsageOptions and shadows the system one. The
+// LCL does not survive that - lmessages uses messages under {$ifdef WINDOWS},
+// the checksums disagree, and the build stops at
+// 'Can't find unit LMessages used by LCLIntf'.
+if (TargetOS &lt;&gt; 'win32') and (TargetOS &lt;&gt; 'win64') then
+  UnitPath += ';../../src/compat';"/>
       <Parsing>
         <SyntaxOptions>
           <SyntaxMode Value="Delphi"/>
@@ -22,10 +33,13 @@
           <OptimizationLevel Value="2"/>
         </Optimizations>
       </CodeGeneration>
+      <Other>
+        <CustomOptions Value="-dNOFORMS -dNOGRAPHICS"/>
+      </Other>
     </CompilerOptions>
     <Description Value="MathParser: a compiler and interpreter of mathematical expressions (core)"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="0" Release="9"/>
+    <Version Major="1" Minor="1" Release="0"/>
     <Files>
       <Item>
         <Filename Value="../../src/Parser.pas"/>
@@ -212,11 +226,6 @@
         <UnitName Value="ScriptFormat"/>
       </Item>
     </Files>
-    <RequiredPkgs>
-      <Item>
-        <PackageName Value="LCL"/>
-      </Item>
-    </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
     </UsageOptions>
