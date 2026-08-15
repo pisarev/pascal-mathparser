@@ -202,6 +202,7 @@ function DeletePath(const Path: string; const Recurse: Boolean): Boolean;
 var
   FileList, PathList: TStringList;
   I: Integer;
+  Mask: {$IFDEF DELPHI_10.2}TArray<string>{$ELSE}TStringDynArray{$ENDIF};
 begin
   if Recurse then
   begin
@@ -209,8 +210,9 @@ begin
     try
       PathList := TStringList.Create;
       try
-        Search([IncludeTrailingPathDelimiter(Path) + AnyFile], FileList, PathList, True, -1, False,
-          False, True);
+        SetLength(Mask, 1);
+        Mask[0] := IncludeTrailingPathDelimiter(Path) + AnyFile;
+        Search(Mask, FileList, PathList, True, -1, False, False, True);
         Result := (FileList.Count > 0) or (PathList.Count > 0);
         if Result then
         begin
@@ -324,15 +326,8 @@ begin
   else
     Result := -1;
   {$ELSE}
-  Handle := {$IFDEF DELPHI_XE7}WinApi.Windows{$ELSE}Windows{$ENDIF}.CreateFile(
-    PChar(FileName),
-    GENERIC_READ,
-    FILE_SHARE_READ or FILE_SHARE_WRITE,
-    nil,
-    OPEN_EXISTING,
-    FILE_ATTRIBUTE_NORMAL,
-    0
-  );
+  Handle := {$IFDEF DELPHI_XE7}WinApi.Windows{$ELSE}Windows{$ENDIF}.CreateFile(PChar(FileName), GENERIC_READ,
+    FILE_SHARE_READ or FILE_SHARE_WRITE, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
   if Handle = INVALID_HANDLE_VALUE then
     Result := -1
   else

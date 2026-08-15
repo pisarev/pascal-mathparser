@@ -527,7 +527,9 @@ uses
   {$ENDIF}
 
 {$IFDEF FPC}
-{$IF FPC_FULLVERSION < 30301}
+{$IFDEF VER3_0}{$DEFINE OLDFPCMATH}{$ENDIF}
+{$IFDEF VER3_2}{$DEFINE OLDFPCMATH}{$ENDIF}
+{$IFDEF OLDFPCMATH}
 function ArcCot(X: Extended): Extended;
 begin
   if X = 0 then
@@ -593,7 +595,7 @@ begin
     Result := (1 + E2) / (1 - E2);
   end;
 end;
-{$IFEND}
+{$ENDIF}
 {$ENDIF}
 
 procedure Check(const AFunction: PFunction; const PA: TParameterArray; const ParamCount: Integer;

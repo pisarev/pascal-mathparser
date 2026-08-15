@@ -250,13 +250,19 @@ to that hand-off.
 
 | | |
 |---|---|
-| Delphi 37.0 (Delphi 13) | win32, win64 |
+| Delphi 10.2 Tokyo through 13 | win32, win64 |
 | Free Pascal 3.2.2 | win32, win64, linux64 |
 | Free Pascal 3.3.1 | win64 |
 | Accelerator | machine code on x86-64; elsewhere the intermediate stage walks it, with the interpreter behind both |
 
 Every line of that table is a matrix that runs before a release, not a guess.
-Older compilers are likely to work and are not claimed to.
+The Delphi row is six installations - 10.2 Tokyo, 10.3 Rio, 10.4 Sydney, 11
+Alexandria, 12 Athens and 13 - and on each of them the units are compiled one at
+a time: 50 of the 51 build. The one that does not is `WinMem`, which carries a
+`MODE` directive in its header and belongs to Free Pascal alone. `PLATFORMS.tsv`
+beside the sources declares that, and both the build script and the release
+check read the table rather than a list of their own. Anything older than 10.2
+is untested and not claimed.
 
 On Free Pascal 3.2.2 one thing is narrower. Function references - `reference to
 function` - arrived in 3.3.1, so on 3.2.2 the iterator callbacks in `MemoryUtils`

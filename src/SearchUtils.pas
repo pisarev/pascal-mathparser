@@ -101,7 +101,6 @@ const
   ArrayIncrement = 1024;
 
 {$IFDEF FPC}
-{ TStringArrayHelper }
 
 class function TStringArrayHelper.Make(const AString: string; const AObject: Double): TStringItem;
 begin
@@ -122,7 +121,6 @@ begin
 end;
 {$ELSE}
 {$IFDEF DELPHI_10.2}
-{ TStringArrayHelper }
 
 class function TStringArrayHelper.Make(const AString: string; const AObject: Double): TStringItem;
 begin
@@ -212,6 +210,7 @@ var
   Path, Name, S: string;
   R: TSearchRec;
   Skip, Stop: Boolean;
+  Next: {$IFDEF DELPHI_10.2}TArray<string>{$ELSE}TStringDynArray{$ENDIF};
 begin
   Result := (MaxDepth < 0) or (Positive(Depth) - 1 <= MaxDepth);
   if Result then
@@ -241,8 +240,7 @@ begin
                       Stop := False;
                       if not Assigned(Event) or Event(S, R.Attr, Depth, P, Skip, Stop) then
                       begin
-                        if not Skip then
-                          Add(PathArray, PathData, S, Pointer(Depth - 1));
+                        if not Skip then Add(PathArray, PathData, S, Pointer(Depth - 1));
                         if Stop then Exit;
                       end;
                     end;
@@ -289,8 +287,9 @@ begin
           J := Length(PathArray);
           while K < J do
           begin
-            Search([PathArray[K].FString + Name], FileArray, PathArray, Recurse, MaxDepth, FileLock,
-              PathLock, Event, P, Depth - 1);
+            SetLength(Next, 1);
+            Next[0] := PathArray[K].FString + Name;
+            Search(Next, FileArray, PathArray, Recurse, MaxDepth, FileLock, PathLock, Event, P, Depth - 1);
             Inc(K);
           end;
         end;
@@ -408,8 +407,7 @@ begin
           if Assigned(FileList) then
           begin
             Put(List, FileArray);
-            if not ModuleName and List.Find(ttNameValue, ParamStr(0), I) then
-              List.Delete(I);
+            if not ModuleName and List.Find(ttNameValue, ParamStr(0), I) then List.Delete(I);
             if FileOrderByDepth then
             begin
               List.BeginUpdate;
