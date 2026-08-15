@@ -228,10 +228,25 @@ does not carry there, and `-Fi src` for the includes.
 Under Lazarus you need none of it by hand: the packages in `packages/lazarus`
 set the defines themselves and add `src/compat` on the targets whose runtime has
 no unit of that name - which is why they do not add it on Windows, where it
-would stand in front of the system one. Install `crosspascal_parser.lpk`, add
-`crosspascal_parserjit.lpk` for the accelerator, and a console project needs
-nothing else. The projects in `samples/docs` are set up that way - open any
-`.lpi` and build it.
+would stand in front of the system one. Open `crosspascal_parser.lpk` and add it
+to your project - `Use` -> `Add to project` in the package window; add
+`crosspascal_parserjit.lpk` the same way for the accelerator, and a console
+project needs nothing else. The projects in `samples/docs` are set up that way -
+open any `.lpi` and build it.
+
+Both packages also install into the IDE. Open `crosspascal_parser.lpk` and press
+`Install`: the IDE rebuilds itself, and eleven components appear on the
+`Samples` palette page - `TParser`, `TMathParser`, `TCalculator`, `TCalcThread`,
+`TParseManager`, `TParseValueList`, `TConnector`, `TBlobManager`, `TSyncThread`,
+`TSyncTimer` and `TExactTimer`. You do not need any of that to use the library
+from code; install it only if you want to drop those components on a form.
+
+One of them deserves a warning. `TExactTimer` calls `OnTimer` in a **different
+thread** under FPC, while under Delphi the same component calls it in the main
+one: there the timer is a window timer, here it is a thread. Anything you do in
+that handler must be safe to do off the main thread - no windows, no canvases,
+no fonts or pens. Hand the work to the main thread instead, and keep the handler
+to that hand-off.
 
 | | |
 |---|---|

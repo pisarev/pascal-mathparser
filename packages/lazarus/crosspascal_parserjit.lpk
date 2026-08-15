@@ -3,6 +3,7 @@
   <Package Version="5">
     <PathDelim Value="/"/>
     <Name Value="crosspascal_parserjit"/>
+    <Type Value="RunAndDesignTime"/>
     <Author Value="Yuriy Pisarev"/>
     <CompilerOptions>
       <Version Value="11"/>
@@ -28,7 +29,7 @@
     </CompilerOptions>
     <Description Value="MathParser accelerator: IR, executor and x86-64 machine code generator"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="1" Release="1"/>
+    <Version Major="1" Minor="1" Release="2"/>
     <Files>
       <Item>
         <Filename Value="../../jit/ParseJit.Decoder.pas"/>

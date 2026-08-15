@@ -148,6 +148,14 @@ foreach ($Test in @('JitDump', 'JitBench', 'JitParserTest', 'JitContractTest', '
 
 $CountsFile = Join-Path $PSScriptRoot 'counts.tsv'
 $Tab = [char]9
+# The header is ENGLISH because the file itself ships. It is declared in
+# jit/README.md and goes out as it is; the comment stripping does not touch it,
+# since it is not a Pascal source. The monorepo copy of this script used to write
+# a Russian header while the published copy already wrote an English one - and
+# counts.tsv is produced by the monorepo copy, so 64 Cyrillic characters reached
+# the release tree and reddened the publication-defect gate. Fixing the file
+# itself does not hold: the next run rewrites it. It is fixed here, in what
+# produces it.
 $Lines = @('# How many checks the run gave. Written by build.ps1, not edited by hand.')
 $Lines += ('# program' + $Tab + 'checks')
 foreach ($k in ($Counts.Keys | Sort-Object)) { $Lines += ($k + $Tab + $Counts[$k]) }

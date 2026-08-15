@@ -3,6 +3,7 @@
   <Package Version="5">
     <PathDelim Value="/"/>
     <Name Value="crosspascal_parser"/>
+    <Type Value="RunAndDesignTime"/>
     <Author Value="Yuriy Pisarev"/>
     <CompilerOptions>
       <Version Value="11"/>
@@ -39,11 +40,12 @@ if (TargetOS &lt;&gt; 'win32') and (TargetOS &lt;&gt; 'win64') then
     </CompilerOptions>
     <Description Value="MathParser: a compiler and interpreter of mathematical expressions (core)"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="1" Release="1"/>
+    <Version Major="1" Minor="1" Release="2"/>
     <Files>
       <Item>
         <Filename Value="../../src/Parser.pas"/>
         <UnitName Value="Parser"/>
+        <HasRegisterProc Value="True"/>
       </Item>
       <Item>
         <Filename Value="../../src/ParseMethod.pas"/>
@@ -84,10 +86,12 @@ if (TargetOS &lt;&gt; 'win32') and (TargetOS &lt;&gt; 'win64') then
       <Item>
         <Filename Value="../../src/ParseManager.pas"/>
         <UnitName Value="ParseManager"/>
+        <HasRegisterProc Value="True"/>
       </Item>
       <Item>
         <Filename Value="../../src/ParseValueList.pas"/>
         <UnitName Value="ParseValueList"/>
+        <HasRegisterProc Value="True"/>
       </Item>
       <Item>
         <Filename Value="../../src/ParseCache.pas"/>
@@ -108,6 +112,7 @@ if (TargetOS &lt;&gt; 'win32') and (TargetOS &lt;&gt; 'win64') then
       <Item>
         <Filename Value="../../src/Calculator.pas"/>
         <UnitName Value="Calculator"/>
+        <HasRegisterProc Value="True"/>
       </Item>
       <Item>
         <Filename Value="../../src/CalcUtils.pas"/>
@@ -140,6 +145,7 @@ if (TargetOS &lt;&gt; 'win32') and (TargetOS &lt;&gt; 'win64') then
       <Item>
         <Filename Value="../../src/Connector.pas"/>
         <UnitName Value="Connector"/>
+        <HasRegisterProc Value="True"/>
       </Item>
       <Item>
         <Filename Value="../../src/EventUtils.pas"/>
@@ -156,6 +162,7 @@ if (TargetOS &lt;&gt; 'win32') and (TargetOS &lt;&gt; 'win64') then
       <Item>
         <Filename Value="../../src/BlobManager.pas"/>
         <UnitName Value="BlobManager"/>
+        <HasRegisterProc Value="True"/>
       </Item>
       <Item>
         <Filename Value="../../src/ZUtils.pas"/>
@@ -204,6 +211,7 @@ if (TargetOS &lt;&gt; 'win32') and (TargetOS &lt;&gt; 'win64') then
       <Item>
         <Filename Value="../../src/SyncThread.pas"/>
         <UnitName Value="SyncThread"/>
+        <HasRegisterProc Value="True"/>
       </Item>
       <Item>
         <Filename Value="../../src/ThreadUtils.pas"/>
@@ -220,12 +228,18 @@ if (TargetOS &lt;&gt; 'win32') and (TargetOS &lt;&gt; 'win64') then
       <Item>
         <Filename Value="../../src/ExactTimer.pas"/>
         <UnitName Value="ExactTimer"/>
+        <HasRegisterProc Value="True"/>
       </Item>
       <Item>
         <Filename Value="../../src/ScriptFormat.pas"/>
         <UnitName Value="ScriptFormat"/>
       </Item>
     </Files>
+    <RequiredPkgs>
+      <Item>
+        <PackageName Value="FCL"/>
+      </Item>
+    </RequiredPkgs>
     <UsageOptions>
       <UnitPath Value="$(PkgOutDir)"/>
     </UsageOptions>
