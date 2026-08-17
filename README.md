@@ -215,6 +215,84 @@ while under FPC the library's `NativeInt` does not exist at all, so naming it
 explicitly is not portable either. `TFunctionHandle` is right on every target. The
 whole example is in `samples/docs/extend.dpr`.
 
+## Installation
+
+Nothing to install: this is a set of units. Clone it, put `src` on the search
+path - and `jit` as well for the accelerator - and you are done. What follows is
+that sentence turned into commands that have been run.
+
+```
+mkdir %USERPROFILE%\Desktop\Parser
+cd /d %USERPROFILE%\Desktop\Parser
+git clone https://github.com/pisarev/pascal-mathparser.git
+cd pascal-mathparser
+```
+
+The commands are for `cmd`; where PowerShell needs something else it is said on
+the spot.
+
+### With Delphi, by hand
+
+```
+mkdir out
+dcc64 -B -Q -U"src;jit" -I"src" -NS"System;System.Win;Winapi" -Eout samples\docs\bindvar.dpr
+out\bindvar.exe
+```
+
+That builds one of the listings from this file and runs it; it prints `6`.
+
+Three things about that command line, each of which stops the compiler when it is
+missing. The namespace prefixes have to be given: the IDE takes them from the
+project, `dcc64` does not, and without them it fails on `SysUtils` and then on
+`Windows`. The include path has to be given separately from the unit path: the
+IDE passes one search path as both, `dcc64` does not. And in PowerShell the
+quotes have to stay, since the switches carry semicolons.
+
+`dcc64` is not on the path by default - it lives in the `bin` folder of the
+installation, and `rsvars.bat` there puts it on the path of the current prompt.
+
+### With Delphi, by script
+
+The design-time packages are built for you:
+
+```
+pwsh -File packages\delphi\build.ps1
+```
+
+It ends with `Delphi packages: did not build 0`. Install
+`packages\delphi\crosspascal_parser_dsgn.dproj` from the IDE afterwards if you
+want the components on the palette.
+
+### With Lazarus, by hand
+
+The packages build from a configuration of their own, which leaves your installed
+Lazarus exactly as it was:
+
+```
+mkdir lazpcp
+"C:\lazarus\lazbuild.exe" --pcp=%CD%\lazpcp packages\lazarus\crosspascal_parser.lpk
+"C:\lazarus\lazbuild.exe" --pcp=%CD%\lazpcp packages\lazarus\crosspascal_parserjit.lpk
+```
+
+The second one is the accelerator and is optional.
+
+### With Free Pascal, by script
+
+The battery under FPC on Windows:
+
+```
+set FPC_EXE=C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe
+set LAZARUS_DIR=C:\lazarus
+pwsh -File tests\build_fpc.ps1
+```
+
+It ends with `FPC DONE: failures 0, skipped 0`. Both variables are needed and for
+different reasons: the first because a normal Lazarus install does not put `fpc`
+on the path, the second because two of the test programs reach LazUtils, and
+without it they stop at `Can't find unit FPCAdds used by LazUTF8`.
+
+On Linux the same battery is `tests/build_parser_linux.sh`.
+
 ## Building
 
 Add `src` to the project search path, and `jit` as well if you want the
