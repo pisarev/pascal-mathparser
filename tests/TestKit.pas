@@ -115,7 +115,8 @@ end;
 
 procedure CheckDouble(const Name: string; const Actual, Expected, Epsilon: Double);
 begin
-  Check(Name, SameValue(Actual, Expected, Epsilon), Format('actual=%.10g expected=%.10g', [Actual, Expected]));
+  Check(Name, SameValue(Actual, Expected, Epsilon),
+    Format('actual=%.10g expected=%.10g', [Actual, Expected]));
 end;
 
 procedure Fail(const Name, Details: string);

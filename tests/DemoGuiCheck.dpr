@@ -54,14 +54,14 @@ begin
         Writeln('Execution mode: interpreter (', Compiled.Reason, ')');
       Writeln('Repeat count: ', FRepeatCount);
       Writeln('Result: ', ValueToText(FParser.ExecuteScript(Script)^));
-      Writeln('Execution time: ', Trunc(TickCount / 1000), ' seconds ', Round(Frac(TickCount / 1000) * 1000),
-        ' milliseconds');
+      Writeln('Execution time: ', Trunc(TickCount / 1000), ' seconds ',
+        Round(Frac(TickCount / 1000) * 1000), ' milliseconds');
       { for comparison: the same count through the interpreter }
       TickCount := GetTickCount;
       for I := 1 to FRepeatCount do FParser.ExecuteScript(Script);
       TickCount := GetTickCount - TickCount;
-      Writeln('Same loop through the interpreter: ', Trunc(TickCount / 1000), ' seconds ', Round(Frac(TickCount / 1000) * 1000),
-        ' milliseconds');
+      Writeln('Same loop through the interpreter: ', Trunc(TickCount / 1000), ' seconds ',
+        Round(Frac(TickCount / 1000) * 1000), ' milliseconds');
     finally
       Compiled.Free;
     end;

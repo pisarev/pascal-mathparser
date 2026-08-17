@@ -326,8 +326,8 @@ begin
   else
     Result := -1;
   {$ELSE}
-  Handle := {$IFDEF DELPHI_XE7}WinApi.Windows{$ELSE}Windows{$ENDIF}.CreateFile(PChar(FileName), GENERIC_READ,
-    FILE_SHARE_READ or FILE_SHARE_WRITE, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
+  Handle := {$IFDEF DELPHI_XE7}WinApi.Windows{$ELSE}Windows{$ENDIF}.CreateFile(PChar(FileName),
+    GENERIC_READ, FILE_SHARE_READ or FILE_SHARE_WRITE, nil, OPEN_EXISTING, FILE_ATTRIBUTE_NORMAL, 0);
   if Handle = INVALID_HANDLE_VALUE then
     Result := -1
   else

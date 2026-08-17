@@ -23,7 +23,8 @@ var
   PerOp: Double;
 begin
   PerOp := Seconds / Ops * 1E9;
-  Writeln(Format('%-34s %10.0f op/s  %10.1f ns/op  (%d ops, %.3f s)', [Name, Ops / Seconds, PerOp, Ops, Seconds]));
+  Writeln(Format('%-34s %10.0f op/s  %10.1f ns/op  (%d ops, %.3f s)',
+    [Name, Ops / Seconds, PerOp, Ops, Seconds]));
   Flush(Output);
 end;
 
@@ -108,7 +109,8 @@ var
 begin
   { the variable is created once, the counter is reset at the start of every run }
   P.AsDouble('new("bi", 0)');
-  Formula := Format('set("bi", 0) + while(get("bi") < %d, set("bi", get("bi") + 1)) + get("bi")', [Iterations]);
+  Formula := Format('set("bi", 0) + while(get("bi") < %d, set("bi", get("bi") + 1)) + get("bi")',
+    [Iterations]);
   P.StringToScript(Formula, Script);
   if Round(GetDouble(P.ExecuteScript(Script)^)) < Iterations then
     Writeln('  WARNING: loop did not run to the end');

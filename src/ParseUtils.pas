@@ -663,7 +663,8 @@ begin
         ItemHeader^.Sign := Ord(LessZero(Value));
         Value := Positive(Value);
         ItemHeader^.UserType.Active := TypeFlag;
-        ItemHeader^.UserType.Handle := MakeTypeHandle(Parser.TData^, Value.ValueType, Parser.DefaultTypeHandle);
+        ItemHeader^.UserType.Handle := MakeTypeHandle(Parser.TData^, Value.ValueType,
+          Parser.DefaultTypeHandle);
         WriteNumber(Result, Value);
       end;
     stScript:
@@ -943,7 +944,8 @@ type
 
   function Add(var Data: TArrayData; const Index, FHandle: NativeInt): Boolean; overload;
   begin
-    Result := not Assigned(Method) or not CheckFHandle(FData, FHandle) or Method(@FData.FA[FHandle]);
+    Result := not Assigned(Method) or not CheckFHandle(FData, FHandle) or
+      Method(@FData.FA[FHandle]);
     if Result then AddFlag(FFArray, Data, Index, FHandle);
   end;
 
@@ -1408,7 +1410,8 @@ begin
   if GetFFArray(Text, ltChar, Data, nil, FFArray, nil, nil, BracketFunction) then
     try
       for I := Low(FFArray) to High(FFArray) do
-        ChangeBracket(Text, FFArray[I].Index + NativeInt(StrLen(Data.FA[FFArray[I].Handle].Name)), BracketFrom, BracketTo);
+        ChangeBracket(Text, FFArray[I].Index + NativeInt(StrLen(Data.FA[FFArray[I].Handle].Name)),
+          BracketFrom, BracketTo);
     finally
       FFArray := nil;
     end;
@@ -2084,7 +2087,8 @@ var
   Data: PFunctionData;
 begin
   Data := PFunctionData(Target);
-  Result := CompareValue(StrLen(FunctionByIndex(Data, BIndex).Name), StrLen(FunctionByIndex(Data, AIndex).Name));
+  Result := CompareValue(StrLen(FunctionByIndex(Data, BIndex).Name),
+    StrLen(FunctionByIndex(Data, AIndex).Name));
 end;
 
 procedure FunctionExchange(const AIndex, BIndex: Integer; const Target, P: Pointer);
@@ -2108,7 +2112,8 @@ begin
     SetLength(Data.FOrder, Length(Data.FA));
     for I := Low(Data.FOrder) to High(Data.FOrder) do
       Data.FOrder[I] := I;
-    QSort(Data, Low(Data.FA), High(Data.FA), {$IFDEF FPC}@{$ENDIF}FunctionCompare, {$IFDEF FPC}@{$ENDIF}FunctionExchange);
+    QSort(Data, Low(Data.FA), High(Data.FA), {$IFDEF FPC}@{$ENDIF}FunctionCompare,
+      {$IFDEF FPC}@{$ENDIF}FunctionExchange);
     for I := Low(Data.FA) to High(Data.FA) do
     begin
       case Data.FA[I].Kind of
@@ -2179,7 +2184,8 @@ begin
   begin
     SetLength(Data.TOrder, Length(Data.TA));
     for I := Low(Data.TOrder) to High(Data.TOrder) do Data.TOrder[I] := I;
-    QSort(Data, Low(Data.TA), High(Data.TA), {$IFDEF FPC}@{$ENDIF}TypeCompare, {$IFDEF FPC}@{$ENDIF}TypeExchange);
+    QSort(Data, Low(Data.TA), High(Data.TA), {$IFDEF FPC}@{$ENDIF}TypeCompare,
+      {$IFDEF FPC}@{$ENDIF}TypeExchange);
     if not Assigned(Data.NameList) then
     begin
       Data.NameList := TFlexibleList.Create(nil);

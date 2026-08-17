@@ -252,7 +252,8 @@ begin
     Sleep(5);
     Inc(Spent, 5);
   end;
-  Check('the second thread got inside an evaluation', Holder.FInside, Format('waited %d ms, the thread said: %s', [Spent, B.FNote]));
+  Check('the second thread got inside an evaluation', Holder.FInside,
+    Format('waited %d ms, the thread said: %s', [Spent, B.FNote]));
   { The first thread evaluates its formula while the second one stands inside }
   A := Launch(MainParser, Exiting);
   Check('the thread with the Exit finished', Waiting(A, 10000), 'never finished');
@@ -585,10 +586,14 @@ begin
     try
       Holder.FParser := MainParser;
       { Registration is over before the first evaluation - that is the contract }
-      MainParser.AddFunction('hold', HoldHandle, fkMethod, MakeFunctionMethod(Holder.Hold, 1, pkValue), False);
-      MainParser.AddFunction('nested', NestedHandle, fkMethod, MakeFunctionMethod(Holder.CallNested, 1, pkValue), False);
-      MainParser.AddFunction('other', OtherHandle, fkMethod, MakeFunctionMethod(Holder.CallOther, 1, pkValue), False);
-      MainParser.AddFunction('boom', BoomHandle, fkMethod, MakeFunctionMethod(Holder.Boom, 1, pkValue), False);
+      MainParser.AddFunction('hold', HoldHandle, fkMethod,
+        MakeFunctionMethod(Holder.Hold, 1, pkValue), False);
+      MainParser.AddFunction('nested', NestedHandle, fkMethod,
+        MakeFunctionMethod(Holder.CallNested, 1, pkValue), False);
+      MainParser.AddFunction('other', OtherHandle, fkMethod,
+        MakeFunctionMethod(Holder.CallOther, 1, pkValue), False);
+      MainParser.AddFunction('boom', BoomHandle, fkMethod,
+        MakeFunctionMethod(Holder.Boom, 1, pkValue), False);
       R1_ParallelRootExitIsIndependent;
       R2_RecursiveExitBelongsToItsThreadRoot;
       R3_StormLeavesExitWorking;

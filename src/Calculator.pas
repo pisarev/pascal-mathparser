@@ -636,8 +636,9 @@ procedure TCalculator.CheckThread(const NotifyType: PNotifyType);
 const
   Forbidden = [ntBFA, ntBTA, ntBFD, ntBTD];
 begin
-  if (FThread.FActiveThreadCount > 0) and (not Assigned(NotifyType) or (NotifyType^ in Forbidden)) then
-    raise Error(OperationError);
+  if (FThread.FActiveThreadCount > 0) and (not Assigned(NotifyType) or
+    (NotifyType^ in Forbidden)) then
+      raise Error(OperationError);
 end;
 
 procedure TCalculator.Clear;

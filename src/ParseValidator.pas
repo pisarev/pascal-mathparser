@@ -92,8 +92,8 @@ end;
 initialization
   Validator := TValidator.Create;
   Reserve[rtName] := LBrace + RBrace + LParenthesis + RParenthesis + LBracket + RBracket + Comma +
-    {$IFDEF DELPHI_XE}FormatSettings.DecimalSeparator{$ELSE}DecimalSeparator{$ENDIF} + DoubleQuote + Minus +
-    Plus + TextConsts.Quote + Semicolon + Space;
+    {$IFDEF DELPHI_XE}FormatSettings.DecimalSeparator{$ELSE}DecimalSeparator{$ENDIF} + DoubleQuote +
+    Minus + Plus + TextConsts.Quote + Semicolon + Space;
   Reserve[rtText] := LBrace + RBrace + TextConsts.Quote;
 
 finalization

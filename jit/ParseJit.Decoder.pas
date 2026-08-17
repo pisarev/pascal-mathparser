@@ -223,7 +223,8 @@ begin
           begin
             K := Add(joString, Depth, Position);
             Size := Item.ScriptString.Size;
-            SetString(FOps[K].Text, PChar(Position + SizeOf(TCode) + SizeOf(TScriptString)), Size div SizeOf(Char));
+            SetString(FOps[K].Text, PChar(Position + SizeOf(TCode) + SizeOf(TScriptString)),
+              Size div SizeOf(Char));
             Inc(Position, SizeOf(TCode) + SizeOf(TScriptString) + Size);
           end;
         FunctionCode:
@@ -396,7 +397,8 @@ begin
               Line := Line + Format(' type=%d', [FOps[I].UserType.Handle]);
           end;
         joConst:
-          Line := Line + ' ' + ValueToText(FOps[I].Value) + ' [' + ClassText[FOps[I].ValueClass] + ']';
+          Line := Line + ' ' + ValueToText(FOps[I].Value) + ' [' + ClassText[FOps[I].ValueClass] +
+            ']';
         joString: Line := Line + ' "' + FOps[I].Text + '"';
         joCall:
           begin

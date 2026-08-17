@@ -231,7 +231,8 @@ end;
 function TTextBuilder.Insert(const P: Pointer; const Count, AIndex: Integer): Boolean;
 begin
   IncreaseCapacity(Count);
-  Result := MemoryUtils.Insert(FCharArray, P, AIndex * SizeOf(Char), Size * SizeOf(Char), Count * SizeOf(Char));
+  Result := MemoryUtils.Insert(FCharArray, P, AIndex * SizeOf(Char), Size * SizeOf(Char),
+    Count * SizeOf(Char));
   MoveIndex(Count);
 end;
 

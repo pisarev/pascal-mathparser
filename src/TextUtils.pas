@@ -209,7 +209,8 @@ begin
   if Index < 0 then
     Result := ''
   else
-    Result := SubStr(Strings[Index], {$IFDEF DELPHI_7}Strings.NameValueSeparator{$ELSE}Equal{$ENDIF}, 1, False);
+    Result := SubStr(Strings[Index],
+      {$IFDEF DELPHI_7}Strings.NameValueSeparator{$ELSE}Equal{$ENDIF}, 1, False);
 end;
 
 procedure SetValueFromIndex(const Strings: TStrings; Index: Integer; const Value: string);
@@ -1266,8 +1267,8 @@ begin
     I := 1;
     while I <= Length(Text) do
     begin
-      if (Text[I] = Percent) and TryStrToInt(Dollar + Copy(Text, I + 1, DigitCount), J) and ((CharSet = []) or
-        CharInSet(Chr(J), CharSet)) then
+      if (Text[I] = Percent) and TryStrToInt(Dollar + Copy(Text, I + 1, DigitCount), J) and
+        ((CharSet = []) or CharInSet(Chr(J), CharSet)) then
         begin
           B.Append(Chr(J));
           Inc(I, DigitCount + 1);
@@ -1304,7 +1305,8 @@ begin
   if {$IFDEF DELPHI_XE7}System.SysUtils.CreateGuid(G){$ELSE}SysUtils.CreateGuid(G){$ENDIF} = S_OK then
   begin
     SetLength(Result, Size);
-    StrLFmt(PChar(Result), Size, Template, [G.D1, G.D2, G.D3, G.D4[0], G.D4[1], G.D4[2], G.D4[3], G.D4[4], G.D4[5], G.D4[6], G.D4[7]]);
+    StrLFmt(PChar(Result), Size, Template,
+      [G.D1, G.D2, G.D3, G.D4[0], G.D4[1], G.D4[2], G.D4[3], G.D4[4], G.D4[5], G.D4[6], G.D4[7]]);
   end
   else
     raise Exception.Create('Cannot create unique name');
@@ -1317,7 +1319,8 @@ var
 begin
   Handle := SelectObject(DC, FontHandle);
   try
-    Result := DrawText(DC, PChar(Text), Length(Text), Rect, DT_LEFT or DT_WORDBREAK or DT_EXPANDTABS or DT_NOPREFIX or DT_CALCRECT);
+    Result := DrawText(DC, PChar(Text), Length(Text), Rect,
+      DT_LEFT or DT_WORDBREAK or DT_EXPANDTABS or DT_NOPREFIX or DT_CALCRECT);
   finally
     SelectObject(DC, Handle);
   end;

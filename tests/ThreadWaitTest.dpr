@@ -90,7 +90,8 @@ begin
     Spent := MilliSecondsBetween(Now, Started);
     Check('gives False when the time runs out', not Res, BoolToStr(Res, True));
     { the upper bound is generous: the FPC loop steps in 100 ms, plus the scheduler }
-    Check('waits about the time given, not longer', (Spent >= 200) and (Spent < 1500), IntToStr(Spent) + ' ms');
+    Check('waits about the time given, not longer', (Spent >= 200) and (Spent < 1500),
+      IntToStr(Spent) + ' ms');
     T.Abort;
   finally
     T.Free;

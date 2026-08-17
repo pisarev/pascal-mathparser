@@ -160,8 +160,8 @@ begin
               Item.FHandle := -1;
             end
             else
-              Result := Parser.AddFunction(ItemName, Item.FHandle, fkHandle, MakeFunctionMethod(False, False, 0),
-                not AnsiStartsText(Lock, AName));
+              Result := Parser.AddFunction(ItemName, Item.FHandle, fkHandle,
+                MakeFunctionMethod(False, False, 0), not AnsiStartsText(Lock, AName));
             if Result then
             begin
               List.BeginUpdate;
@@ -231,8 +231,8 @@ begin
             ZeroMemory(Item, SizeOf(TItem));
           end;
           S := Trim(List.Names[I]);
-          if Parser.AddFunction(S, Item.FHandle, fkHandle, MakeFunctionMethod(False, False, 0), not DeletePrefix(S, Lock),
-            vtDouble) then
+          if Parser.AddFunction(S, Item.FHandle, fkHandle, MakeFunctionMethod(False, False, 0),
+            not DeletePrefix(S, Lock), vtDouble) then
             begin
               List.Objects[I] := Pointer(Item);
               Item := nil;
@@ -533,8 +533,8 @@ var
   FA: {$IFDEF DELPHI_10.2}TArray<NativeInt>{$ELSE}TNativeIntDynArray{$ENDIF};
   I: Integer;
 begin
-  Result := FindParser and Parser.GetFunction(FunctionHandle, AFunction) and (not AFunction.Optimizable or
-    not FOptimization);
+  Result := FindParser and Parser.GetFunction(FunctionHandle, AFunction) and
+    (not AFunction.Optimizable or not FOptimization);
   if Result then
   begin
     Helper.GetFunctionArray(Script, FA);

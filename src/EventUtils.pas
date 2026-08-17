@@ -99,8 +99,8 @@ procedure SortEventArray(var Data: TEventData);
 begin
   if Data.Flag then
   begin
-    QSort(Data.EventArray, Low(Data.EventArray), High(Data.EventArray), {$IFDEF FPC}@{$ENDIF}EventCompare,
-      {$IFDEF FPC}@{$ENDIF}EventExchange);
+    QSort(Data.EventArray, Low(Data.EventArray), High(Data.EventArray),
+      {$IFDEF FPC}@{$ENDIF}EventCompare, {$IFDEF FPC}@{$ENDIF}EventExchange);
     Data.Flag := False;
   end;
 end;

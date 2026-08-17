@@ -41,7 +41,8 @@ var
 // A reciprocal: multiplied by its base it gives one.
 procedure Reciprocal(const Name, Base, Arg: string);
 begin
-  CheckDouble(Format('%s(%s) * %s(%s) = 1', [Name, Arg, Base, Arg]), P.AsDouble(Format('%s(%s) * %s(%s)', [Name, Arg, Base, Arg])), 1);
+  CheckDouble(Format('%s(%s) * %s(%s) = 1', [Name, Arg, Base, Arg]),
+    P.AsDouble(Format('%s(%s) * %s(%s)', [Name, Arg, Base, Arg])), 1);
 end;
 
 {
@@ -54,7 +55,8 @@ end;
 }
 procedure RoundTrip(const Inverse, Direct, Arg: string; const Value: Double);
 begin
-  CheckDouble(Format('%s(%s(%s)) = %s', [Inverse, Direct, Arg, Arg]), P.AsDouble(Format('%s(%s(%s))', [Inverse, Direct, Arg])), Value);
+  CheckDouble(Format('%s(%s(%s)) = %s', [Inverse, Direct, Arg, Arg]),
+    P.AsDouble(Format('%s(%s(%s))', [Inverse, Direct, Arg])), Value);
 end;
 
 begin

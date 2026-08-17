@@ -2057,8 +2057,9 @@ var
 begin
   Result.Reset;
   if Empty then Exit;
-  if (Rect.Left < 0) or (Rect.Top < 0) or (Rect.Right <= Rect.Left) or (Rect.Bottom <= Rect.Top) then
-    Exit;
+  if (Rect.Left < 0) or (Rect.Top < 0) or (Rect.Right <= Rect.Left) or
+    (Rect.Bottom <= Rect.Top) then
+      Exit;
   if Rect.Bottom > VSize then Exit;
   for I := Rect.Top to Rect.Bottom - 1 do if Rect.Right > Length(RawData[I]) then Exit;
   RowCount := Rect.Bottom - Rect.Top;
@@ -3653,7 +3654,8 @@ var
   Size: Integer;
 begin
   Size := Length(Target);
-  Result := Delete(Pointer(Target), Index * SizeOf(NativeUInt), SizeOf(NativeUInt), Size * SizeOf(NativeUInt));
+  Result := Delete(Pointer(Target), Index * SizeOf(NativeUInt), SizeOf(NativeUInt),
+    Size * SizeOf(NativeUInt));
   if Result then SetLength(Target, Size - 1);
 end;
 
@@ -3852,7 +3854,8 @@ var
 begin
   Size := Length(Target);
   SetLength(Target, Size + 1);
-  Result := Insert(Pointer(Target), @Value, Index * SizeOf(NativeInt), Size * SizeOf(NativeInt), SizeOf(NativeInt));
+  Result := Insert(Pointer(Target), @Value, Index * SizeOf(NativeInt), Size * SizeOf(NativeInt),
+    SizeOf(NativeInt));
 end;
 
 function Insert(var Target: TArray<NativeUInt>; const Value: NativeUInt; const Index: Integer): Boolean;
@@ -3861,7 +3864,8 @@ var
 begin
   Size := Length(Target);
   SetLength(Target, Size + 1);
-  Result := Insert(Pointer(Target), @Value, Index * SizeOf(NativeUInt), Size * SizeOf(NativeUInt), SizeOf(NativeUInt));
+  Result := Insert(Pointer(Target), @Value, Index * SizeOf(NativeUInt), Size * SizeOf(NativeUInt),
+    SizeOf(NativeUInt));
 end;
 
 function Insert(var Target: TArray<Int64>; const Value: Int64; const Index: Integer): Boolean;
@@ -3926,7 +3930,8 @@ var
 begin
   Size := Length(Target);
   SetLength(Target, Size + 1);
-  Result := Insert(Pointer(Target), @Value, Index * SizeOf(Extended), Size * SizeOf(Extended), SizeOf(Extended));
+  Result := Insert(Pointer(Target), @Value, Index * SizeOf(Extended), Size * SizeOf(Extended),
+    SizeOf(Extended));
 end;
 
 function Insert(var Target: TArray<Char>; const Value: Char; const Index: Integer): Boolean;
@@ -3974,7 +3979,8 @@ end;
 
 function Search(const Target: TArray<NativeInt>; const Value: NativeInt): Integer;
 begin
-  Result := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}NativeIntSearchCompare, @Value);
+  Result := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}NativeIntSearchCompare, @Value);
 end;
 
 function Find(const Target: TArray<NativeInt>; const Value: NativeInt; const P: Pointer;
@@ -3982,7 +3988,8 @@ function Find(const Target: TArray<NativeInt>; const Value: NativeInt; const P: 
 var
   I: Integer;
 begin
-  I := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}NativeIntSearchCompare, @Value, P);
+  I := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}NativeIntSearchCompare, @Value, P);
   Result := I >= 0;
   if Result and Assigned(Index) then Index^ := I;
 end;
@@ -3997,7 +4004,8 @@ end;
 
 function Search(const Target: TArray<NativeUInt>; const Value: NativeUInt): Integer;
 begin
-  Result := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}NativeUIntSearchCompare, @Value);
+  Result := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}NativeUIntSearchCompare, @Value);
 end;
 
 function Find(const Target: TArray<NativeUInt>; const Value: NativeUInt; const P: Pointer;
@@ -4005,7 +4013,8 @@ function Find(const Target: TArray<NativeUInt>; const Value: NativeUInt; const P
 var
   I: Integer;
 begin
-  I := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}NativeUIntSearchCompare, @Value, P);
+  I := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}NativeUIntSearchCompare, @Value, P);
   Result := I >= 0;
   if Result and Assigned(Index) then Index^ := I;
 end;
@@ -4020,7 +4029,8 @@ end;
 
 function Search(const Target: TArray<Int64>; const Value: Int64): Integer;
 begin
-  Result := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}Int64SearchCompare, @Value);
+  Result := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}Int64SearchCompare, @Value);
 end;
 
 function Find(const Target: TArray<Int64>; const Value: Int64; const P: Pointer;
@@ -4043,7 +4053,8 @@ end;
 
 function Search(const Target: TArray<Integer>; const Value: Integer): Integer;
 begin
-  Result := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}IntegerSearchCompare, @Value);
+  Result := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}IntegerSearchCompare, @Value);
 end;
 
 function Find(const Target: TArray<Integer>; const Value: Integer; const P: Pointer;
@@ -4051,7 +4062,8 @@ function Find(const Target: TArray<Integer>; const Value: Integer; const P: Poin
 var
   I: Integer;
 begin
-  I := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}IntegerSearchCompare, @Value, P);
+  I := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}IntegerSearchCompare, @Value, P);
   Result := I >= 0;
   if Result and Assigned(Index) then Index^ := I;
 end;
@@ -4066,7 +4078,8 @@ end;
 
 function Search(const Target: TArray<Word>; const Value: Word): Integer;
 begin
-  Result := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}WordSearchCompare, @Value);
+  Result := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}WordSearchCompare, @Value);
 end;
 
 function Find(const Target: TArray<Word>; const Value: Word; const P: Pointer;
@@ -4089,7 +4102,8 @@ end;
 
 function Search(const Target: TArray<Byte>; const Value: Byte): Integer;
 begin
-  Result := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}ByteSearchCompare, @Value);
+  Result := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}ByteSearchCompare, @Value);
 end;
 
 function Find(const Target: TArray<Byte>; const Value: Byte; const P: Pointer;
@@ -4112,7 +4126,8 @@ end;
 
 function Search(const Target: TArray<Single>; const Value: Single): Integer;
 begin
-  Result := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}SingleSearchCompare, @Value);
+  Result := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}SingleSearchCompare, @Value);
 end;
 
 function Find(const Target: TArray<Single>; const Value: Single; const P: Pointer;
@@ -4136,7 +4151,8 @@ end;
 
 function Search(const Target: TArray<Double>; const Value: Double): Integer;
 begin
-  Result := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}DoubleSearchCompare, @Value);
+  Result := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}DoubleSearchCompare, @Value);
 end;
 
 function Find(const Target: TArray<Double>; const Value: Double; const P: Pointer;
@@ -4160,7 +4176,8 @@ end;
 
 function Search(const Target: TArray<Extended>; const Value: Extended): Integer;
 begin
-  Result := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}ExtendedSearchCompare, @Value);
+  Result := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}ExtendedSearchCompare, @Value);
 end;
 
 function Find(const Target: TArray<Extended>; const Value: Extended; const P: Pointer;
@@ -4168,7 +4185,8 @@ function Find(const Target: TArray<Extended>; const Value: Extended; const P: Po
 var
   I: Integer;
 begin
-  I := BSearch(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}ExtendedSearchCompare, @Value, P);
+  I := BSearch(Pointer(Target), Low(Target), High(Target),
+    {$IFDEF FPC}@{$ENDIF}ExtendedSearchCompare, @Value, P);
   Result := I >= 0;
   if Result and Assigned(Index) then Index^ := I;
 end;
@@ -4279,7 +4297,8 @@ end;
 
 procedure Sort(var Target: TArray<NativeInt>);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}NativeIntSortCompare, {$IFDEF FPC}@{$ENDIF}NativeIntExchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}NativeIntSortCompare,
+    {$IFDEF FPC}@{$ENDIF}NativeIntExchange);
 end;
 
 function NativeUIntSortCompare(const AIndex, BIndex: Integer;
@@ -4302,7 +4321,8 @@ end;
 
 procedure Sort(var Target: TArray<NativeUInt>);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}NativeUIntSortCompare, {$IFDEF FPC}@{$ENDIF}NativeUIntExchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}NativeUIntSortCompare,
+    {$IFDEF FPC}@{$ENDIF}NativeUIntExchange);
 end;
 
 function Int64SortCompare(const AIndex, BIndex: Integer;
@@ -4325,7 +4345,8 @@ end;
 
 procedure Sort(var Target: TArray<Int64>);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}Int64SortCompare, {$IFDEF FPC}@{$ENDIF}Int64Exchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}Int64SortCompare,
+    {$IFDEF FPC}@{$ENDIF}Int64Exchange);
 end;
 
 function IntegerSortCompare(const AIndex, BIndex: Integer;
@@ -4348,7 +4369,8 @@ end;
 
 procedure Sort(var Target: TArray<Integer>);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}IntegerSortCompare, {$IFDEF FPC}@{$ENDIF}IntegerExchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}IntegerSortCompare,
+    {$IFDEF FPC}@{$ENDIF}IntegerExchange);
 end;
 
 function WordSortCompare(const AIndex, BIndex: Integer;
@@ -4371,7 +4393,8 @@ end;
 
 procedure Sort(var Target: TArray<Word>);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}WordSortCompare, {$IFDEF FPC}@{$ENDIF}WordExchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}WordSortCompare,
+    {$IFDEF FPC}@{$ENDIF}WordExchange);
 end;
 
 function ByteSortCompare(const AIndex, BIndex: Integer;
@@ -4394,7 +4417,8 @@ end;
 
 procedure Sort(var Target: TArray<Byte>);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}ByteSortCompare, {$IFDEF FPC}@{$ENDIF}ByteExchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}ByteSortCompare,
+    {$IFDEF FPC}@{$ENDIF}ByteExchange);
 end;
 
 function SingleSortCompare(const AIndex, BIndex: Integer;
@@ -4417,7 +4441,8 @@ end;
 
 procedure Sort(var Target: TArray<Single>);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}SingleSortCompare, {$IFDEF FPC}@{$ENDIF}SingleExchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}SingleSortCompare,
+    {$IFDEF FPC}@{$ENDIF}SingleExchange);
 end;
 
 {$IF NOT Defined(FPC) OR Defined(FPC_HAS_TYPE_EXTENDED)}
@@ -4441,7 +4466,8 @@ end;
 
 procedure Sort(var Target: TArray<Double>);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}DoubleSortCompare, {$IFDEF FPC}@{$ENDIF}DoubleExchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}DoubleSortCompare,
+    {$IFDEF FPC}@{$ENDIF}DoubleExchange);
 end;
 {$ENDIF}
 
@@ -4465,7 +4491,8 @@ end;
 
 procedure Sort(var Target: TArray<Extended>);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}ExtendedSortCompare, {$IFDEF FPC}@{$ENDIF}ExtendedExchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}ExtendedSortCompare,
+    {$IFDEF FPC}@{$ENDIF}ExtendedExchange);
 end;
 
 function CharSortCompare(const AIndex, BIndex: Integer;
@@ -4488,7 +4515,8 @@ end;
 
 procedure Sort(var Target: TArray<Char>);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}CharSortCompare, {$IFDEF FPC}@{$ENDIF}CharExchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}CharSortCompare,
+    {$IFDEF FPC}@{$ENDIF}CharExchange);
 end;
 
 function StringSortCompare(const AIndex, BIndex: Integer;
@@ -4511,7 +4539,8 @@ end;
 
 procedure Sort(var Target: TArray<string>);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}StringSortCompare, {$IFDEF FPC}@{$ENDIF}StringExchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}StringSortCompare,
+    {$IFDEF FPC}@{$ENDIF}StringExchange);
 end;
 
 procedure Resize(const Target: Pointer; const PriorSize, Size: Integer; const Fill: Byte);

@@ -201,8 +201,8 @@ var
   I: Integer;
 begin
   I := Length(FAddresseeArray);
-  Result := MemoryUtils.Delete(FAddresseeArray, Index * SizeOf(TCustomAddressee), SizeOf(TCustomAddressee),
-    I * SizeOf(TCustomAddressee));
+  Result := MemoryUtils.Delete(FAddresseeArray, Index * SizeOf(TCustomAddressee),
+    SizeOf(TCustomAddressee), I * SizeOf(TCustomAddressee));
   if Result then SetLength(FAddresseeArray, I - 1);
 end;
 
@@ -214,7 +214,8 @@ end;
 
 function TNotifier.IndexOf(const Addressee: TCustomAddressee): Integer;
 begin
-  Result := MemoryUtils.IndexOf(FAddresseeArray, @Addressee, Length(FAddresseeArray), SizeOf(TCustomAddressee));
+  Result := MemoryUtils.IndexOf(FAddresseeArray, @Addressee, Length(FAddresseeArray),
+    SizeOf(TCustomAddressee));
 end;
 
 {$WARNINGS OFF}

@@ -77,7 +77,8 @@ begin
     Rate := 20;
     CheckDouble('the function is called with both arguments', P.AsDouble('discount(1000, rate)'), 800);
     Rate := 50;
-    CheckDouble('the variable is read at evaluation, not at registration', P.AsDouble('discount(1000, rate)'), 500);
+    CheckDouble('the variable is read at evaluation, not at registration',
+      P.AsDouble('discount(1000, rate)'), 500);
     CheckDouble('it composes with the built-ins', P.AsDouble('discount(1000, rate) / 2 + 1'), 251);
   finally
     Pricing.Free;

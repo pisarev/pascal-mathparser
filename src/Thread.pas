@@ -292,7 +292,8 @@ begin
     {$IFDEF FPC}
     Result := not WaitFor(FAbortTime) and (KillThread(FThreadID) = 0);
     {$ELSE}
-    Result := (WaitForSingleObject(FHandle, FAbortTime) = WAIT_TIMEOUT) and TerminateThread(FHandle, 0);
+    Result := (WaitForSingleObject(FHandle, FAbortTime) = WAIT_TIMEOUT) and
+      TerminateThread(FHandle, 0);
     {$ENDIF}
     if Result then
     begin
@@ -435,13 +436,15 @@ begin
       if FSuspended then
       begin
         if FStackSize > 0 then
-          FHandle := BeginThread(nil, FStackSize, @ThreadMethod, Pointer(Self), CREATE_SUSPENDED or STACK_SIZE_PARAM_IS_A_RESERVATION, FThreadId)
+          FHandle := BeginThread(nil, FStackSize, @ThreadMethod, Pointer(Self),
+            CREATE_SUSPENDED or STACK_SIZE_PARAM_IS_A_RESERVATION, FThreadId)
         else
           FHandle := BeginThread(nil, 0, @ThreadMethod, Pointer(Self), CREATE_SUSPENDED, FThreadId);
         Break;
       end;
       if FStackSize > 0 then
-        FHandle := BeginThread(nil, FStackSize, @ThreadMethod, Pointer(Self), STACK_SIZE_PARAM_IS_A_RESERVATION, FThreadId)
+        FHandle := BeginThread(nil, FStackSize, @ThreadMethod, Pointer(Self),
+          STACK_SIZE_PARAM_IS_A_RESERVATION, FThreadId)
       else
         FHandle := BeginThread(nil, 0, @ThreadMethod, Pointer(Self), 0, FThreadId);
     until True;

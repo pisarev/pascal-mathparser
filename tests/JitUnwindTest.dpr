@@ -92,7 +92,8 @@ begin
   if not Code.Ready then Exit;
   Base := 0;
   Entry := RtlLookupFunctionEntry(NativeUInt(Code.Code.Address), Base, nil);
-  Check('a description for our code was found', Assigned(Entry), 'the system takes this code for a leaf function');
+  Check('a description for our code was found', Assigned(Entry),
+    'the system takes this code for a leaf function');
   if not Assigned(Entry) then Exit;
   Check(
     'the description points at the start of our code',
@@ -162,7 +163,8 @@ begin
   finally
     SetExceptionMask(Mask);
   end;
-  Check('a throw from a called function reached the handler', Caught, Format('there was no exception, it returned %g', [Value]));
+  Check('a throw from a called function reached the handler', Caught,
+    Format('there was no exception, it returned %g', [Value]));
   Check('the process is still running', Alive);
   { Under the mask nothing changed: not a number, rather than an error }
   Value := Code.Execute;

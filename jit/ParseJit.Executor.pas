@@ -294,7 +294,8 @@ begin
       else
         RValue := EmptyValue;
       if (Step.FastOp <> foNone) and (IsFloat(LValue) or IsFloat(RValue)) and
-        (LValue.ValueType <> ValueTypes.vtUnknown) and (RValue.ValueType <> ValueTypes.vtUnknown) then
+        (LValue.ValueType <> ValueTypes.vtUnknown) and
+        (RValue.ValueType <> ValueTypes.vtUnknown) then
         begin
           if Step.FastOp = foMultiply then
             SetFloat(Value, FloatOf(LValue) * FloatOf(RValue))

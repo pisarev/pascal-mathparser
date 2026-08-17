@@ -102,10 +102,12 @@ begin
   Value.ValueType := vtUnknown;
   DirtyStack;
   ResultValue := Negative(Value);
-  Check('A#7 Negative(vtUnknown) is EmptyValue, not stack garbage', CompareMem(@ResultValue, @EmptyValue, SizeOf(TValue)));
+  Check('A#7 Negative(vtUnknown) is EmptyValue, not stack garbage',
+    CompareMem(@ResultValue, @EmptyValue, SizeOf(TValue)));
   DirtyStack;
   ResultValue := Positive(Value);
-  Check('A#7 Positive(vtUnknown) is EmptyValue, not stack garbage', CompareMem(@ResultValue, @EmptyValue, SizeOf(TValue)));
+  Check('A#7 Positive(vtUnknown) is EmptyValue, not stack garbage',
+    CompareMem(@ResultValue, @EmptyValue, SizeOf(TValue)));
   CheckFormula('A#28 strtodatetime with date and time', 'hourof(strtodatetime("01.02.2020 10:30"))', 10);
   { the reference comes from the formula: the library ArcSecH on FPC is
     noticeably less precise }
@@ -125,7 +127,8 @@ begin
   Check('B#5 GetNativeInt(-5) = -5', GetNativeInt(Value) = -5, IntToStr(GetNativeInt(Value)));
   DirtyStack;
   AssignInt64(Value, -1);
-  Check('B#5 GetNativeUInt(-1) wraps to all ones', GetNativeUInt(Value) = NativeUInt(-1), UIntToStr(GetNativeUInt(Value)));
+  Check('B#5 GetNativeUInt(-1) wraps to all ones', GetNativeUInt(Value) = NativeUInt(-1),
+    UIntToStr(GetNativeUInt(Value)));
   {$IFDEF CPUX64}
   P := Pointer($100000001);
   {$ELSE}
@@ -133,7 +136,8 @@ begin
   {$ENDIF}
   DirtyStack;
   AssignPointer(Value, P);
-  Check('B#6 AssignPointer keeps full pointer width', Pointer(GetNativeUInt(Value)) = P, UIntToStr(GetNativeUInt(Value)));
+  Check('B#6 AssignPointer keeps full pointer width', Pointer(GetNativeUInt(Value)) = P,
+    UIntToStr(GetNativeUInt(Value)));
   CheckFormula('B#20 MaxInteger is Int32 bound', 'MaxInteger', 2147483647);
   CheckFormula('B#20 MinInteger is Int32 bound', 'MinInteger', -2147483648);
   { The bound is turned into a floating value by ASSIGNMENT, not by writing
@@ -175,11 +179,13 @@ begin
   SIn := StringOfChar('m', StringLength + 50);
   FillChar(GuardS, SizeOf(GuardS), 0);
   GuardS.S := MakeString(SIn);
-  Check('C#13 MakeString truncates at capacity', StrLen(PChar(@GuardS.S)) = StringLength - 1, IntToStr(StrLen(PChar(@GuardS.S))));
+  Check('C#13 MakeString truncates at capacity', StrLen(PChar(@GuardS.S)) = StringLength - 1,
+    IntToStr(StrLen(PChar(@GuardS.S))));
   Check('C#13 MakeString does not overflow', GuardS.Pad[0] = #0);
   FillChar(GuardT, SizeOf(GuardT), 0);
   GuardT.T := MakeType(SIn, Handle, vtInteger);
-  Check('C#13 MakeType truncates at capacity', StrLen(PChar(@GuardT.T.Name)) = StringLength - 1, IntToStr(StrLen(PChar(@GuardT.T.Name))));
+  Check('C#13 MakeType truncates at capacity', StrLen(PChar(@GuardT.T.Name)) = StringLength - 1,
+    IntToStr(StrLen(PChar(@GuardT.T.Name))));
   Check('C#13 MakeType does not overflow', GuardT.Pad[0] = #0);
   FL := TFastList.Create;
   try
@@ -266,15 +272,16 @@ begin
     M2.Parser := MathParser;
     try
       M.AssignValue('xv + 1', 'zzz');
-      Check('D#10 AssignValue keeps expression text', (M.Count = 1) and (M.List[0] = 'xv + 1'), '"' + M.List[0] + '"');
+      Check('D#10 AssignValue keeps expression text', (M.Count = 1) and (M.List[0] = 'xv + 1'),
+        '"' + M.List[0] + '"');
       CheckDouble('D#10 stored expression computes', GetDouble(M.AsValue(0)), 5);
       FN := ExtractFilePath(ParamStr(0)) + 'd10.tmp';
       M.SaveToFile(FN);
       try
         XVar := 40;
         Check('D#11 LoadFromFile succeeds', M2.LoadFromFile(FN));
-        Check('D#10 expression text survives round-trip', (M2.Count = 1) and (M2.List[0] = 'xv + 1'),
-          '"' + M2.List[0] + '"');
+        Check('D#10 expression text survives round-trip',
+          (M2.Count = 1) and (M2.List[0] = 'xv + 1'), '"' + M2.List[0] + '"');
         CheckDouble('D#10 loaded value is the saved constant', GetDouble(M2.AsValue(0)), 5);
       finally
         XVar := 4;
@@ -302,9 +309,10 @@ begin
   try
     Check('F#8 SetRedirect', MathParser.SetRedirect(RI, 7, 12345, 777));
     Target := 0;
-    Check('F#8 wrong category is not matched', not MathParser.GetRedirect(3, 12345, Target), 'target=' + IntToStr(Target));
-    Check('F#8 right category is matched', MathParser.GetRedirect(7, 12345, Target) and (Target = 777),
+    Check('F#8 wrong category is not matched', not MathParser.GetRedirect(3, 12345, Target),
       'target=' + IntToStr(Target));
+    Check('F#8 right category is matched',
+      MathParser.GetRedirect(7, 12345, Target) and (Target = 777), 'target=' + IntToStr(Target));
   finally
     MathParser.DeleteRedirect(RI);
   end;
@@ -348,18 +356,21 @@ begin
   { C32: a short-circuit or in While/Repeat/For skipped the body after the first true }
   { new = -1 (true), the loop returns the OR of the bodies = 1 (Boolean8),
     get = the counter }
-  CheckFormula('C32 while counter advances', 'new("wc", 0) + while(get("wc") < 5, set("wc", get("wc") + 1)) + get("wc")', 5);
-  CheckFormula('C32 repeat counter advances', 'new("rc", 0) + repeat(set("rc", get("rc") + 1), get("rc") >= 3) + get("rc")', 3);
+  CheckFormula('C32 while counter advances',
+    'new("wc", 0) + while(get("wc") < 5, set("wc", get("wc") + 1)) + get("wc")', 5);
+  CheckFormula('C32 repeat counter advances',
+    'new("rc", 0) + repeat(set("rc", get("rc") + 1), get("rc") >= 3) + get("rc")', 3);
   CheckFormula('G-C1 exit breaks counting while',
     'new("ec", 0) + while(get("ec") < 100000, if(get("ec") > 4, exit(get("ec")), set("ec", get("ec") + 1)))', 5);
-  Check('G-C2 BitwiseXorHandle is live', MathParser.BitwiseXorHandle >= 0, IntToStr(MathParser.BitwiseXorHandle));
+  Check('G-C2 BitwiseXorHandle is live', MathParser.BitwiseXorHandle >= 0,
+    IntToStr(MathParser.BitwiseXorHandle));
   CheckFormula('G-C2 bxor works', 'dv bxor 0', 6);
   CheckFormula('G-C3 || synonym works', 'dv || 0', 6);
   CheckFormula('G-C4 power binds tighter than mul', '2 * 3 ** 2', 18);
   CheckFormula('G-C4 root binds tighter than mul', '2 * 8 // 3', 4);
   try
-    Writeln('INFO chain: 2 degree 3 degree 2 = ', MathParser.AsDouble('2 degree 3 degree 2'):0:0, '; 2 ** 3 ** 2 = ',
-      MathParser.AsDouble('2 ** 3 ** 2'):0:0);
+    Writeln('INFO chain: 2 degree 3 degree 2 = ', MathParser.AsDouble('2 degree 3 degree 2'):0:0,
+      '; 2 ** 3 ** 2 = ', MathParser.AsDouble('2 ** 3 ** 2'):0:0);
   except
     on E: Exception do Writeln('INFO chain measure failed: ', E.Message);
   end;
@@ -445,8 +456,8 @@ begin
     TestWaveG;
     TestWaveGSpecs;
     Writeln;
-    Writeln('INFO SizeOf(TFunction)=', SizeOf(TFunction), ' bytes; ~220 registrations = ', 220 * SizeOf(TFunction) div 1024,
-      ' KB per TMathParser');
+    Writeln('INFO SizeOf(TFunction)=', SizeOf(TFunction), ' bytes; ~220 registrations = ',
+      220 * SizeOf(TFunction) div 1024, ' KB per TMathParser');
     Failed := TestSummary;
   finally
     MathParser.Free;

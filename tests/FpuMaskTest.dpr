@@ -164,7 +164,8 @@ procedure LivingParserDoesNotHoldTheMask;
 begin
   BeginSection('a living parser does not hold the mask of the thread');
   Check('creating a parser left the mask alone', GetExceptionMask = HostMask, MaskText(GetExceptionMask));
-  Check('the host still gets its exceptions', not (exZeroDivide in GetExceptionMask), MaskText(GetExceptionMask));
+  Check('the host still gets its exceptions', not (exZeroDivide in GetExceptionMask),
+    MaskText(GetExceptionMask));
 end;
 
 { 2 }
@@ -185,7 +186,8 @@ begin
   end;
   Check('nothing was raised', Note = '', Note);
   Check('the answer is infinity', IsInfinite(Value), Format('%g', [Value]));
-  Check('after the evaluation the host mask came back', GetExceptionMask = HostMask, MaskText(GetExceptionMask));
+  Check('after the evaluation the host mask came back', GetExceptionMask = HostMask,
+    MaskText(GetExceptionMask));
 end;
 
 { 3 }
@@ -243,7 +245,8 @@ begin
     Check('the outer evaluation ran to the end', Note = '', Note);
     Check('the inner parser got ITS OWN exception', Pos('EZeroDivide', Holder.FNote) > 0, Holder.FNote);
     Check('and handed a zero back out rather than a number', Value = 0, Format('%g', [Value]));
-    Check('after the evaluation the host mask is in place', GetExceptionMask = HostMask, MaskText(GetExceptionMask));
+    Check('after the evaluation the host mask is in place', GetExceptionMask = HostMask,
+      MaskText(GetExceptionMask));
   finally
     Inner.Free;
     Holder.FInner := nil;
@@ -269,7 +272,8 @@ begin
       P.Free;
       Holder.Free;
     end;
-    Check('after the parser is freed the host mask is unchanged', GetExceptionMask = HostMask, MaskText(GetExceptionMask));
+    Check('after the parser is freed the host mask is unchanged', GetExceptionMask = HostMask,
+      MaskText(GetExceptionMask));
   except
     on E: Exception do Fail('the run', E.ClassName + ': ' + E.Message);
   end;

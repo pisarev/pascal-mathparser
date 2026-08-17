@@ -85,7 +85,8 @@ begin
     {$IFDEF COMPILES_TO_MACHINE_CODE}
     Check('the very first formula ran as machine code', P.HitCount = 1,
       Format('  hits=%d misses=%d reason="%s"', [P.HitCount, P.MissCount, P.CodeReason('x * x * 3 + 1')]));
-    Check('nothing was handed back to the interpreter', P.MissCount = 0, Format('  misses=%d', [P.MissCount]));
+    Check('nothing was handed back to the interpreter', P.MissCount = 0,
+      Format('  misses=%d', [P.MissCount]));
     Check('a compiled formula reports no reason', P.CodeReason('x * x * 3 + 1') = '',
       Format('  reason="%s"', [P.CodeReason('x * x * 3 + 1')]));
     {$ELSE}
@@ -117,7 +118,8 @@ begin
     {$IFDEF COMPILES_TO_MACHINE_CODE}
     { A cache entry that was written off once is never retried, so a single
       early decline would show up here as five misses rather than one. }
-    Check('all five calls used the compiled code', P.HitCount = 5, Format('  hits=%d misses=%d', [P.HitCount, P.MissCount]));
+    Check('all five calls used the compiled code', P.HitCount = 5,
+      Format('  hits=%d misses=%d', [P.HitCount, P.MissCount]));
     {$ELSE}
     Check(
       'off x86-64 all five calls went to the IR executor',
@@ -184,7 +186,8 @@ begin
     Value := P.AsDouble('mean(1, 2, x)');
     CheckDouble('the interpreter still answers', Value, 5 / 3);
     Check('the decline is reported', Reason <> '', Format('  reason="%s"', [Reason]));
-    Check('the reason is a word the code can produce', ReasonIsKnown(Reason), Format('  reason="%s" is outside the vocabulary', [Reason]));
+    Check('the reason is a word the code can produce', ReasonIsKnown(Reason),
+      Format('  reason="%s" is outside the vocabulary', [Reason]));
     Check('the decline was counted', P.MissCount > 0, Format('  misses=%d', [P.MissCount]));
   finally
     P.Free;
@@ -210,7 +213,8 @@ begin
     for I := Low(Probes) to High(Probes) do
     begin
       Reason := P.CodeReason(Probes[I]);
-      Check('reason for ' + Probes[I] + ' is known', ReasonIsKnown(Reason), Format('  reason="%s"', [Reason]));
+      Check('reason for ' + Probes[I] + ' is known', ReasonIsKnown(Reason),
+        Format('  reason="%s"', [Reason]));
     end;
   finally
     P.Free;
@@ -235,11 +239,13 @@ begin
       with a generation that can never match again. }
     P.AddVariable('y', Y);
     Y := 3;
-    Check('the generation moved on', P.Generation <> Before, Format('  before=%d after=%d', [Before, P.Generation]));
+    Check('the generation moved on', P.Generation <> Before,
+      Format('  before=%d after=%d', [Before, P.Generation]));
     CheckDouble('the old formula still answers', P.AsDouble('x * 2 + 1'), 5);
     CheckDouble('the new variable is visible', P.AsDouble('x + y'), 5);
     {$IFDEF COMPILES_TO_MACHINE_CODE}
-    Check('both formulas run as machine code again', P.CodeReason('x * 2 + 1') = '', Format('  reason="%s"', [P.CodeReason('x * 2 + 1')]));
+    Check('both formulas run as machine code again', P.CodeReason('x * 2 + 1') = '',
+      Format('  reason="%s"', [P.CodeReason('x * 2 + 1')]));
     {$ENDIF}
   finally
     P.Free;
@@ -330,14 +336,16 @@ begin
     otherwise the limit did nothing and the loop measured nothing.
   }
   Check('every size answers correctly', Wrong = 0, Format('  wrong answers=%d', [Wrong]));
-  Check('cramped sizes are refused rather than run', Slipped < 393, Format('  sizes that compiled=%d of 393', [Slipped]));
+  Check('cramped sizes are refused rather than run', Slipped < 393,
+    Format('  sizes that compiled=%d of 393', [Slipped]));
   {$IFDEF COMPILES_TO_MACHINE_CODE}
   Check('the limit was actually reached', Slipped > 0, Format('  sizes that compiled=%d', [Slipped]));
   {$ELSE}
   { Where there is no emitter the limit has nothing to cut, so the third demand
     turns into its opposite - and stays a demand: not one size may claim machine
     code. The first two hold unchanged. }
-  Check('off x86-64 no size reaches machine code', Slipped = 0, Format('  sizes that compiled=%d', [Slipped]));
+  Check('off x86-64 no size reaches machine code', Slipped = 0,
+    Format('  sizes that compiled=%d', [Slipped]));
   {$ENDIF}
 end;
 
@@ -380,7 +388,8 @@ begin
     { Where there is no emitter at all the decline is reported a level higher and
       the width of the variable never comes up. Both answers above were still
       right, and on this platform that is the whole of the contract. }
-    Check('off x86-64 the reason names the missing emitter, not the variable', (Reason <> '') and (Pos('variable type', Reason) = 0),
+    Check('off x86-64 the reason names the missing emitter, not the variable',
+      (Reason <> '') and (Pos('variable type', Reason) = 0),
       Format('  SizeOf(Extended)=%d reason=%s', [SizeOf(Extended), Reason]));
     {$ENDIF}
   finally
@@ -421,9 +430,11 @@ begin
     Check('every formula was compiled once', P.CompileCount = 5, Format('  compiled=%d', [P.CompileCount]));
     {$IFDEF COMPILES_TO_MACHINE_CODE}
     Check('all five reached machine code', P.MachineCount = 5, Format('  machine=%d', [P.MachineCount]));
-    Check('and none of them got a spare executor', P.ExecutorCount = 0, Format('  executors=%d', [P.ExecutorCount]));
+    Check('and none of them got a spare executor', P.ExecutorCount = 0,
+      Format('  executors=%d', [P.ExecutorCount]));
     {$ELSE}
-    Check('without machine code every formula gets the executor', P.ExecutorCount = 5, Format('  executors=%d', [P.ExecutorCount]));
+    Check('without machine code every formula gets the executor', P.ExecutorCount = 5,
+      Format('  executors=%d', [P.ExecutorCount]));
     {$ENDIF}
   finally
     P.Free;
@@ -476,7 +487,8 @@ begin
     Hits := P.HitCount;
     Ok := P.ExecuteMany('Max(x, 2)', X, Inputs, Outputs);
     Check('a formula the accelerator declines is computed anyway', Ok);
-    Check('the accelerator did decline it', Pos('parametric', P.CodeReason('Max(x, 2)')) > 0, P.CodeReason('Max(x, 2)'));
+    Check('the accelerator did decline it', Pos('parametric', P.CodeReason('Max(x, 2)')) > 0,
+      P.CodeReason('Max(x, 2)'));
     Script := nil;
     P.StringToScript('Max(x, 2)', Script);
     for I := 0 to 2 do
@@ -486,7 +498,8 @@ begin
     end;
     for I := 0 to 2 do
       CheckDouble(Format('bulk answer %d matches the ordinary one', [I]), Outputs[I], Plain[I]);
-    Check('the fallback is not counted as an accelerator hit', P.HitCount = Hits, Format('  hits %d -> %d', [Hits, P.HitCount]));
+    Check('the fallback is not counted as an accelerator hit', P.HitCount = Hits,
+      Format('  hits %d -> %d', [Hits, P.HitCount]));
     {
       And the point of it all: a computation that did not happen must leave no numbers
       of somebody else. The formula is deliberately unusable, so the answers have to
@@ -496,7 +509,8 @@ begin
     Ok := P.ExecuteMany('Max(x, ', X, Inputs, Outputs);
     Check('a formula that does not parse is refused', not Ok);
     for I := 0 to 2 do
-      Check(Format('answer %d is not left over from before', [I]), IsNan(Outputs[I]), Format('  %g', [Outputs[I]]));
+      Check(Format('answer %d is not left over from before', [I]), IsNan(Outputs[I]),
+        Format('  %g', [Outputs[I]]));
     {
       Next come two kinds of output that do not match the size of the input. Up to this
       point only the refusal on equal lengths was checked, and the contract "a refusal
@@ -664,7 +678,8 @@ procedure CompiledScriptRefusesWithoutItsParser;
       on E: EJitOrphan do Note := 'orphan';
       on E: Exception do Note := E.ClassName + ': ' + E.Message;
     end;
-    Check('Execute refused with the named exception: ' + Text, Note = 'orphan', Format('%s, returned %g', [Note, Value]));
+    Check('Execute refused with the named exception: ' + Text, Note = 'orphan',
+      Format('%s, returned %g', [Note, Value]));
     Compiled.Free;
   end;
 

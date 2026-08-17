@@ -89,8 +89,8 @@ begin
   try
     Base.AddVariable('x', XVar);
     Jit.AddVariable('x', XVar);
-    Writeln('# platform: ', {$IFDEF MSWINDOWS}'windows'{$ELSE}'unix'{$ENDIF}, ', compiler: ', {$IFDEF FPC}'fpc'{$ELSE}'delphi'{$ENDIF},
-      ', x = ', Bits(XVar));
+    Writeln('# platform: ', {$IFDEF MSWINDOWS}'windows'{$ELSE}'unix'{$ENDIF}, ', compiler: ',
+      {$IFDEF FPC}'fpc'{$ELSE}'delphi'{$ENDIF}, ', x = ', Bits(XVar));
     Writeln('# base             accelerator      expression');
     for I := Low(Formula) to High(Formula) do
     begin

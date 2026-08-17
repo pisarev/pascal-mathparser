@@ -412,7 +412,8 @@ begin
             begin
               List.BeginUpdate;
               try
-                QSort(List, 0, List.Count - 1, {$IFDEF FPC}@{$ENDIF}FileCompare, {$IFDEF FPC}@{$ENDIF}FileExchange, List);
+                QSort(List, 0, List.Count - 1, {$IFDEF FPC}@{$ENDIF}FileCompare,
+                  {$IFDEF FPC}@{$ENDIF}FileExchange, List);
               finally
                 List.EndUpdate;
               end;
@@ -435,7 +436,8 @@ begin
             begin
               List.BeginUpdate;
               try
-                QSort(List, 0, List.Count - 1, {$IFDEF FPC}@{$ENDIF}PathCompare, {$IFDEF FPC}@{$ENDIF}PathExchange, List);
+                QSort(List, 0, List.Count - 1, {$IFDEF FPC}@{$ENDIF}PathCompare,
+                  {$IFDEF FPC}@{$ENDIF}PathExchange, List);
               finally
                 List.EndUpdate;
               end;

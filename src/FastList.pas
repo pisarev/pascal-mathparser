@@ -311,7 +311,8 @@ end;
 
 procedure Sort(var Target: TBindArray);
 begin
-  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}SortCompare, {$IFDEF FPC}@{$ENDIF}SortExchange);
+  QSort(Pointer(Target), Low(Target), High(Target), {$IFDEF FPC}@{$ENDIF}SortCompare,
+    {$IFDEF FPC}@{$ENDIF}SortExchange);
 end;
 
 function MakeBind(const AHashCode, AIndex: Integer): TBind;
@@ -652,7 +653,8 @@ begin
       Size := Length(FIndexArray[I].BindArray[J]);
       B.Import(dkData, Format('IndexArray(%d).BindArray(%d).Size', [I, Ord(J)]), @Size, SizeOf(NativeInt));
       Data := NativeInt(Pointer(FIndexArray[I].BindArray[J]));
-      B.Import(dkData, Format('IndexArray(%d).BindArray(%d).Data', [I, Ord(J)]), Pointer(Data), Size * SizeOf(TBind));
+      B.Import(dkData, Format('IndexArray(%d).BindArray(%d).Data', [I, Ord(J)]), Pointer(Data),
+        Size * SizeOf(TBind));
       Data := NativeInt(FIndexArray[I].Live[J]);
       B.Import(dkData, Format('IndexArray(%d).Live(%d)', [I, Ord(J)]), @Data, SizeOf(NativeInt));
     end;
@@ -667,11 +669,12 @@ var
   I: Integer;
 begin
   for I := Low(FIndexArray[TextCode].BindArray[TextType]) to High(FIndexArray[TextCode].BindArray[TextType]) do
-    if Same(Text[TextType, FIndexArray[TextCode].BindArray[TextType, I].Index], S, not FList.CaseSensitive) then
-    begin
-      Result := I;
-      Exit;
-    end;
+    if Same(Text[TextType, FIndexArray[TextCode].BindArray[TextType, I].Index], S,
+      not FList.CaseSensitive) then
+      begin
+        Result := I;
+        Exit;
+      end;
   Result := -1;
 end;
 

@@ -70,7 +70,8 @@ begin
       before the warm-up }
     Check('C31 parallel pool starts', Calc.Thread.Execute);
     Calc.Thread.WaitFor;
-    Check('C31 all 200 items computed without a crash', Calc.Thread.ItemCount = 200, IntToStr(Calc.Thread.ItemCount));
+    Check('C31 all 200 items computed without a crash', Calc.Thread.ItemCount = 200,
+      IntToStr(Calc.Thread.ItemCount));
     Calc.Thread.Clear;
     { the parser is alive after the pool }
     Check('C31 calculator still works after the pool', GetDouble(Calc.AsValue('2 + 2')) = 4);

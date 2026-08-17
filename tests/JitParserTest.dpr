@@ -61,7 +61,8 @@ begin
     Jit.AsDouble(Formula);
   end;
   TJit := Elapsed(T0);
-  Writeln(Format('%-24s base %8.1f ns   jit %7.1f ns   speedup %6.2fx', [Name, TBase / Count * 1E9, TJit / Count * 1E9, TBase / TJit]));
+  Writeln(Format('%-24s base %8.1f ns   jit %7.1f ns   speedup %6.2fx',
+    [Name, TBase / Count * 1E9, TJit / Count * 1E9, TBase / TJit]));
   Flush(Output);
 end;
 
@@ -111,7 +112,8 @@ begin
   TJit := Elapsed(T0);
   Writeln(Format('loop iteration           base %8.1f ns   jit %7.1f ns   speedup %6.2fx',
     [TBase / Repeats / Iterations * 1E9, TJit / Repeats / Iterations * 1E9, TBase / TJit]));
-  Report(Format('native/loop, %d iterations', [Iterations]), TBase / Repeats * 1E9, TJit / Repeats * 1E9, Repeats);
+  Report(Format('native/loop, %d iterations', [Iterations]), TBase / Repeats * 1E9,
+    TJit / Repeats * 1E9, Repeats);
   Flush(Output);
 end;
 
@@ -289,7 +291,8 @@ begin
     SetLength(Outputs, 5);
     for I := 0 to 4 do Inputs[I] := I + 1;
     Check('bulk supported', Jit.ExecuteMany('x * 10 + 1', XJit, Inputs, Outputs));
-    Check('bulk values', (Abs(Outputs[0] - 11) < 1E-9) and (Abs(Outputs[4] - 51) < 1E-9), Format('%.1f..%.1f', [Outputs[0], Outputs[4]]));
+    Check('bulk values', (Abs(Outputs[0] - 11) < 1E-9) and (Abs(Outputs[4] - 51) < 1E-9),
+      Format('%.1f..%.1f', [Outputs[0], Outputs[4]]));
     {
       What used to stand here was "if you cannot do it, do not compute": a formula the
       accelerator refuses was not computed at all. That turned out to be harmful, the
@@ -301,13 +304,14 @@ begin
       that gives a DIFFERENT answer is worse than no departure.
 
     }
-    Check('the accelerator does decline this one', Jit.CodeReason('mean(1, 2, x)') <> '', Jit.CodeReason('mean(1, 2, x)'));
+    Check('the accelerator does decline this one', Jit.CodeReason('mean(1, 2, x)') <> '',
+      Jit.CodeReason('mean(1, 2, x)'));
     Check('bulk computes it anyway', Jit.ExecuteMany('mean(1, 2, x)', XJit, Inputs, Outputs));
     for I := 0 to 4 do
     begin
       XBase := Inputs[I];
-      Check(Format('bulk answer %d matches the ordinary parser', [I]), Abs(Outputs[I] - Base.AsDouble('mean(1, 2, x)')) < 1E-9,
-        Format('%.6f', [Outputs[I]]));
+      Check(Format('bulk answer %d matches the ordinary parser', [I]),
+        Abs(Outputs[I] - Base.AsDouble('mean(1, 2, x)')) < 1E-9, Format('%.6f', [Outputs[I]]));
     end;
     {
       A formula that does not parse at all, however, has to be rejected, and it has to
@@ -315,9 +319,11 @@ begin
       somebody else's numbers, looks like one that did.
 
     }
-    Check('bulk refuses a formula that does not parse', not Jit.ExecuteMany('mean(1, 2, ', XJit, Inputs, Outputs));
+    Check('bulk refuses a formula that does not parse',
+      not Jit.ExecuteMany('mean(1, 2, ', XJit, Inputs, Outputs));
     for I := 0 to 4 do
-      Check(Format('answer %d is not left over from before', [I]), IsNaN(Outputs[I]), Format('%.6f', [Outputs[I]]));
+      Check(Format('answer %d is not left over from before', [I]), IsNaN(Outputs[I]),
+        Format('%.6f', [Outputs[I]]));
     BeginSection('J5: control flow and script variables');
     Base.AsDouble('new("k", 0)');
     Jit.AsDouble('new("k", 0)');
@@ -335,8 +341,8 @@ begin
     SameCase('x <= 2');
     SameCase('x <> 3');
     Writeln('  reasons: if -> "', Jit.CodeReason('if(x > 2, 10, 20)'), '"; while -> "',
-      Jit.CodeReason('set("k", 0) + while(get("k") < 5, set("k", get("k") + 1)) + get("k")'), '"; get -> "',
-      Jit.CodeReason('get("k")'), '"');
+      Jit.CodeReason('set("k", 0) + while(get("k") < 5, set("k", get("k") + 1)) + get("k")'),
+      '"; get -> "', Jit.CodeReason('get("k")'), '"');
     BeginSection('J5: unsigned and typed variables');
     Base.AddVariable('uw', UBase);
     Jit.AddVariable('uw', UJit);
@@ -359,7 +365,8 @@ begin
       could not fail. The contract is that the code is rebuilt after the
       registry changes, which means no reason at all on x86-64. }
     {$IFDEF CPUX64}
-    Check('code rebuilt after notification', Jit.CodeReason('x * 2') = '', Format('  reason="%s"', [Jit.CodeReason('x * 2')]));
+    Check('code rebuilt after notification', Jit.CodeReason('x * 2') = '',
+      Format('  reason="%s"', [Jit.CodeReason('x * 2')]));
     {$ELSE}
     Check('reason is reported off x86-64', Jit.CodeReason('x * 2') <> '');
     {$ENDIF}
@@ -380,7 +387,8 @@ begin
     Writeln;
     Writeln(Format('jit stats: compiles=%d hits=%d misses=%d inline=%d lookups=%d',
       [Jit.CompileCount, Jit.HitCount, Jit.MissCount, Jit.InlineCount, Jit.LookupCount]));
-    Writeln('tier-down reasons: mean -> ', Jit.CodeReason('mean(1, 2, 3)'), '; if -> ', Jit.CodeReason('if(x > 0, x * 2, 0 - x)'));
+    Writeln('tier-down reasons: mean -> ', Jit.CodeReason('mean(1, 2, 3)'), '; if -> ',
+      Jit.CodeReason('if(x > 0, x * 2, 0 - x)'));
     Failed := TestSummary;
   finally
     Jit.Free;

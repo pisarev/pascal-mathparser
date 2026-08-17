@@ -291,7 +291,8 @@ begin
   Target := -1;
   Check('the row is found', Parser.GetRedirect(Category, GlobalHandle, Target));
   Check('the row gives back its target', Target = 12345, Format('  target=%d', [Target]));
-  Check('filling in a row that does not exist fails', not Parser.SetRedirect(Index + 10000, Category, GlobalHandle, 1));
+  Check('filling in a row that does not exist fails',
+    not Parser.SetRedirect(Index + 10000, Category, GlobalHandle, 1));
   Check('the row can be deleted', Parser.DeleteRedirect(Index));
   Target := -1;
   Check('after deletion the query fails again', not Parser.GetRedirect(Category, GlobalHandle, Target));
@@ -354,7 +355,8 @@ begin
     {$IFDEF HAS_EMITTER}
     Check(Format('cell %d went to machine code', [I]), Slots[I].Reason = '', '  reason: ' + Slots[I].Reason);
     {$ELSE}
-    Check(Format('cell %d went to the IR executor', [I]), Slots[I].Reason = 'ir executor', '  reason: ' + Slots[I].Reason);
+    Check(Format('cell %d went to the IR executor', [I]), Slots[I].Reason = 'ir executor',
+      '  reason: ' + Slots[I].Reason);
     {$ENDIF}
     if Slots[I].Ready then
       CheckDouble(Format('cell %d answers', [I]), Slots[I].ByCode, Expect(I));
@@ -368,7 +370,8 @@ begin
     reference, which is the harder case for the emitter: the address is not known
     at compile time and has to be resolved through the redirect. That the checks
     above pass at all is the proof, so this section states it explicitly. }
-  Check('cell variables are boxed', Slots[0].Local.ValueType = vtExtended, Format('  type=%d', [Ord(Slots[0].Local.ValueType)]));
+  Check('cell variables are boxed', Slots[0].Local.ValueType = vtExtended,
+    Format('  type=%d', [Ord(Slots[0].Local.ValueType)]));
   CheckDouble('a boxed value reads back', GetExtended(Slots[0].Local), 2);
   Check('and the compiled code took it', Slots[0].Ready, '  reason: ' + Slots[0].Reason);
 end;
@@ -417,7 +420,8 @@ begin
     Parser.Notify(ntCompile, Parser);
   end;
   Parser.Prepare;
-  Check('the compiled script no longer claims to be ready', not Slots[0].Ready, '  reason: ' + Slots[0].Reason);
+  Check('the compiled script no longer claims to be ready', not Slots[0].Ready,
+    '  reason: ' + Slots[0].Reason);
   { The point of invalidation is not that the code stops working - it is that the
     caller still gets the right answer. }
   Value := Slots[0].ByParser;

@@ -228,7 +228,8 @@ begin
       Check('the inner run did not lose somebody else''s flag', ParseBreak = @Stop);
       Stop := True;
       Note := Run(Outer, Endless);
-      Check('the endless loop was stopped by the outer run''s flag', Pos('stopped', LowerCase(Note)) > 0, Note);
+      Check('the endless loop was stopped by the outer run''s flag',
+        Pos('stopped', LowerCase(Note)) > 0, Note);
     finally
       DisarmLoopGuard(Inner2);
     end;
@@ -267,9 +268,12 @@ begin
   Holder.FSpent := 0;
   Note := Run(Outer, NestedTen);
   Check('the count was stopped by the shared limit', Pos('Loop limit', Note) > 0, Note);
-  Check('the outer loop stopped short of its ten turns', GetDouble(Turns) < 10, Format('%g turns out of 10', [GetDouble(Turns)]));
-  Check('the turns of the nested count came out of the same budget', Holder.FSpent > 0, Format('%d nested turns', [Holder.FSpent]));
-  Check('the turns together add up to about the budget', Round(GetDouble(Turns)) + Holder.FSpent >= 39,
+  Check('the outer loop stopped short of its ten turns', GetDouble(Turns) < 10,
+    Format('%g turns out of 10', [GetDouble(Turns)]));
+  Check('the turns of the nested count came out of the same budget', Holder.FSpent > 0,
+    Format('%d nested turns', [Holder.FSpent]));
+  Check('the turns together add up to about the budget',
+    Round(GetDouble(Turns)) + Holder.FSpent >= 39,
     Format('%d against a budget of 40', [Round(GetDouble(Turns)) + Holder.FSpent]));
 end;
 

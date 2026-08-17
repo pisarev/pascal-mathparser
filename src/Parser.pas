@@ -1251,7 +1251,8 @@ function TCustomParser.AddFunction(const AName: string; var Handle: NativeInt; c
   const Method: TFunctionMethod; const Optimizable: Boolean; const ReturnType: TValueType;
   const Priority: TFunctionPriority; const Coverage: TPriorityCoverage): Boolean;
 begin
-  Result := AddFunction(MakeFunction(AName, Handle, ReturnType, Kind, Method, Optimizable, MakePriority(Priority, Coverage)));
+  Result := AddFunction(MakeFunction(AName, Handle, ReturnType, Kind, Method, Optimizable,
+    MakePriority(Priority, Coverage)));
 end;
 
 function TCustomParser.AddType(const AType: TType): Boolean;
@@ -1529,7 +1530,8 @@ begin
           begin
             if AFlag then
             begin
-              Result := MakeError(etStringTypeError, EText(StringTypeError, [ScriptToString(Data.Script^, rmUser)]));
+              Result := MakeError(etStringTypeError,
+                EText(StringTypeError, [ScriptToString(Data.Script^, rmUser)]));
               Exit;
             end;
             if BFlag then
@@ -1598,12 +1600,14 @@ begin
             begin
               if PriorParameter.Count > 0 then
               begin
-                Result := MakeError(etAParamExpectError, EText(RestoreText(Self, Text, SA), AParamExpectError, [PriorFunction.Name]));
+                Result := MakeError(etAParamExpectError,
+                  EText(RestoreText(Self, Text, SA), AParamExpectError, [PriorFunction.Name]));
                 Exit;
               end;
               if PriorParameter.R then
               begin
-                Result := MakeError(etRTextExpectError, EText(RestoreText(Self, Text, SA), RTextExpectError, [PriorFunction.Name]));
+                Result := MakeError(etRTextExpectError,
+                  EText(RestoreText(Self, Text, SA), RTextExpectError, [PriorFunction.Name]));
                 Exit;
               end;
             end;
@@ -1612,14 +1616,16 @@ begin
         case Syntax.PriorKind of
           okNumber, okScript, okParameter:
             begin
-              Result := MakeError(etFunctionExpectError, EText(FunctionExpectError, [RestoreText(Self, Text, SA)]));
+              Result := MakeError(etFunctionExpectError,
+                EText(FunctionExpectError, [RestoreText(Self, Text, SA)]));
               Exit;
             end;
           okFunction:
             if Assigned(PriorFunction) and Assigned(PriorParameter) and ((PriorParameter.Count > 0) or
               not PriorParameter.R) then
               begin
-                Result := MakeError(etRTextExcessError, EText(RestoreText(Self, Text, SA), RTextExcessError, [PriorFunction.Name]));
+                Result := MakeError(etRTextExcessError,
+                  EText(RestoreText(Self, Text, SA), RTextExcessError, [PriorFunction.Name]));
                 Exit;
               end;
         end;
@@ -1629,14 +1635,16 @@ begin
             okBof:
               if Assigned(AFunction) and Assigned(Parameter) and Parameter.L then
               begin
-                Result := MakeError(etLTextExpectError, EText(LTextExpectError, [RestoreText(Self, Text, SA)]));
+                Result := MakeError(etLTextExpectError,
+                  EText(LTextExpectError, [RestoreText(Self, Text, SA)]));
                 Exit;
               end;
             okNumber, okScript, okParameter:
               if Assigned(AFunction) and Assigned(Parameter) and ((Parameter.Count > 0) or
                 not Parameter.L) then
                 begin
-                  Result := MakeError(etLTextExcessError, EText(RestoreText(Self, Text, SA), LTextExcessError, [AFunction.Name]));
+                  Result := MakeError(etLTextExcessError,
+                    EText(RestoreText(Self, Text, SA), LTextExcessError, [AFunction.Name]));
                   Exit;
                 end;
             okFunction:
@@ -1663,13 +1671,15 @@ begin
         case Syntax.PriorKind of
           okBof, okNumber, okScript, okParameter:
             begin
-              Result := MakeError(etFunctionExpectError, EText(FunctionExpectError, [RestoreText(Self, Text, SA)]));
+              Result := MakeError(etFunctionExpectError,
+                EText(FunctionExpectError, [RestoreText(Self, Text, SA)]));
               Exit;
             end;
           okFunction:
             if Assigned(PriorFunction) and (PriorParameter.Count = 0) then
             begin
-              Result := MakeError(etAParamExcessError, EText(RestoreText(Self, Text, SA), AParamExcessError, [PriorFunction.Name]));
+              Result := MakeError(etAParamExcessError,
+                EText(RestoreText(Self, Text, SA), AParamExcessError, [PriorFunction.Name]));
               Exit;
             end;
         end;
@@ -1734,24 +1744,32 @@ begin
   FConstantList := TFlexibleList.Create(Self);
   BeginUpdate;
   try
-    InternalAddFunction(InternalFunctionName, FInternalHandle, fkHandle, MakeFunctionMethod(False, False, 0), False);
+    InternalAddFunction(InternalFunctionName, FInternalHandle, fkHandle,
+      MakeFunctionMethod(False, False, 0), False);
     SetLength(FOArray, Length(TOperatorArray));
     for I := Low(TOperatorArray) to High(TOperatorArray) do
-      InternalAddFunction(TOperatorArray[I], FOArray[Ord(I)], fkHandle, MakeFunctionMethod(True, True, 0), False);
+      InternalAddFunction(TOperatorArray[I], FOArray[Ord(I)], fkHandle,
+        MakeFunctionMethod(True, True, 0), False);
     FNegativeHandle := @FOArray[NativeInt(toNegative)];
     FPositiveHandle := @FOArray[NativeInt(toPositive)];
-    InternalAddFunction(VoidFunctionName, FVoidHandle, fkMethod, MakeFunctionMethod(FMethod.VoidMethod), True);
-    InternalAddFunction(NewFunctionName, FNewHandle, fkMethod, MakeFunctionMethod(FMethod.NewMethod, NewParameterMinCount, pkReference), False);
+    InternalAddFunction(VoidFunctionName, FVoidHandle, fkMethod,
+      MakeFunctionMethod(FMethod.VoidMethod), True);
+    InternalAddFunction(NewFunctionName, FNewHandle, fkMethod,
+      MakeFunctionMethod(FMethod.NewMethod, NewParameterMinCount, pkReference), False);
     InternalAddFunction(DeleteFunctionName, FDeleteHandle, fkMethod,
       MakeFunctionMethod(FMethod.DeleteMethod, DeleteParameterCount, pkReference), False);
-    InternalAddFunction(FindFunctionName, FFindHandle, fkMethod, MakeFunctionMethod(FMethod.FindMethod, FindParameterCount, pkReference), False);
-    InternalAddFunction(GetFunctionName, FGetHandle, fkMethod, MakeFunctionMethod(FMethod.GetMethod, GetParameterCount, pkReference), False);
-    InternalAddFunction(SetFunctionName, FSetHandle, fkMethod, MakeFunctionMethod(FMethod.SetMethod, SetParameterCount, pkReference), False);
+    InternalAddFunction(FindFunctionName, FFindHandle, fkMethod,
+      MakeFunctionMethod(FMethod.FindMethod, FindParameterCount, pkReference), False);
+    InternalAddFunction(GetFunctionName, FGetHandle, fkMethod,
+      MakeFunctionMethod(FMethod.GetMethod, GetParameterCount, pkReference), False);
+    InternalAddFunction(SetFunctionName, FSetHandle, fkMethod,
+      MakeFunctionMethod(FMethod.SetMethod, SetParameterCount, pkReference), False);
     InternalAddFunction(ScriptFunctionName, FScriptHandle, fkMethod,
       MakeFunctionMethod(FMethod.ScriptMethod, ScriptParameterMinCount, pkReference), False);
     InternalAddFunction(ExecuteFunctionName, FExecuteHandle, fkMethod,
       MakeFunctionMethod(FMethod.ExecuteMethod, ExecuteParameterCount, pkReference), False);
-    InternalAddFunction(ForFunctionName, FForHandle, fkMethod, MakeFunctionMethod(FMethod.ForMethod, ForParameterCount, pkReference), False);
+    InternalAddFunction(ForFunctionName, FForHandle, fkMethod,
+      MakeFunctionMethod(FMethod.ForMethod, ForParameterCount, pkReference), False);
     InternalAddFunction(RepeatFunctionName, FRepeatHandle, fkMethod,
       MakeFunctionMethod(FMethod.RepeatMethod, RepeatParameterCount, pkReference), False);
     InternalAddFunction(WhileFunctionName, FWhileHandle, fkMethod,
@@ -1801,7 +1819,8 @@ begin
     try
       Notify(ntBFD, Self);
       I := Length(FFData.FA);
-      Result := MemoryUtils.Delete(FFData.FA, Handle * SizeOf(TFunction), SizeOf(TFunction), I * SizeOf(TFunction));
+      Result := MemoryUtils.Delete(FFData.FA, Handle * SizeOf(TFunction), SizeOf(TFunction),
+        I * SizeOf(TFunction));
       if Result then
       begin
         SetLength(FFData.FA, I - 1);
@@ -2090,7 +2109,8 @@ end;
 function TCustomParser.Notifiable(const NotifyType: TNotifyType): Boolean;
 begin
   Result := NotifyAttribute[NotifyType].Permanent and (NotifyAttribute[NotifyType].Reliable or
-    Available(Self)) or (FUpdateCount = 0) and (NotifyAttribute[NotifyType].Reliable or Available(Self));
+    Available(Self)) or (FUpdateCount = 0) and (NotifyAttribute[NotifyType].Reliable or
+    Available(Self));
 end;
 
 procedure TCustomParser.Notification(Component: TComponent; Operation: TOperation);
@@ -2164,8 +2184,8 @@ begin
     WM_ADDVARIABLE:
       begin
         Data := PVariableData(Message.WParam);
-        Message.Result := NativeInt(InternalAddVariable(Data.Name, PValue(Message.LParam)^, Data.Optimizable,
-          Data.ReturnType));
+        Message.Result := NativeInt(InternalAddVariable(Data.Name, PValue(Message.LParam)^,
+          Data.Optimizable, Data.ReturnType));
       end;
   else
     {$IFNDEF FPC}
@@ -2215,63 +2235,86 @@ begin
   TItemCache(FPData.ItemCache).SetSubComponent(True);
   BeginUpdate;
   try
-    InternalAddFunction(MultiplyFunctionName, FMultiplyHandle, fkMethod, MakeFunctionMethod(FMethod.MultiplyMethod), True);
-    InternalAddFunction(DivideFunctionName, FDivideHandle, fkMethod, MakeFunctionMethod(FMethod.DivideMethod), True);
-    InternalAddFunction(SuccFunctionName, FSuccHandle, fkMethod, MakeFunctionMethod(FMethod.SuccMethod, False, True), True);
-    InternalAddFunction(PredFunctionName, FPredHandle, fkMethod, MakeFunctionMethod(FMethod.PredMethod, False, True), True);
+    InternalAddFunction(MultiplyFunctionName, FMultiplyHandle, fkMethod,
+      MakeFunctionMethod(FMethod.MultiplyMethod), True);
+    InternalAddFunction(DivideFunctionName, FDivideHandle, fkMethod,
+      MakeFunctionMethod(FMethod.DivideMethod), True);
+    InternalAddFunction(SuccFunctionName, FSuccHandle, fkMethod,
+      MakeFunctionMethod(FMethod.SuccMethod, False, True), True);
+    InternalAddFunction(PredFunctionName, FPredHandle, fkMethod,
+      MakeFunctionMethod(FMethod.PredMethod, False, True), True);
     for I := Low(NotFunctionName) to High(NotFunctionName) do
-      InternalAddFunction(NotFunctionName[I], FNotHandle[I], fkMethod, MakeFunctionMethod(FMethod.NotMethod, False, True), True);
+      InternalAddFunction(NotFunctionName[I], FNotHandle[I], fkMethod,
+        MakeFunctionMethod(FMethod.NotMethod, False, True), True);
     for I := Low(AndFunctionName) to High(AndFunctionName) do
-      InternalAddFunction(AndFunctionName[I], FAndHandle[I], fkMethod, MakeFunctionMethod(FMethod.AndMethod), True);
+      InternalAddFunction(AndFunctionName[I], FAndHandle[I], fkMethod,
+        MakeFunctionMethod(FMethod.AndMethod), True);
     for I := Low(OrFunctionName) to High(OrFunctionName) do
-      InternalAddFunction(OrFunctionName[I], FOrHandle[I], fkMethod, MakeFunctionMethod(FMethod.OrMethod),
-        True, OrReturnType[I], OrPriority[I], OrCoverage[I]);
+      InternalAddFunction(OrFunctionName[I], FOrHandle[I], fkMethod,
+        MakeFunctionMethod(FMethod.OrMethod), True, OrReturnType[I], OrPriority[I], OrCoverage[I]);
     for I := Low(XorFunctionName) to High(XorFunctionName) do
-      InternalAddFunction(XorFunctionName[I], FXorHandle[I], fkMethod, MakeFunctionMethod(FMethod.XorMethod), True);
+      InternalAddFunction(XorFunctionName[I], FXorHandle[I], fkMethod,
+        MakeFunctionMethod(FMethod.XorMethod), True);
     for I := Low(ShiftLeftFunctionName) to High(ShiftLeftFunctionName) do
-      InternalAddFunction(ShiftLeftFunctionName[I], FShlHandle[I], fkMethod, MakeFunctionMethod(FMethod.ShlMethod), True);
+      InternalAddFunction(ShiftLeftFunctionName[I], FShlHandle[I], fkMethod,
+        MakeFunctionMethod(FMethod.ShlMethod), True);
     for I := Low(ShiftRightFunctionName) to High(ShiftRightFunctionName) do
-      InternalAddFunction(ShiftRightFunctionName[I], FShrHandle[I], fkMethod, MakeFunctionMethod(FMethod.ShrMethod), True);
-    InternalAddFunction(BitwiseNotFunctionName, FBitwiseNotHandle, fkMethod, MakeFunctionMethod(FMethod.NotMethod, False, True), True);
-    InternalAddFunction(BitwiseAndFunctionName, FBitwiseAndHandle, fkMethod, MakeFunctionMethod(FMethod.AndMethod), True);
-    InternalAddFunction(BitwiseOrFunctionName, FBitwiseOrHandle, fkMethod, MakeFunctionMethod(FMethod.OrMethod), True);
-    InternalAddFunction(BitwiseXorFunctionName, FBitwiseXorHandle, fkMethod, MakeFunctionMethod(FMethod.XorMethod), True);
+      InternalAddFunction(ShiftRightFunctionName[I], FShrHandle[I], fkMethod,
+        MakeFunctionMethod(FMethod.ShrMethod), True);
+    InternalAddFunction(BitwiseNotFunctionName, FBitwiseNotHandle, fkMethod,
+      MakeFunctionMethod(FMethod.NotMethod, False, True), True);
+    InternalAddFunction(BitwiseAndFunctionName, FBitwiseAndHandle, fkMethod,
+      MakeFunctionMethod(FMethod.AndMethod), True);
+    InternalAddFunction(BitwiseOrFunctionName, FBitwiseOrHandle, fkMethod,
+      MakeFunctionMethod(FMethod.OrMethod), True);
+    InternalAddFunction(BitwiseXorFunctionName, FBitwiseXorHandle, fkMethod,
+      MakeFunctionMethod(FMethod.XorMethod), True);
     InternalAddFunction(TryExceptFunctionName, FTryExceptHandle, fkMethod,
       MakeFunctionMethod(FMethod.TryExceptMethod, TryExceptParameterCount, pkReference), True);
     InternalAddFunction(TryFinallyFunctionName, FTryFinallyHandle, fkMethod,
       MakeFunctionMethod(FMethod.TryFinallyMethod, TryFinallyParameterCount, pkReference), True);
     InternalAddFunction(SameValueFunctionName, FSameValueHandle, fkMethod,
       MakeFunctionMethod(FMethod.SameValueMethod, SameValueParameterMaxCount), True);
-    InternalAddFunction(IsZeroFunctionName, FIsZeroHandle, fkMethod, MakeFunctionMethod(FMethod.IsZeroMethod, IsZeroParameterMaxCount), True);
-    InternalAddFunction(IfFunctionName, FIfHandle, fkMethod, MakeFunctionMethod(FMethod.IfMethod, IfParameterMaxCount, pkReference), True);
-    InternalAddFunction(ExitFunctionName, FExitHandle, fkMethod, MakeFunctionMethod(FMethod.ExitMethod, 1, pkValue), False);
-    InternalAddFunction(IfThenFunctionName, FIfThenHandle, fkMethod, MakeFunctionMethod(FMethod.IfThenMethod, IfThenParameterCount), True);
+    InternalAddFunction(IsZeroFunctionName, FIsZeroHandle, fkMethod,
+      MakeFunctionMethod(FMethod.IsZeroMethod, IsZeroParameterMaxCount), True);
+    InternalAddFunction(IfFunctionName, FIfHandle, fkMethod,
+      MakeFunctionMethod(FMethod.IfMethod, IfParameterMaxCount, pkReference), True);
+    InternalAddFunction(ExitFunctionName, FExitHandle, fkMethod,
+      MakeFunctionMethod(FMethod.ExitMethod, 1, pkValue), False);
+    InternalAddFunction(IfThenFunctionName, FIfThenHandle, fkMethod,
+      MakeFunctionMethod(FMethod.IfThenMethod, IfThenParameterCount), True);
     InternalAddFunction(EnsureRangeFunctionName, FEnsureRangeHandle, fkMethod,
       MakeFunctionMethod(FMethod.EnsureRangeMethod, EnsureRangeParameterCount), True);
-    InternalAddFunction(StrToIntFunctionName, FStrToIntHandle, fkMethod, MakeFunctionMethod(FMethod.StrToIntMethod, StrToIntParameterCount), True);
+    InternalAddFunction(StrToIntFunctionName, FStrToIntHandle, fkMethod,
+      MakeFunctionMethod(FMethod.StrToIntMethod, StrToIntParameterCount), True);
     InternalAddFunction(StrToIntDefFunctionName, FStrToIntDefHandle, fkMethod,
       MakeFunctionMethod(FMethod.StrToIntDefMethod, StrToIntDefParameterCount), True);
     InternalAddFunction(StrToFloatFunctionName, FStrToFloatHandle, fkMethod,
       MakeFunctionMethod(FMethod.StrToFloatMethod, StrToFloatParameterCount), True);
     InternalAddFunction(StrToFloatDefFunctionName, FStrToFloatDefHandle, fkMethod,
       MakeFunctionMethod(FMethod.StrToFloatDefMethod, StrToFloatDefParameterCount), True);
-    InternalAddFunction(ParseFunctionName, FParseHandle, fkMethod, MakeFunctionMethod(FMethod.ParseMethod, ParseParameterCount), False);
-    InternalAddFunction(DerivFunctionName, FDerivHandle, fkMethod, MakeFunctionMethod(FMethod.DerivMethod, DerivParameterMaxCount), False);
-    InternalAddFunction(FalseFunctionName, FFalseHandle, fkMethod, MakeFunctionMethod(FMethod.FalseMethod), True);
-    InternalAddFunction(TrueFunctionName, FTrueHandle, fkMethod, MakeFunctionMethod(FMethod.TrueMethod), True);
-    InternalAddFunction(EqualFunctionName, FEqualHandle, fkMethod, MakeFunctionMethod(FMethod.EqualMethod),
-      True, vtUnknown, fpLower, pcTotal);
-    InternalAddFunction(NotEqualFunctionName, FNotEqualHandle, fkMethod, MakeFunctionMethod(FMethod.NotEqualMethod),
-      True, vtUnknown, fpLower, pcTotal);
-    InternalAddFunction(AboveFunctionName, FAboveHandle, fkMethod, MakeFunctionMethod(FMethod.AboveMethod),
-      True, vtUnknown, fpLower, pcTotal);
-    InternalAddFunction(BelowFunctionName, FBelowHandle, fkMethod, MakeFunctionMethod(FMethod.BelowMethod),
-      True, vtUnknown, fpLower, pcTotal);
-    InternalAddFunction(AboveOrEqualFunctionName, FAboveOrEqualHandle, fkMethod, MakeFunctionMethod(FMethod.AboveOrEqualMethod),
-      True, vtUnknown, fpLower, pcTotal);
-    InternalAddFunction(BelowOrEqualFunctionName, FBelowOrEqualHandle, fkMethod, MakeFunctionMethod(FMethod.BelowOrEqualMethod),
-      True, vtUnknown, fpLower, pcTotal);
-    InternalAddFunction(GetEpsilonFunctionName, FGetEpsilonHandle, fkMethod, MakeFunctionMethod(FMethod.GetEpsilonMethod), False);
+    InternalAddFunction(ParseFunctionName, FParseHandle, fkMethod,
+      MakeFunctionMethod(FMethod.ParseMethod, ParseParameterCount), False);
+    InternalAddFunction(DerivFunctionName, FDerivHandle, fkMethod,
+      MakeFunctionMethod(FMethod.DerivMethod, DerivParameterMaxCount), False);
+    InternalAddFunction(FalseFunctionName, FFalseHandle, fkMethod,
+      MakeFunctionMethod(FMethod.FalseMethod), True);
+    InternalAddFunction(TrueFunctionName, FTrueHandle, fkMethod,
+      MakeFunctionMethod(FMethod.TrueMethod), True);
+    InternalAddFunction(EqualFunctionName, FEqualHandle, fkMethod,
+      MakeFunctionMethod(FMethod.EqualMethod), True, vtUnknown, fpLower, pcTotal);
+    InternalAddFunction(NotEqualFunctionName, FNotEqualHandle, fkMethod,
+      MakeFunctionMethod(FMethod.NotEqualMethod), True, vtUnknown, fpLower, pcTotal);
+    InternalAddFunction(AboveFunctionName, FAboveHandle, fkMethod,
+      MakeFunctionMethod(FMethod.AboveMethod), True, vtUnknown, fpLower, pcTotal);
+    InternalAddFunction(BelowFunctionName, FBelowHandle, fkMethod,
+      MakeFunctionMethod(FMethod.BelowMethod), True, vtUnknown, fpLower, pcTotal);
+    InternalAddFunction(AboveOrEqualFunctionName, FAboveOrEqualHandle, fkMethod,
+      MakeFunctionMethod(FMethod.AboveOrEqualMethod), True, vtUnknown, fpLower, pcTotal);
+    InternalAddFunction(BelowOrEqualFunctionName, FBelowOrEqualHandle, fkMethod,
+      MakeFunctionMethod(FMethod.BelowOrEqualMethod), True, vtUnknown, fpLower, pcTotal);
+    InternalAddFunction(GetEpsilonFunctionName, FGetEpsilonHandle, fkMethod,
+      MakeFunctionMethod(FMethod.GetEpsilonMethod), False);
     InternalAddFunction(SetEpsilonFunctionName, FSetEpsilonHandle, fkMethod,
       MakeFunctionMethod(FMethod.SetEpsilonMethod, SetEpsilonParameterCount), False);
     InternalAddFunction(SetDecimalSeparatorFunctionName, FSetDecimalSeparatorHandle, fkMethod,
@@ -2379,7 +2422,8 @@ begin
     StringCode:
       begin
         Data.ItemText.Append(LockText, Data.Delimiter);
-        Data.ItemText.Append(PAnsiChar(Index) + SizeOf(TCode) + SizeOf(TScriptString), Item.ScriptString.Size div SizeOf(Char));
+        Data.ItemText.Append(PAnsiChar(Index) + SizeOf(TCode) + SizeOf(TScriptString),
+          Item.ScriptString.Size div SizeOf(Char));
         Data.ItemText.Append(LockText);
         Inc(Index, SizeOf(TCode) + SizeOf(TScriptString) + Item.ScriptString.Size);
         Data.AFunction := nil;
@@ -2397,7 +2441,8 @@ begin
       end;
     ParameterCode:
       begin
-        S := InternalDecompile(Index + SizeOf(TCode), Data.Delimiter, True, Data.ParameterBracket, Data.TypeMode);
+        S := InternalDecompile(Index + SizeOf(TCode), Data.Delimiter, True, Data.ParameterBracket,
+          Data.TypeMode);
         Data.ItemText.Append(Embrace(S, Data.ParameterBracket), Data.Delimiter);
         Inc(Index, SizeOf(TCode) + Item.Script.Header.ScriptSize);
         Data.AFunction := nil;
@@ -2569,17 +2614,18 @@ begin
       end;
     end;
     AFunction := GetFunction(Handle);
-    if (Result.ValueType <> vtUnknown) and Assigned(AFunction) and (AFunction.ReturnType <> vtUnknown) then
-    begin
-      if ItemHeader.UserType.Active and GetType(ItemHeader.UserType.Handle, AType) then
-        ValueType := AType.ValueType
-      else
-        if FIgnoreType[icFunction] then
-          ValueType := vtUnknown
+    if (Result.ValueType <> vtUnknown) and Assigned(AFunction) and
+      (AFunction.ReturnType <> vtUnknown) then
+      begin
+        if ItemHeader.UserType.Active and GetType(ItemHeader.UserType.Handle, AType) then
+          ValueType := AType.ValueType
         else
-          ValueType := AFunction.ReturnType;
-      if ValueType <> vtUnknown then Result := Convert(Result, ValueType);
-    end;
+          if FIgnoreType[icFunction] then
+            ValueType := vtUnknown
+          else
+            ValueType := AFunction.ReturnType;
+        if ValueType <> vtUnknown then Result := Convert(Result, ValueType);
+      end;
   finally
     PA := nil;
   end;
@@ -2729,7 +2775,8 @@ function TCustomParser.InternalAddFunction(const AName: string; var Handle: Nati
   const ReturnType: TValueType; const Priority: TFunctionPriority;
   const Coverage: TPriorityCoverage): Boolean;
 begin
-  Result := InternalAddFunction(MakeFunction(AName, Handle, ReturnType, Kind, Method, Optimizable, MakePriority(Priority, Coverage)));
+  Result := InternalAddFunction(MakeFunction(AName, Handle, ReturnType, Kind, Method, Optimizable,
+    MakePriority(Priority, Coverage)));
 end;
 
 function TCustomParser.InternalAddVariable(const AName: string; var Variable: TValue;
@@ -2737,8 +2784,8 @@ function TCustomParser.InternalAddVariable(const AName: string; var Variable: TV
 var
   AFunction: TFunction;
 begin
-  AFunction := MakeFunction(AName, AFunction.Method.Variable.Handle, ReturnType, fkMethod, MakeFunctionMethod(@Variable),
-    Optimizable, MakePriority(fpNormal, pcLocal));
+  AFunction := MakeFunction(AName, AFunction.Method.Variable.Handle, ReturnType, fkMethod,
+    MakeFunctionMethod(@Variable), Optimizable, MakePriority(fpNormal, pcLocal));
   Result := InternalAddFunction(AFunction);
 end;
 
@@ -2747,8 +2794,8 @@ function TCustomParser.InternalAddVariable(const AName: string; const Variable: 
 var
   AFunction: TFunction;
 begin
-  AFunction := MakeFunction(AName, AFunction.Method.Variable.Handle, ReturnType, fkMethod, MakeFunctionMethod(Variable),
-    Optimizable, MakePriority(fpNormal, pcLocal));
+  AFunction := MakeFunction(AName, AFunction.Method.Variable.Handle, ReturnType, fkMethod,
+    MakeFunctionMethod(Variable), Optimizable, MakePriority(fpNormal, pcLocal));
   Result := AddFunction(AFunction);
 end;
 
@@ -3424,17 +3471,18 @@ begin
                   else
                     AItem := ItemText(@ItemArray[J]) + Space + AItem;
                   AddItem(Array1.B, ItemArray[J]);
-                  if not GetFunction(ItemArray[J].FHandle, BFunction) or not BFunction.Method.Parameter.L then
-                  begin
-                    Reset(Array1.A, Array1.Data);
-                    try
-                      for K := Low(ItemArray) to J - 1 do
-                        AddItem(Array1.A, Array1.Data, ItemArray[K]);
-                    finally
-                      Apply(Array1.A, Array1.Data);
+                  if not GetFunction(ItemArray[J].FHandle, BFunction) or
+                    not BFunction.Method.Parameter.L then
+                    begin
+                      Reset(Array1.A, Array1.Data);
+                      try
+                        for K := Low(ItemArray) to J - 1 do
+                          AddItem(Array1.A, Array1.Data, ItemArray[K]);
+                      finally
+                        Apply(Array1.A, Array1.Data);
+                      end;
+                      Break;
                     end;
-                    Break;
-                  end;
                 end;
                 AItem := Trim(AItem);
               end
@@ -3457,17 +3505,18 @@ begin
                   else
                     BItem := BItem + Space + ItemText(@ItemArray[J]);
                   AddItem(Array1.B, ItemArray[J]);
-                  if not GetFunction(ItemArray[J].FHandle, BFunction) or not BFunction.Method.Parameter.R then
-                  begin
-                    Reset(Array1.A, Array1.Data);
-                    try
-                      for K := J + 1 to High(ItemArray) do
-                        AddItem(Array1.A, Array1.Data, ItemArray[K]);
-                    finally
-                      Apply(Array1.A, Array1.Data);
+                  if not GetFunction(ItemArray[J].FHandle, BFunction) or
+                    not BFunction.Method.Parameter.R then
+                    begin
+                      Reset(Array1.A, Array1.Data);
+                      try
+                        for K := J + 1 to High(ItemArray) do
+                          AddItem(Array1.A, Array1.Data, ItemArray[K]);
+                      finally
+                        Apply(Array1.A, Array1.Data);
+                      end;
+                      Break;
                     end;
-                    Break;
-                  end;
                 end;
                 BItem := Trim(BItem);
               end
@@ -3485,7 +3534,8 @@ begin
               if Match(ItemArray, Array1.B) then
                 Break
               else begin
-                S := Embrace(IntToStr(AddScript(SA, InternalCompile(S, SA, False, AFunction))), BracketArray[bkBrace]);
+                S := Embrace(IntToStr(AddScript(SA, InternalCompile(S, SA, False, AFunction))),
+                  BracketArray[bkBrace]);
                 Array1.A[Index] := MakeTextItem(S, FInternalHandle, -1);
               end;
             finally
@@ -3601,7 +3651,8 @@ begin
         if Data.Idle then
           ExecuteFunction(Index, Header, ItemHeader, EmptyValue, Data.Idle)
         else
-          I := AddParameter(Data.PA^, Data.AD, ItemHeader.UserType.Handle, ExecuteFunction(Index, Header, ItemHeader, EmptyValue));
+          I := AddParameter(Data.PA^, Data.AD, ItemHeader.UserType.Handle,
+            ExecuteFunction(Index, Header, ItemHeader, EmptyValue));
       end;
     StringCode:
       begin
@@ -3618,7 +3669,8 @@ begin
     ScriptCode:
       begin
         if not Data.Idle then
-          I := AddParameter(Data.PA^, Data.AD, ItemHeader.UserType.Handle, ExecuteScript(NativeInt(@Item.Script.Header))^);
+          I := AddParameter(Data.PA^, Data.AD, ItemHeader.UserType.Handle,
+            ExecuteScript(NativeInt(@Item.Script.Header))^);
         Inc(Index, SizeOf(TCode) + Item.Script.Header.ScriptSize);
       end;
   else
@@ -4006,94 +4058,158 @@ begin
   FMathMethod := TMathMethod.Create(Self);
   BeginUpdate;
   try
-    InternalAddFunction(IntegerDivideFunctionName, FDivHandle, fkMethod, MakeFunctionMethod(FMathMethod.DivMethod), True);
-    InternalAddFunction(ReminderFunctionName, FModHandle, fkMethod, MakeFunctionMethod(FMathMethod.ModMethod), True);
-    InternalAddFunction(DegreeFunctionName, FDegreeHandle, fkMethod, MakeFunctionMethod(FMathMethod.DegreeMethod),
-      True, vtUnknown, fpHigher, pcLocal);
+    InternalAddFunction(IntegerDivideFunctionName, FDivHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DivMethod), True);
+    InternalAddFunction(ReminderFunctionName, FModHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ModMethod), True);
+    InternalAddFunction(DegreeFunctionName, FDegreeHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DegreeMethod), True, vtUnknown, fpHigher, pcLocal);
     InternalAddFunction(FactorialFunctionName, FFactorialHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.FactorialMethod, FactorialParameterCount), True);
-    InternalAddFunction(SqrFunctionName, FSqrHandle, fkMethod, MakeFunctionMethod(FMathMethod.SqrMethod, False, True), True);
-    InternalAddFunction(SqrtFunctionName, FSqrtHandle, fkMethod, MakeFunctionMethod(FMathMethod.SqrtMethod, False, True), True);
-    InternalAddFunction(IntFunctionName, FIntHandle, fkMethod, MakeFunctionMethod(FMathMethod.IntMethod, False, True), True);
-    InternalAddFunction(RoundFunctionName, FRoundHandle, fkMethod, MakeFunctionMethod(FMathMethod.RoundMethod, False, True), True);
-    InternalAddFunction(RoundToFunctionName, FRoundToHandle, fkMethod, MakeFunctionMethod(FMathMethod.RoundToMethod, RoundToParameterCount), True);
-    InternalAddFunction(TruncFunctionName, FTruncHandle, fkMethod, MakeFunctionMethod(FMathMethod.TruncMethod, False, True), True);
-    InternalAddFunction(AbsFunctionName, FAbsHandle, fkMethod, MakeFunctionMethod(FMathMethod.AbsMethod, False, True), True);
-    InternalAddFunction(FracFunctionName, FFracHandle, fkMethod, MakeFunctionMethod(FMathMethod.FracMethod, False, True), True);
-    InternalAddFunction(LnFunctionName, FLnHandle, fkMethod, MakeFunctionMethod(FMathMethod.LnMethod, False, True), True);
-    InternalAddFunction(LgFunctionName, FLgHandle, fkMethod, MakeFunctionMethod(FMathMethod.LgMethod, False, True), True);
-    InternalAddFunction(LogFunctionName, FLogHandle, fkMethod, MakeFunctionMethod(FMathMethod.LogMethod), True);
-    InternalAddFunction(ExpFunctionName, FExpHandle, fkMethod, MakeFunctionMethod(FMathMethod.ExpMethod, False, True), True);
-    InternalAddFunction(RandomFunctionName, FRandomHandle, fkMethod, MakeFunctionMethod(FMathMethod.RandomMethod, False, True), False);
-    InternalAddFunction(SinFunctionName, FSinHandle, fkMethod, MakeFunctionMethod(FMathMethod.SinMethod, False, True), True);
-    InternalAddFunction(ArcSinFunctionName, FArcSinHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcSinMethod, False, True), True);
-    InternalAddFunction(SinHFunctionName, FSinHHandle, fkMethod, MakeFunctionMethod(FMathMethod.SinHMethod, False, True), True);
-    InternalAddFunction(ArcSinHFunctionName, FArcSinHHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcSinHMethod, False, True), True);
-    InternalAddFunction(CosFunctionName, FCosHandle, fkMethod, MakeFunctionMethod(FMathMethod.CosMethod, False, True), True);
-    InternalAddFunction(ArcCosFunctionName, FArcCosHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcCosMethod, False, True), True);
-    InternalAddFunction(CosHFunctionName, FCosHHandle, fkMethod, MakeFunctionMethod(FMathMethod.CosHMethod, False, True), True);
-    InternalAddFunction(ArcCosHFunctionName, FArcCosHHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcCosHMethod, False, True), True);
-    InternalAddFunction(TanFunctionName, FTanHandle, fkMethod, MakeFunctionMethod(FMathMethod.TanMethod, False, True), True);
-    InternalAddFunction(ArcTanFunctionName, FArcTanHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcTanMethod, False, True), True);
-    InternalAddFunction(TanHFunctionName, FTanHHandle, fkMethod, MakeFunctionMethod(FMathMethod.TanHMethod, False, True), True);
-    InternalAddFunction(ArcTanHFunctionName, FArcTanHHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcTanHMethod, False, True), True);
-    InternalAddFunction(CoTanFunctionName, FCoTanHandle, fkMethod, MakeFunctionMethod(FMathMethod.CoTanMethod, False, True), True);
-    InternalAddFunction(ArcCotanFunctionName, FArcCoTanHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcCoTanMethod, False, True), True);
-    InternalAddFunction(CotanHFunctionName, FCoTanHHandle, fkMethod, MakeFunctionMethod(FMathMethod.CoTanHMethod, False, True), True);
-    InternalAddFunction(ArcCotanHFunctionName, FArcCoTanHHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcCoTanHMethod, False, True), True);
-    InternalAddFunction(SecFunctionName, FSecHandle, fkMethod, MakeFunctionMethod(FMathMethod.SecMethod, False, True), True);
-    InternalAddFunction(ArcSecFunctionName, FArcSecHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcSecMethod, False, True), True);
-    InternalAddFunction(SecHFunctionName, FSecHHandle, fkMethod, MakeFunctionMethod(FMathMethod.SecHMethod, False, True), True);
-    InternalAddFunction(ArcSecHFunctionName, FArcSecHHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcSecHMethod, False, True), True);
-    InternalAddFunction(CscFunctionName, FCscHandle, fkMethod, MakeFunctionMethod(FMathMethod.CscMethod, False, True), True);
-    InternalAddFunction(ArcCscFunctionName, FArcCscHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcCscMethod, False, True), True);
-    InternalAddFunction(CscHFunctionName, FCscHHandle, fkMethod, MakeFunctionMethod(FMathMethod.CscHMethod, False, True), True);
-    InternalAddFunction(ArcCscHFunctionName, FArcCscHHandle, fkMethod, MakeFunctionMethod(FMathMethod.ArcCscHMethod, False, True), True);
-    InternalAddFunction(ArcTan2FunctionName, FArcTan2Handle, fkMethod, MakeFunctionMethod(FMathMethod.ArcTan2Method, ArcTan2ParameterCount), True);
-    InternalAddFunction(HypotFunctionName, FHypotHandle, fkMethod, MakeFunctionMethod(FMathMethod.HypotMethod, HypotParameterCount), True);
-    InternalAddFunction(RadToDegFunctionName, FRadToDegHandle, fkMethod, MakeFunctionMethod(FMathMethod.RadToDegMethod, False, True), True);
-    InternalAddFunction(RadToGradFunctionName, FRadToGradHandle, fkMethod, MakeFunctionMethod(FMathMethod.RadToGradMethod, False, True), True);
-    InternalAddFunction(RadToCycleFunctionName, FRadToCycleHandle, fkMethod, MakeFunctionMethod(FMathMethod.RadToCycleMethod, False, True), True);
-    InternalAddFunction(DegToRadFunctionName, FDegToRadHandle, fkMethod, MakeFunctionMethod(FMathMethod.DegToRadMethod, False, True), True);
-    InternalAddFunction(DegToGradFunctionName, FDegToGradHandle, fkMethod, MakeFunctionMethod(FMathMethod.DegToGradMethod, False, True), True);
-    InternalAddFunction(DegToCycleFunctionName, FDegToCycleHandle, fkMethod, MakeFunctionMethod(FMathMethod.DegToCycleMethod, False, True), True);
-    InternalAddFunction(GradToRadFunctionName, FGradToRadHandle, fkMethod, MakeFunctionMethod(FMathMethod.GradToRadMethod, False, True), True);
-    InternalAddFunction(GradToDegFunctionName, FGradToDegHandle, fkMethod, MakeFunctionMethod(FMathMethod.GradToDegMethod, False, True), True);
+    InternalAddFunction(SqrFunctionName, FSqrHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SqrMethod, False, True), True);
+    InternalAddFunction(SqrtFunctionName, FSqrtHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SqrtMethod, False, True), True);
+    InternalAddFunction(IntFunctionName, FIntHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.IntMethod, False, True), True);
+    InternalAddFunction(RoundFunctionName, FRoundHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.RoundMethod, False, True), True);
+    InternalAddFunction(RoundToFunctionName, FRoundToHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.RoundToMethod, RoundToParameterCount), True);
+    InternalAddFunction(TruncFunctionName, FTruncHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.TruncMethod, False, True), True);
+    InternalAddFunction(AbsFunctionName, FAbsHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.AbsMethod, False, True), True);
+    InternalAddFunction(FracFunctionName, FFracHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.FracMethod, False, True), True);
+    InternalAddFunction(LnFunctionName, FLnHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.LnMethod, False, True), True);
+    InternalAddFunction(LgFunctionName, FLgHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.LgMethod, False, True), True);
+    InternalAddFunction(LogFunctionName, FLogHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.LogMethod), True);
+    InternalAddFunction(ExpFunctionName, FExpHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ExpMethod, False, True), True);
+    InternalAddFunction(RandomFunctionName, FRandomHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.RandomMethod, False, True), False);
+    InternalAddFunction(SinFunctionName, FSinHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SinMethod, False, True), True);
+    InternalAddFunction(ArcSinFunctionName, FArcSinHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcSinMethod, False, True), True);
+    InternalAddFunction(SinHFunctionName, FSinHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SinHMethod, False, True), True);
+    InternalAddFunction(ArcSinHFunctionName, FArcSinHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcSinHMethod, False, True), True);
+    InternalAddFunction(CosFunctionName, FCosHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.CosMethod, False, True), True);
+    InternalAddFunction(ArcCosFunctionName, FArcCosHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcCosMethod, False, True), True);
+    InternalAddFunction(CosHFunctionName, FCosHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.CosHMethod, False, True), True);
+    InternalAddFunction(ArcCosHFunctionName, FArcCosHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcCosHMethod, False, True), True);
+    InternalAddFunction(TanFunctionName, FTanHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.TanMethod, False, True), True);
+    InternalAddFunction(ArcTanFunctionName, FArcTanHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcTanMethod, False, True), True);
+    InternalAddFunction(TanHFunctionName, FTanHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.TanHMethod, False, True), True);
+    InternalAddFunction(ArcTanHFunctionName, FArcTanHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcTanHMethod, False, True), True);
+    InternalAddFunction(CoTanFunctionName, FCoTanHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.CoTanMethod, False, True), True);
+    InternalAddFunction(ArcCotanFunctionName, FArcCoTanHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcCoTanMethod, False, True), True);
+    InternalAddFunction(CotanHFunctionName, FCoTanHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.CoTanHMethod, False, True), True);
+    InternalAddFunction(ArcCotanHFunctionName, FArcCoTanHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcCoTanHMethod, False, True), True);
+    InternalAddFunction(SecFunctionName, FSecHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SecMethod, False, True), True);
+    InternalAddFunction(ArcSecFunctionName, FArcSecHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcSecMethod, False, True), True);
+    InternalAddFunction(SecHFunctionName, FSecHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SecHMethod, False, True), True);
+    InternalAddFunction(ArcSecHFunctionName, FArcSecHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcSecHMethod, False, True), True);
+    InternalAddFunction(CscFunctionName, FCscHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.CscMethod, False, True), True);
+    InternalAddFunction(ArcCscFunctionName, FArcCscHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcCscMethod, False, True), True);
+    InternalAddFunction(CscHFunctionName, FCscHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.CscHMethod, False, True), True);
+    InternalAddFunction(ArcCscHFunctionName, FArcCscHHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcCscHMethod, False, True), True);
+    InternalAddFunction(ArcTan2FunctionName, FArcTan2Handle, fkMethod,
+      MakeFunctionMethod(FMathMethod.ArcTan2Method, ArcTan2ParameterCount), True);
+    InternalAddFunction(HypotFunctionName, FHypotHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.HypotMethod, HypotParameterCount), True);
+    InternalAddFunction(RadToDegFunctionName, FRadToDegHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.RadToDegMethod, False, True), True);
+    InternalAddFunction(RadToGradFunctionName, FRadToGradHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.RadToGradMethod, False, True), True);
+    InternalAddFunction(RadToCycleFunctionName, FRadToCycleHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.RadToCycleMethod, False, True), True);
+    InternalAddFunction(DegToRadFunctionName, FDegToRadHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DegToRadMethod, False, True), True);
+    InternalAddFunction(DegToGradFunctionName, FDegToGradHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DegToGradMethod, False, True), True);
+    InternalAddFunction(DegToCycleFunctionName, FDegToCycleHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DegToCycleMethod, False, True), True);
+    InternalAddFunction(GradToRadFunctionName, FGradToRadHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.GradToRadMethod, False, True), True);
+    InternalAddFunction(GradToDegFunctionName, FGradToDegHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.GradToDegMethod, False, True), True);
     InternalAddFunction(GradToCycleFunctionName, FGradToCycleHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.GradToCycleMethod, False, True), True);
-    InternalAddFunction(CycleToRadFunctionName, FCycleToRadHandle, fkMethod, MakeFunctionMethod(FMathMethod.CycleToRadMethod, False, True), True);
-    InternalAddFunction(CycleToDegFunctionName, FCycleToDegHandle, fkMethod, MakeFunctionMethod(FMathMethod.CycleToDegMethod, False, True), True);
+    InternalAddFunction(CycleToRadFunctionName, FCycleToRadHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.CycleToRadMethod, False, True), True);
+    InternalAddFunction(CycleToDegFunctionName, FCycleToDegHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.CycleToDegMethod, False, True), True);
     InternalAddFunction(CycleToGradFunctionName, FCycleToGradHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.CycleToGradMethod, False, True), True);
-    InternalAddFunction(LnXP1FunctionName, FLnXP1Handle, fkMethod, MakeFunctionMethod(FMathMethod.LnXP1Method, False, True), True);
-    InternalAddFunction(Log10FunctionName, FLog10Handle, fkMethod, MakeFunctionMethod(FMathMethod.Log10Method, False, True), True);
-    InternalAddFunction(Log2FunctionName, FLog2Handle, fkMethod, MakeFunctionMethod(FMathMethod.Log2Method, False, True), True);
+    InternalAddFunction(LnXP1FunctionName, FLnXP1Handle, fkMethod,
+      MakeFunctionMethod(FMathMethod.LnXP1Method, False, True), True);
+    InternalAddFunction(Log10FunctionName, FLog10Handle, fkMethod,
+      MakeFunctionMethod(FMathMethod.Log10Method, False, True), True);
+    InternalAddFunction(Log2FunctionName, FLog2Handle, fkMethod,
+      MakeFunctionMethod(FMathMethod.Log2Method, False, True), True);
     InternalAddFunction(IntPowerFunctionName, FIntPowerHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.IntPowerMethod, IntPowerParameterCount), True);
-    InternalAddFunction(PowerFunctionName, FPowerHandle, fkMethod, MakeFunctionMethod(FMathMethod.PowerMethod),
-      True, vtUnknown, fpHigher, pcLocal);
-    InternalAddFunction(RootFunctionName, FRootHandle, fkMethod, MakeFunctionMethod(FMathMethod.RootMethod),
-      True, vtUnknown, fpHigher, pcLocal);
-    InternalAddFunction(LdexpFunctionName, FLdexpHandle, fkMethod, MakeFunctionMethod(FMathMethod.LdexpMethod, LdexpParameterCount), True);
-    InternalAddFunction(CeilFunctionName, FCeilHandle, fkMethod, MakeFunctionMethod(FMathMethod.CeilMethod, False, True), True);
-    InternalAddFunction(FloorFunctionName, FFloorHandle, fkMethod, MakeFunctionMethod(FMathMethod.FloorMethod, False, True), True);
-    InternalAddFunction(PolyFunctionName, FPolyHandle, fkMethod, MakeFunctionMethod(FMathMethod.PolyMethod, PolyParameterCount), True);
-    InternalAddFunction(MeanFunctionName, FMeanHandle, fkMethod, MakeFunctionMethod(FMathMethod.MeanMethod, MeanParameterCount), True);
-    InternalAddFunction(SumFunctionName, FSumHandle, fkMethod, MakeFunctionMethod(FMathMethod.SumMethod, SumParameterCount), True);
-    InternalAddFunction(SumIntFunctionName, FSumIntHandle, fkMethod, MakeFunctionMethod(FMathMethod.SumIntMethod, SumIntParameterCount), True);
+    InternalAddFunction(PowerFunctionName, FPowerHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.PowerMethod), True, vtUnknown, fpHigher, pcLocal);
+    InternalAddFunction(RootFunctionName, FRootHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.RootMethod), True, vtUnknown, fpHigher, pcLocal);
+    InternalAddFunction(LdexpFunctionName, FLdexpHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.LdexpMethod, LdexpParameterCount), True);
+    InternalAddFunction(CeilFunctionName, FCeilHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.CeilMethod, False, True), True);
+    InternalAddFunction(FloorFunctionName, FFloorHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.FloorMethod, False, True), True);
+    InternalAddFunction(PolyFunctionName, FPolyHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.PolyMethod, PolyParameterCount), True);
+    InternalAddFunction(MeanFunctionName, FMeanHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MeanMethod, MeanParameterCount), True);
+    InternalAddFunction(SumFunctionName, FSumHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SumMethod, SumParameterCount), True);
+    InternalAddFunction(SumIntFunctionName, FSumIntHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SumIntMethod, SumIntParameterCount), True);
     InternalAddFunction(SumOfSquaresFunctionName, FSumOfSquaresHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.SumOfSquaresMethod, SumOfSquaresParameterCount), True);
     InternalAddFunction(MinValueFunctionName, FMinValueHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.MinValueMethod, MinValueParameterCount), True);
     InternalAddFunction(MinIntValueFunctionName, FMinIntValueHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.MinIntValueMethod, MinIntValueParameterCount), True);
-    InternalAddFunction(MinFunctionName, FMinHandle, fkMethod, MakeFunctionMethod(FMathMethod.MinMethod, ParameterMinCount), True);
+    InternalAddFunction(MinFunctionName, FMinHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MinMethod, ParameterMinCount), True);
     InternalAddFunction(MaxValueFunctionName, FMaxValueHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.MaxValueMethod, MaxValueParameterCount), True);
     InternalAddFunction(MaxIntValueFunctionName, FMaxIntValueHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.MaxIntValueMethod, MaxIntValueParameterCount), True);
-    InternalAddFunction(MaxFunctionName, FMaxHandle, fkMethod, MakeFunctionMethod(FMathMethod.MaxMethod, ParameterMaxCount), True);
-    InternalAddFunction(StdDevFunctionName, FStdDevHandle, fkMethod, MakeFunctionMethod(FMathMethod.StdDevMethod, StdDevParameterCount), True);
+    InternalAddFunction(MaxFunctionName, FMaxHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MaxMethod, ParameterMaxCount), True);
+    InternalAddFunction(StdDevFunctionName, FStdDevHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.StdDevMethod, StdDevParameterCount), True);
     InternalAddFunction(PopnStdDevFunctionName, FPopnStdDevHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.PopnStdDevMethod, PopnStdDevParameterCount), True);
     InternalAddFunction(VarianceFunctionName, FVarianceHandle, fkMethod,
@@ -4102,44 +4218,46 @@ begin
       MakeFunctionMethod(FMathMethod.PopnVarianceMethod, PopnVarianceParameterCount), True);
     InternalAddFunction(TotalVarianceFunctionName, FTotalVarianceHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.TotalVarianceMethod, TotalVarianceParameterCount), True);
-    InternalAddFunction(NormFunctionName, FNormHandle, fkMethod, MakeFunctionMethod(FMathMethod.NormMethod, NormParameterCount), True);
-    InternalAddFunction(RandGFunctionName, FRandGHandle, fkMethod, MakeFunctionMethod(FMathMethod.RandGMethod, RandGParameterCount), True);
+    InternalAddFunction(NormFunctionName, FNormHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.NormMethod, NormParameterCount), True);
+    InternalAddFunction(RandGFunctionName, FRandGHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.RandGMethod, RandGParameterCount), True);
     InternalAddFunction(RandomRangeFunctionName, FRandomRangeHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.RandomRangeMethod, RandomRangeParameterCount), False);
     InternalAddFunction(RandomFromFunctionName, FRandomFromHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.RandomFromMethod, RandomFromParameterCount), False);
-    InternalAddFunction(DateTimeFunctionName, FDateTimeHandle, fkMethod, MakeFunctionMethod(FMathMethod.DateTimeMethod),
-      False, vtDouble);
-    InternalAddFunction(DateFunctionName, FDateHandle, fkMethod, MakeFunctionMethod(FMathMethod.DateMethod),
-      False, vtDouble);
-    InternalAddFunction(TimeFunctionName, FTimeHandle, fkMethod, MakeFunctionMethod(FMathMethod.TimeMethod),
-      False, vtDouble);
-    InternalAddFunction(YearFunctionName, FYearHandle, fkMethod, MakeFunctionMethod(FMathMethod.YearMethod),
-      False, vtWord);
-    InternalAddFunction(MonthFunctionName, FMonthHandle, fkMethod, MakeFunctionMethod(FMathMethod.MonthMethod),
-      False, vtWord);
-    InternalAddFunction(DayFunctionName, FDayHandle, fkMethod, MakeFunctionMethod(FMathMethod.DayMethod),
-      False, vtWord);
-    InternalAddFunction(DayOfWeekFunctionName, FDayOfWeekHandle, fkMethod, MakeFunctionMethod(FMathMethod.DayOfWeekMethod),
-      False, vtWord);
-    InternalAddFunction(HourFunctionName, FHourHandle, fkMethod, MakeFunctionMethod(FMathMethod.HourMethod),
-      False, vtWord);
-    InternalAddFunction(MinuteFunctionName, FMinuteHandle, fkMethod, MakeFunctionMethod(FMathMethod.MinuteMethod),
-      False, vtWord);
-    InternalAddFunction(SecondFunctionName, FSecondHandle, fkMethod, MakeFunctionMethod(FMathMethod.SecondMethod),
-      False, vtWord);
-    InternalAddFunction(MilliSecondFunctionName, FMilliSecondHandle, fkMethod, MakeFunctionMethod(FMathMethod.MilliSecondMethod),
-      False, vtWord);
-    InternalAddFunction(GetYearFunctionName, FGetYearHandle, fkMethod, MakeFunctionMethod(FMathMethod.GetYearMethod, GetYearParameterCount),
-      True, vtWord);
+    InternalAddFunction(DateTimeFunctionName, FDateTimeHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DateTimeMethod), False, vtDouble);
+    InternalAddFunction(DateFunctionName, FDateHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DateMethod), False, vtDouble);
+    InternalAddFunction(TimeFunctionName, FTimeHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.TimeMethod), False, vtDouble);
+    InternalAddFunction(YearFunctionName, FYearHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.YearMethod), False, vtWord);
+    InternalAddFunction(MonthFunctionName, FMonthHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MonthMethod), False, vtWord);
+    InternalAddFunction(DayFunctionName, FDayHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DayMethod), False, vtWord);
+    InternalAddFunction(DayOfWeekFunctionName, FDayOfWeekHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DayOfWeekMethod), False, vtWord);
+    InternalAddFunction(HourFunctionName, FHourHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.HourMethod), False, vtWord);
+    InternalAddFunction(MinuteFunctionName, FMinuteHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MinuteMethod), False, vtWord);
+    InternalAddFunction(SecondFunctionName, FSecondHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SecondMethod), False, vtWord);
+    InternalAddFunction(MilliSecondFunctionName, FMilliSecondHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MilliSecondMethod), False, vtWord);
+    InternalAddFunction(GetYearFunctionName, FGetYearHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.GetYearMethod, GetYearParameterCount), True, vtWord);
     InternalAddFunction(GetMonthFunctionName, FGetMonthHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.GetMonthMethod, GetMonthParameterCount), True, vtWord);
-    InternalAddFunction(GetDayFunctionName, FGetDayHandle, fkMethod, MakeFunctionMethod(FMathMethod.GetDayMethod, GetDayParameterCount),
-      True, vtWord);
+    InternalAddFunction(GetDayFunctionName, FGetDayHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.GetDayMethod, GetDayParameterCount), True, vtWord);
     InternalAddFunction(GetDayOfWeekFunctionName, FGetDayOfWeekHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.GetDayOfWeekMethod, GetDayOfWeekParameterCount), True, vtWord);
-    InternalAddFunction(GetHourFunctionName, FGetHourHandle, fkMethod, MakeFunctionMethod(FMathMethod.GetHourMethod, GetHourParameterCount),
-      True, vtWord);
+    InternalAddFunction(GetHourFunctionName, FGetHourHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.GetHourMethod, GetHourParameterCount), True, vtWord);
     InternalAddFunction(GetMinuteFunctionName, FGetMinuteHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.GetMinuteMethod, GetMinuteParameterCount), True, vtWord);
     InternalAddFunction(GetSecondFunctionName, FGetSecondHandle, fkMethod,
@@ -4158,24 +4276,24 @@ begin
       MakeFunctionMethod(FMathMethod.StrToDateMethod, StrToDateParameterCount), False, vtDouble);
     InternalAddFunction(StrToTimeFunctionName, FStrToTimeHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.StrToTimeMethod, StrToTimeParameterCount), False, vtDouble);
-    InternalAddFunction(DateOfFunctionName, FDateOfHandle, fkMethod, MakeFunctionMethod(FMathMethod.DateOfMethod, False, True),
-      True, vtDouble);
-    InternalAddFunction(TimeOfFunctionName, FTimeOfHandle, fkMethod, MakeFunctionMethod(FMathMethod.TimeOfMethod, False, True),
-      True, vtDouble);
-    InternalAddFunction(YearOfFunctionName, FYearOfHandle, fkMethod, MakeFunctionMethod(FMathMethod.YearOfMethod, False, True),
-      True, vtWord);
-    InternalAddFunction(MonthOfFunctionName, FMonthOfHandle, fkMethod, MakeFunctionMethod(FMathMethod.MonthOfMethod, False, True),
-      True, vtWord);
-    InternalAddFunction(WeekOfFunctionName, FWeekOfHandle, fkMethod, MakeFunctionMethod(FMathMethod.WeekOfMethod, False, True),
-      True, vtWord);
-    InternalAddFunction(DayOfFunctionName, FDayOfHandle, fkMethod, MakeFunctionMethod(FMathMethod.DayOfMethod, False, True),
-      True, vtWord);
-    InternalAddFunction(HourOfFunctionName, FHourOfHandle, fkMethod, MakeFunctionMethod(FMathMethod.HourOfMethod, False, True),
-      True, vtWord);
-    InternalAddFunction(MinuteOfFunctionName, FMinuteOfHandle, fkMethod, MakeFunctionMethod(FMathMethod.MinuteOfMethod, False, True),
-      True, vtWord);
-    InternalAddFunction(SecondOfFunctionName, FSecondOfHandle, fkMethod, MakeFunctionMethod(FMathMethod.SecondOfMethod, False, True),
-      True, vtWord);
+    InternalAddFunction(DateOfFunctionName, FDateOfHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DateOfMethod, False, True), True, vtDouble);
+    InternalAddFunction(TimeOfFunctionName, FTimeOfHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.TimeOfMethod, False, True), True, vtDouble);
+    InternalAddFunction(YearOfFunctionName, FYearOfHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.YearOfMethod, False, True), True, vtWord);
+    InternalAddFunction(MonthOfFunctionName, FMonthOfHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MonthOfMethod, False, True), True, vtWord);
+    InternalAddFunction(WeekOfFunctionName, FWeekOfHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.WeekOfMethod, False, True), True, vtWord);
+    InternalAddFunction(DayOfFunctionName, FDayOfHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.DayOfMethod, False, True), True, vtWord);
+    InternalAddFunction(HourOfFunctionName, FHourOfHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.HourOfMethod, False, True), True, vtWord);
+    InternalAddFunction(MinuteOfFunctionName, FMinuteOfHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.MinuteOfMethod, False, True), True, vtWord);
+    InternalAddFunction(SecondOfFunctionName, FSecondOfHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.SecondOfMethod, False, True), True, vtWord);
     InternalAddFunction(MilliSecondOfFunctionName, FMilliSecondOfHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.MilliSecondOfMethod, False, True), True, vtWord);
     InternalAddFunction(YearsBetweenFunctionName, FYearsBetweenHandle, fkMethod,
@@ -4263,8 +4381,8 @@ begin
       MakeFunctionMethod(FMathMethod.CompareTimeMethod, CompareTimeParameterCount), True, vtShortint);
     InternalAddFunction(SameTimeFunctionName, FSameTimeHandle, fkMethod,
       MakeFunctionMethod(FMathMethod.SameTimeMethod, SameTimeParameterCount), True, vtShortint);
-    InternalAddFunction(GetTickCountFunctionName, FGetTickCountHandle, fkMethod, MakeFunctionMethod(FMathMethod.GetTickCount),
-      False, vtLongWord);
+    InternalAddFunction(GetTickCountFunctionName, FGetTickCountHandle, fkMethod,
+      MakeFunctionMethod(FMathMethod.GetTickCount), False, vtLongWord);
     InternalAddConstant(MondayConstantName, MakeByte(DayMonday));
     InternalAddConstant(TuesdayConstantName, MakeByte(DayTuesday));
     InternalAddConstant(WednesdayConstantName, MakeByte(DayWednesday));

@@ -621,7 +621,8 @@ var
   H: PHeader;
 begin
   H := Header[ItemKind];
-  Result := (Index >= 0) and (Index < H.Count) and not Eof(Stream, H.From[Index] + H.Size[Index], 0);
+  Result := (Index >= 0) and (Index < H.Count) and
+    not Eof(Stream, H.From[Index] + H.Size[Index], 0);
 end;
 
 constructor TBlobManager.Create(AOwner: TComponent);
@@ -1152,7 +1153,8 @@ begin
       FillChar(H.Name[I], SizeOf(H.Name[I]), 0);
       Stream.Read(H.Name[I], K);
       Result := ReadValue(Stream, H.From[I], SizeOf(H.From[I])) and
-        ReadValue(Stream, H.Size[I], SizeOf(H.Size[I])) and not Eof(Stream, H.From[I] + H.Size[I], 0);
+        ReadValue(Stream, H.Size[I], SizeOf(H.Size[I])) and
+        not Eof(Stream, H.From[I] + H.Size[I], 0);
       if not Result then Break;
     end;
   end;

@@ -426,11 +426,12 @@ begin
 end;
 function FitInto(const Value, MaxValue: Extended): Extended;
 begin
-  if IsNan(Value) or IsInfinite(Value) or IsNan(MaxValue) or IsInfinite(MaxValue) or (MaxValue = 0) then
-  begin
-    Result := 0;
-    Exit;
-  end;
+  if IsNan(Value) or IsInfinite(Value) or IsNan(MaxValue) or IsInfinite(MaxValue) or
+    (MaxValue = 0) then
+    begin
+      Result := 0;
+      Exit;
+    end;
   Result := Value - MaxValue * Floor((Value + MaxValue) / MaxValue);
   if Result < 0 then
     Result := Result + MaxValue;
@@ -492,9 +493,11 @@ function SExtrapolate(const MinRatio, MaxRatio: Extended; const Value, MaxValue:
   const Invert: Boolean): Extended;
 begin
   if Invert then
-    Result := MaxRatio - MaxRatio * Sin(ArcSin(((Value * (MaxRatio - MinRatio)) / MaxValue) / MaxRatio))
+    Result := MaxRatio -
+      MaxRatio * Sin(ArcSin(((Value * (MaxRatio - MinRatio)) / MaxValue) / MaxRatio))
   else
-    Result := MinRatio + MaxRatio * Sin(ArcSin(((Value * (MaxRatio - MinRatio)) / MaxValue) / MaxRatio));
+    Result := MinRatio +
+      MaxRatio * Sin(ArcSin(((Value * (MaxRatio - MinRatio)) / MaxValue) / MaxRatio));
 end;
 function RandomDeviation(const MaxDeviation: Extended): Extended;
 begin

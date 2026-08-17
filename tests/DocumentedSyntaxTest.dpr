@@ -179,7 +179,8 @@ begin
   { The documentation showed 'ab' + 'cd' giving abcd. It does not: a quoted
     literal is refused outright. }
   Check('a quoted literal is refused', Raises('''ab'' + ''cd'''));
-  Check('AsString converts the answer, it does not join text', P.AsString('2 + 2') = '4', '  got "' + P.AsString('2 + 2') + '"');
+  Check('AsString converts the answer, it does not join text', P.AsString('2 + 2') = '4',
+    '  got "' + P.AsString('2 + 2') + '"');
 end;
 
 procedure LazinessAndSelfReference;

@@ -4124,7 +4124,8 @@ begin
           vtValue:
             BFunction.Method.Variable.Variable^ := Operation(BValue, MakeExtended(E), otSubtract);
           vtValueRef:
-            AssignValue(BFunction.Method.Variable.VariableRef, Operation(BValue, MakeExtended(E), otSubtract));
+            AssignValue(BFunction.Method.Variable.VariableRef,
+              Operation(BValue, MakeExtended(E), otSubtract));
         end;
         try
           P.StringToScriptInto(DequoteDouble(PA[0].Text, P.FData.FA[P.DerivHandle].Name, P.Bracket),
@@ -4146,7 +4147,8 @@ begin
           vtValueRef: AssignValue(BFunction.Method.Variable.VariableRef, BValue);
         end;
       end;
-      Result := Operation(Operation(CValue, AValue, otSubtract), Operation(MakeExtended(E), MakeByte(2), otMultiply), otDivide);
+      Result := Operation(Operation(CValue, AValue, otSubtract),
+        Operation(MakeExtended(E), MakeByte(2), otMultiply), otDivide);
     until True;
   finally
     Leave(FSync);

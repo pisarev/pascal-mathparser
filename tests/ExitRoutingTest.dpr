@@ -217,7 +217,8 @@ begin
   Got := Run(Hop.FA, Root, Note);
   Check('nothing escaped', Note = '', Note);
   Check('the parser in the middle was called', Hop.FEnteredB, 'B was never entered');
-  Check('the parser in the middle did not take somebody else''s Exit', not Hop.FReturnedB, Format('B returned with %g', [Hop.FValueB]));
+  Check('the parser in the middle did not take somebody else''s Exit', not Hop.FReturnedB,
+    Format('B returned with %g', [Hop.FValueB]));
   CheckDouble('the root got the value of its own Exit', Got, 42);
 end;
 
@@ -244,8 +245,10 @@ begin
   Got := Run(Hop.FA, Root, Note);
   Check('nothing escaped', Note = '', Note);
   Check('both parsers in the middle were called', Hop.FEnteredB and Hop.FEnteredC, 'C was never reached');
-  Check('C did not take somebody else''s Exit', not Hop.FReturnedC, Format('C returned with %g', [Hop.FValueC]));
-  Check('B did not take somebody else''s Exit', not Hop.FReturnedB, Format('B returned with %g', [Hop.FValueB]));
+  Check('C did not take somebody else''s Exit', not Hop.FReturnedC,
+    Format('C returned with %g', [Hop.FValueC]));
+  Check('B did not take somebody else''s Exit', not Hop.FReturnedB,
+    Format('B returned with %g', [Hop.FValueB]));
   CheckDouble('the root got the value of its own Exit', Got, 42);
 end;
 
@@ -296,7 +299,8 @@ begin
   Hop.FA.StringToScript('tob(0) + 7', Root);
   Got := Run(Hop.FA, Root, Note);
   Check('nothing escaped', Note = '', Note);
-  Check('the middle one did not take somebody else''s Exit', not Hop.FReturnedB, Format('B returned with %g', [Hop.FValueB]));
+  Check('the middle one did not take somebody else''s Exit', not Hop.FReturnedB,
+    Format('B returned with %g', [Hop.FValueB]));
   CheckDouble('the root got the value', Got, 42);
 end;
 
@@ -322,7 +326,8 @@ begin
     begin
       Note := 'caught outside';
       Got := GetDouble(E.Value);
-      Check('no owner was assigned', not Assigned(E.OwnerParser), 'an exception raised outside an evaluation has an owner');
+      Check('no owner was assigned', not Assigned(E.OwnerParser),
+        'an exception raised outside an evaluation has an owner');
     end;
   end;
   Check('the exception reached the caller', Note = 'caught outside', Note);
@@ -399,8 +404,10 @@ begin
     try
       { Registration is over before the first evaluation - that is the contract }
       Hop.FA.AddFunction('tob', HandleToB, fkMethod, MakeFunctionMethod(Hop.ToB, 1, pkValue), False);
-      Hop.FA.AddFunction('recursea', HandleRecurse, fkMethod, MakeFunctionMethod(Hop.RecurseA, 1, pkValue), False);
-      Hop.FA.AddFunction('legacyexit', HandleLegacy, fkMethod, MakeFunctionMethod(Hop.LegacyExit, 1, pkValue), False);
+      Hop.FA.AddFunction('recursea', HandleRecurse, fkMethod,
+        MakeFunctionMethod(Hop.RecurseA, 1, pkValue), False);
+      Hop.FA.AddFunction('legacyexit', HandleLegacy, fkMethod,
+        MakeFunctionMethod(Hop.LegacyExit, 1, pkValue), False);
       Hop.FB.AddFunction('backtoa', HandleBack, fkMethod, MakeFunctionMethod(Hop.BackToA, 1, pkValue), False);
       Hop.FB.AddFunction('toc', HandleToC, fkMethod, MakeFunctionMethod(Hop.ToC, 1, pkValue), False);
       Hop.FC.AddFunction('backtoa', HandleBack, fkMethod, MakeFunctionMethod(Hop.BackToA, 1, pkValue), False);

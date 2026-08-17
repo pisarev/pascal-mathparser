@@ -343,7 +343,8 @@ begin
   FMinCountToCacheVariableName := Format(DefaultMinCountToCacheName, [S, Name]);
   FMaxCountToCacheVariableName := Format(DefaultMaxCountToCacheName, [S, Name]);
   FCountToCacheVariableName := Format(DefaultCountToCacheName, [S, Name]);
-  FCapacityFormula := Format(DefaultCapacityFormula, [FMatchCountVariableName, FUsageCountVariableName, FMaxCountToCacheVariableName]);
+  FCapacityFormula := Format(DefaultCapacityFormula,
+    [FMatchCountVariableName, FUsageCountVariableName, FMaxCountToCacheVariableName]);
   FRestrictFormula := Format(DefaultRestrictFormula, [FMatchCountVariableName, FUsageCountVariableName]);
   FVariable := nil;
   VariableUtils.Add(FVariable, FMatchCountVariableName, @FMatchCount);

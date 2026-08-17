@@ -156,8 +156,8 @@ begin
   Quick.FText := 'Parse("1 + 1")';
   Quick.FRounds := 1;
   Quick.Start;
-  Check('the second thread went through its own Parse while the first was busy', Waiting(@Quick.FEnded, 5000),
-    'never arrived within 5 s');
+  Check('the second thread went through its own Parse while the first was busy',
+    Waiting(@Quick.FEnded, 5000), 'never arrived within 5 s');
   Check('and without a refusal', Quick.FNote = '', Quick.FNote);
   Holder.FRelease.Open := True;
   Check('the first thread finished once released', Waiting(@Held.FEnded, 5000), 'never arrived');
@@ -210,8 +210,8 @@ begin
   Other.FText := 'Deriv("x * x", "x")';
   Other.FRounds := 1;
   Other.Start;
-  Check('the second parser took its derivative without waiting for the first', Waiting(@Other.FEnded, 5000),
-    'never arrived within 5 s');
+  Check('the second parser took its derivative without waiting for the first',
+    Waiting(@Other.FEnded, 5000), 'never arrived within 5 s');
   Check('and without a refusal', Other.FNote = '', Other.FNote);
   Holder.FRelease.Open := True;
   Check('the first one finished once released', Waiting(@Held.FEnded, 5000), 'never arrived');
@@ -269,12 +269,14 @@ begin
   end;
   Check('the derivative is held in the middle', Holder.FInside, 'never got there');
   Seen := GetDouble(SharedValue);
-  Check('the neighbouring thread sees NOT the original 5 but the shifted value', Abs(Seen - 5) > 1E-9,
-    Format('%g', [Seen]));
-  Check('the shift is exactly eps, not garbage', Abs(Abs(Seen - 5) - 0.001) < 1E-9, Format('shift %g', [Abs(Seen - 5)]));
+  Check('the neighbouring thread sees NOT the original 5 but the shifted value',
+    Abs(Seen - 5) > 1E-9, Format('%g', [Seen]));
+  Check('the shift is exactly eps, not garbage', Abs(Abs(Seen - 5) - 0.001) < 1E-9,
+    Format('shift %g', [Abs(Seen - 5)]));
   Holder.FRelease.Open := True;
   Check('the derivative finished once released', Waiting(@Held.FEnded, 5000), 'never arrived');
-  Check('and put the variable back', Abs(GetDouble(SharedValue) - 5) < 1E-9, Format('%g', [GetDouble(SharedValue)]));
+  Check('and put the variable back', Abs(GetDouble(SharedValue) - 5) < 1E-9,
+    Format('%g', [GetDouble(SharedValue)]));
   Held.Free;
 end;
 
