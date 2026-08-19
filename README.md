@@ -218,8 +218,10 @@ whole example is in `samples/docs/extend.dpr`.
 ## Installation
 
 Nothing to install: this is a set of units. Clone it, put `src` on the search
-path - and `jit` as well for the accelerator - and you are done. What follows is
-that sentence turned into commands that have been run.
+path - and `jit` as well for the accelerator - and you are done. That is the
+Delphi answer, and it holds for the compiler called by hand. Under Lazarus a
+project takes the package rather than the path; the Lazarus part below says why.
+What follows is that sentence turned into commands that have been run.
 
 ```
 mkdir %USERPROFILE%\Desktop\Parser
@@ -275,6 +277,13 @@ mkdir lazpcp
 ```
 
 The second one is the accelerator and is optional.
+
+Those commands build the packages. A project of your own then asks for one of
+them - `Use` -> `Add to project` in the package window - rather than putting
+`src` on its search path. The defines that keep the LCL out, `-dNOFORMS` and
+`-dNOGRAPHICS`, live in the package; a project pointing straight at the sources
+does not carry them, and the build stops at `BlobManager`, which falls back to
+`TGraphic` and asks for `Graphics` from the LCL.
 
 ### With Free Pascal, by script
 
