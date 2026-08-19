@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <Package Version="5">
     <PathDelim Value="/"/>
@@ -40,7 +40,7 @@ if (TargetOS &lt;&gt; 'win32') and (TargetOS &lt;&gt; 'win64') then
     </CompilerOptions>
     <Description Value="MathParser: a compiler and interpreter of mathematical expressions (core)"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="3" Release="0"/>
+    <Version Major="1" Minor="3" Release="1"/>
     <Files>
       <Item>
         <Filename Value="../../src/Parser.pas"/>

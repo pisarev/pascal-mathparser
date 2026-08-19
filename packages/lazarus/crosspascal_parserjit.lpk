@@ -1,4 +1,4 @@
-<?xml version="1.0" encoding="UTF-8"?>
+﻿<?xml version="1.0" encoding="UTF-8"?>
 <CONFIG>
   <Package Version="5">
     <PathDelim Value="/"/>
@@ -29,7 +29,7 @@
     </CompilerOptions>
     <Description Value="MathParser accelerator: IR, executor and x86-64 machine code generator"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="3" Release="0"/>
+    <Version Major="1" Minor="3" Release="1"/>
     <Files>
       <Item>
         <Filename Value="../../jit/ParseJit.Decoder.pas"/>

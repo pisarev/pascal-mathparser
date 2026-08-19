@@ -324,9 +324,40 @@ foreach ($S in $Stale) {
 if ($Compiler -eq 'delphi') {
     # The studio directory: BDS_BIN, otherwise BDS from Delphi itself, otherwise the
     # standard place.
+# The bin folder of the studio. Order: the builder's own variable, the one RAD
+# Studio sets for its command prompt, then the registry. The registry replaced a
+# path written here by hand. That path named a single version - 13 - and on a
+# machine with Delphi 12 the build stopped at "dcc64.exe is not recognized",
+# which says nothing about the real cause: the studio is installed, just not
+# that one.
+function Find-BdsBin($Keys = @('HKLM:\SOFTWARE\WOW6432Node\Embarcadero\BDS',
+                               'HKLM:\SOFTWARE\Embarcadero\BDS')) {
+    $found = @()
+    foreach ($key in $Keys) {
+        if (-not (Test-Path $key)) { continue }
+        foreach ($item in Get-ChildItem $key) {
+            $root = (Get-ItemProperty -Path $item.PSPath -Name RootDir -ErrorAction SilentlyContinue).RootDir
+            if (-not $root) { continue }
+            $bin = Join-Path $root 'bin'
+            if (-not (Test-Path (Join-Path $bin 'dcc64.exe'))) { continue }
+            # The key is named after the version: 19.0, 23.0, 37.0. Only the major
+            # part is read, and as an integer: [double] would parse 23.0 through the
+            # current culture and give nothing on a comma-decimal one.
+            $number = 0
+            [void][int]::TryParse((($item.PSChildName -split '\.')[0]), [ref]$number)
+            $found += [pscustomobject]@{ Version = $number; Bin = $bin }
+        }
+    }
+    if (-not $found) { return '' }
+    ($found | Sort-Object Version -Descending)[0].Bin
+}
+
     $BdsBin = if ($env:BDS_BIN) { $env:BDS_BIN }
               elseif ($env:BDS) { [IO.Path]::Combine($env:BDS, 'bin') }
-              else { 'C:\Program Files (x86)\Embarcadero\Studio\37.0\bin' }
+              else { Find-BdsBin }
+    if (-not $BdsBin) {
+        throw 'Delphi was not found. Set BDS_BIN to the bin folder of the installation, or run this from the RAD Studio command prompt.'
+    }
     $Bin = [IO.Path]::Combine($BdsBin, 'dcc64.exe')
     $Rtl = [IO.Path]::Combine([IO.Path]::GetDirectoryName($BdsBin.TrimEnd('\')), 'lib\win64\release')
 }

@@ -258,8 +258,12 @@ installation, and `rsvars.bat` there puts it on the path of the current prompt.
 The design-time packages are built for you:
 
 ```
-pwsh -File packages\delphi\build.ps1
+powershell -ExecutionPolicy Bypass -File packages\delphi\build.ps1
 ```
+
+The commands are for the PowerShell that ships with Windows; nothing here needs
+PowerShell 7. `-ExecutionPolicy Bypass` is what lets a downloaded script run
+under the default policy, and it holds for that one run only.
 
 It ends with `Delphi packages: did not build 0`. Install
 `packages\delphi\crosspascal_parser_dsgn.dproj` from the IDE afterwards if you
@@ -292,7 +296,7 @@ The battery under FPC on Windows:
 ```
 set FPC_EXE=C:\lazarus\fpc\3.2.2\bin\x86_64-win64\fpc.exe
 set LAZARUS_DIR=C:\lazarus
-pwsh -File tests\build_fpc.ps1
+powershell -ExecutionPolicy Bypass -File tests\build_fpc.ps1
 ```
 
 It ends with `FPC DONE: failures 0, skipped 0`. Both variables are needed and for
