@@ -1,6 +1,8 @@
 # How many checks the run gave. Written by build.ps1, not edited by hand.
 # program	checks
 BigScript	5
+CacheContractTest	48
+ConstantsTest	34
 DemoSpeed	6
 DocumentedSyntaxTest	34
 ExitRoutingTest	32
@@ -15,7 +17,10 @@ LoopScopeTest	19
 MathFamilyTest	24
 MethodLockTest	13
 ParserBugTests	75
-PublicApiTest	23
+PlatformTextTest	10
+PublicApiTest	28
+ScientificTest	53
+SignCacheTest	80
 ThreadSafetyTest	29
 ThreadShareTest	12
 ThreadWaitTest	6

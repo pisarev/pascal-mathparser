@@ -103,6 +103,7 @@ function MakeValueRef(var Value: Extended): TValueRef; overload;
 
 function GetValueType(const Value: Int64): TValueType;
 function LessZero(const Value: TValue): Boolean;
+function GreaterZero(const Value: TValue): Boolean;
 function TextToValue(const Text: string): TValue;
 function TryTextToValue(const Source: string; var Target: TValue): Boolean;
 function ValueToText(const Value: TValue): string;
@@ -538,6 +539,25 @@ begin
   end;
 end;
 
+function GreaterZero(const Value: TValue): Boolean;
+begin
+  case Value.ValueType of
+    vtByte: Result := Value.Unsigned8 > 0;
+    vtWord: Result := Value.Unsigned16 > 0;
+    vtLongWord: Result := Value.Unsigned32 > 0;
+    vtNativeUInt: Result := Value.NativeUInt > 0;
+    vtShortint: Result := Value.Signed8 > 0;
+    vtSmallint: Result := Value.Signed16 > 0;
+    vtInteger: Result := Value.Signed32 > 0;
+    vtNativeInt: Result := Value.NativeInt > 0;
+    vtInt64: Result := Value.Signed64 > 0;
+    vtSingle: Result := Value.Float32 > 0;
+    vtDouble: Result := Value.Float64 > 0;
+    vtExtended: Result := Value.Float80 > 0;
+  else
+    Result := False;
+  end;
+end;
 function TextToValue(const Text: string): TValue;
 begin
   if TryStrToInt64(Text, Result.Signed64) then

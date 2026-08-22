@@ -12,7 +12,7 @@ program LoopGuardTest;
 {$B-}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, Thread, TestKit in 'TestKit.pas';
 
 {
@@ -166,6 +166,13 @@ begin
   FEnded := True;
 end;
 
+{
+  One formula, computed from scratch and with an eye on the clock.
+
+  Returns: empty - it finished; an error text - it was stopped; the word "hung"
+  - the thread had to be killed. That last one is the reason this test lives in
+  a thread at all: it has to be a visible failure, not a stalled run.
+}
 function Waiting(const T: TFormulaThread; const Time: LongWord): Boolean;
 var
   Spent: LongWord;
@@ -179,13 +186,6 @@ begin
   Result := T.Ended;
 end;
 
-{
-  One formula, computed from scratch and with an eye on the clock.
-
-  Returns: empty - it finished; an error text - it was stopped; the word "hung"
-  - the thread had to be killed. That last one is the reason this test lives in
-  a thread at all: it has to be a visible failure, not a stalled run.
-}
 function Run(const AText: string; const Budget: NativeInt; const Watched: Boolean;
   const RaiseAfter: LongWord = 0; const Twice: Boolean = False): string;
 var

@@ -102,7 +102,11 @@ cd "$HERE"
 RUN=""
 [ -z "$DISPLAY" ] && command -v xvfb-run >/dev/null && RUN="xvfb-run -a"
 
-TARGETS="${@:-ParserBugTests ThreadWaitTest JitDump JitBench JitParserTest JitContractTest PublicApiTest DocumentedSyntaxTest JitRedirectTest DemoSpeed BigScript MathFamilyTest LoopScopeTest FpuMaskTest MethodLockTest C31Console}"
+# The list follows the Windows one. Five sets - ConstantsTest,
+# ExitRoutingTest, LoopGuardTest, ThreadSafetyTest, ThreadShareTest - did
+# not run here at all, and ConstantsTest is among them: it is the set that
+# holds both debts of the parser.
+TARGETS="${@:-ParserBugTests ThreadWaitTest JitDump JitBench JitParserTest JitContractTest PublicApiTest DocumentedSyntaxTest JitRedirectTest ExitRoutingTest LoopGuardTest LoopScopeTest ThreadSafetyTest ThreadShareTest DemoSpeed BigScript MathFamilyTest FpuMaskTest MethodLockTest ConstantsTest ScientificTest SignCacheTest PlatformTextTest CacheContractTest C31Console}"
 
 # Two ways of building, and the difference is fundamental.
 #

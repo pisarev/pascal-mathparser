@@ -111,7 +111,7 @@ type
 
 const
   InternalFlexibleListName = 'FlexibleList';
-  RecurseError = 'Function "%s" recursively uses itself';
+  RecurseError = 'Function "%s" calls itself recursively';
 
 procedure Register;
 
@@ -128,8 +128,6 @@ procedure Register;
 begin
   RegisterComponents('Samples', [TParseValueList]);
 end;
-
-{ TParseValueList }
 
 function TParseValueList.AssignValue(const AName, Value: string; out Index: Integer): Boolean;
 var
@@ -166,10 +164,8 @@ begin
             begin
               List.BeginUpdate;
               try
-                Index := List.AddObject(
-                  ItemName + {$IFDEF DELPHI_7}List.NameValueSeparator{$ELSE}Equal{$ENDIF} + S,
-                  Pointer(Item)
-                );
+                Index := List.AddObject(ItemName + {$IFDEF DELPHI_7}List.NameValueSeparator{$ELSE}Equal{$ENDIF} + S,
+                  Pointer(Item));
               finally
                 List.EndUpdate;
               end;
@@ -335,8 +331,7 @@ end;
 procedure TParseValueList.Connect;
 begin
   inherited;
-  if Assigned(Connector) then
-    Connector.Add(FFunctionHandle, FFunctionName, FPriority, Custom);
+  if Assigned(Connector) then Connector.Add(FFunctionHandle, FFunctionName, FPriority, Custom);
   Attach;
 end;
 

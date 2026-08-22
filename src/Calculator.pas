@@ -231,7 +231,7 @@ type
   end;
 
 const
-  OperationError = 'Cannot perform the operation while one or more threads are running';
+  OperationError = 'Cannot perform this operation while threads are still running';
   InternalParserName = 'Parser';
   InternalConnectorName = 'Connector';
   InternalParseValueListName = 'ValueList';
@@ -240,7 +240,7 @@ const
   InternalThreadName = 'Thread';
   ValueError = 'Value "%s" not found';
   ValueIndexError = 'Value index %d not found';
-  ValueNameError = 'Value name "%s" not found';
+  ValueNameError = 'No value is registered under the name "%s"';
 
 procedure Register;
 
@@ -262,15 +262,11 @@ begin
   RegisterComponents('Samples', [TCalcThread, TCalculator]);
 end;
 
-{ TCalcThread }
-
 constructor TCalcThread.Create(AOwner: TComponent);
 begin
   inherited;
   FParseManager := TParseManager.Create(Self);
 end;
-
-{ TThread }
 
 function TThread.Add(const Text: string): Integer;
 var
@@ -549,8 +545,6 @@ begin
     Inc(I);
   end;
 end;
-
-{ TCalculator }
 
 procedure TCalculator.AddVariableList(const List: TStrings);
 begin

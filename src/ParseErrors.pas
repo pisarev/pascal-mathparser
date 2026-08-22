@@ -53,6 +53,7 @@ type
     etLTextExcessError,
     etLTextExpectError,
     etDefinitionError,
+    etNumberNameError,
     etAParamExcessError,
     etBParamExcessError,
     etAParamExpectError,
@@ -81,33 +82,34 @@ type
 const
   ErrorMessage = '%s: "%s"';
   NotImplementedError = 'Not implemented: %s';
-  AMutualExcessError = 'Function "%s" requires expression after itself, function "%s" requires expression before itself';
-  BMutualExcessError = 'Function "%s" does not require expression after itself, function "%s" does not require expression before itself';
-  BracketError = 'Bracket character expected';
-  EmptyTextError = 'Empty text';
-  FunctionHandleError = 'Function handle error: "%s"';
-  FunctionExpectError = 'Function expected: "%s"';
-  ElementError = 'Unknown element: "%s"';
-  RExcessError = '"%s" does not require expression after itself';
-  LTextExcessError = 'Function "%s" does not require expression before itself';
-  LTextExpectError = 'Function "%s" requires expression before itself';
-  DefinitionError = '"%s" cannot start with a number';
-  AParamExcessError = 'Function "%s" does not require parameters';
-  BParamExcessError = 'Too much parameters for function "%s"';
-  AParamExpectError = 'Function "%s" requires parameters';
-  BParamExpectError = 'Not enough parameters for function "%s"';
-  ReserveError = 'Text "%s" contains reserved character: "%s"';
-  RTextExcessError = 'Function "%s" does not require expression after itself';
-  RTextExpectError = 'Function "%s" requires expression after itself';
-  ScriptError = 'Script error';
-  StringError = '"%s" cannot be the part of math expression';
-  StringTypeError = '"%s" cannot have type of string';
-  NumberTypeError = 'Cannot apply "%s" type to "%s" number in "%s" expression';
-  FunctionTypeError = 'Cannot apply "%s" type to "%s" function in "%s" expression';
-  ScriptTypeError = 'Cannot apply "%s" type to "%s" script in "%s" expression';
-  TypeError = 'Type error';
-  TextError = 'Expression expected: "%s"';
-  SizeError = 'Incomplete expression';
+  AMutualExcessError = 'Function "%s" expects a value on its right, and function "%s" expects a value on its left';
+  BMutualExcessError = 'Function "%s" takes no value on its right, and function "%s" takes no value on its left';
+  BracketError = 'A bracket is expected here';
+  EmptyTextError = 'The expression is empty';
+  FunctionHandleError = 'Invalid function handle: "%s"';
+  FunctionExpectError = 'A function name is expected here: "%s"';
+  ElementError = 'Unrecognized element: "%s"';
+  RExcessError = '"%s" takes no value on its right';
+  LTextExcessError = 'Function "%s" takes no value on its left';
+  LTextExpectError = 'Function "%s" expects a value on its left';
+  DefinitionError = 'A name cannot start with a digit: "%s"';
+  NumberNameError = '"%s" cannot be used as a name: it reads as a number';
+  AParamExcessError = 'Function "%s" takes no arguments';
+  BParamExcessError = 'Too many arguments for function "%s"';
+  AParamExpectError = 'Function "%s" requires arguments';
+  BParamExpectError = 'Not enough arguments for function "%s"';
+  ReserveError = '"%s" contains a reserved character: "%s"';
+  RTextExcessError = 'Function "%s" takes no value on its right';
+  RTextExpectError = 'Function "%s" expects a value on its right';
+  ScriptError = 'Internal script error';
+  StringError = '"%s" cannot be used in a math expression';
+  StringTypeError = '"%s" cannot be of type string';
+  NumberTypeError = 'Cannot apply type "%s" to number "%s" in expression "%s"';
+  FunctionTypeError = 'Cannot apply type "%s" to function "%s" in expression "%s"';
+  ScriptTypeError = 'Cannot apply type "%s" to script "%s" in expression "%s"';
+  TypeError = 'Type mismatch';
+  TextError = 'An expression is expected here: "%s"';
+  SizeError = 'The expression is incomplete';
   LoopBreakError = 'Calculation stopped: "%s"';
   LoopLimitError = 'Loop limit reached: "%s"';
 
@@ -126,14 +128,14 @@ uses
 
 constructor EParserExit.Create(const AValue: TValue);
 begin
-  inherited Create('script exit');
+  inherited Create('Script exit');
   FOwnerParser := CurrentParserOf(CurrentExecuteFrame);
   FValue := AValue;
 end;
 
 constructor EParserExit.Create(const AOwnerParser: TObject; const AValue: TValue);
 begin
-  inherited Create('script exit');
+  inherited Create('Script exit');
   FOwnerParser := AOwnerParser;
   FValue := AValue;
 end;
@@ -150,7 +152,7 @@ end;
 
 function Error(const Message: string): Exception;
 begin
-  Result := Error(Message, []);
+  Result := EParserError.Create(Message);
 end;
 
 function EText(const Message: string; const Arguments: array of const): string;

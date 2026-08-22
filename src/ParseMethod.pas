@@ -487,8 +487,8 @@ type
   TDoubleDynArray = array of Double;
 
 const
-  TypeError1 = '%s type found, but %s type expected for %s function parameter with index %d';
-  TypeError2 = '%s type is not applicable for %s function parameter with index %d';
+  TypeError1 = 'Found type %s where type %s is expected, in function %s, argument %d';
+  TypeError2 = 'Type %s is not allowed in function %s, argument %d';
 
 procedure Check(const AFunction: PFunction; const PA: TParameterArray; const ParamCount: Integer;
   const Relationship: TValueRelationship = vrEqual); overload;

@@ -5,13 +5,14 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 program BenchParser;
 
 {$APPTYPE CONSOLE}
 {$B-}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils;
 
 var

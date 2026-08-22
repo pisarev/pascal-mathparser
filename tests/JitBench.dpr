@@ -5,6 +5,7 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 program JitBench;
 
 {$APPTYPE CONSOLE}
@@ -14,7 +15,7 @@ uses
   { The thread driver comes FIRST: units are initialised in the order they
     are listed, and Classes standing ahead of it gets to touch threading
     before the driver is up. }
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   Classes, SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Decoder,
   ParseJit.Executor, ParseJit.CodeGen, TestKit in 'TestKit.pas';
 
@@ -218,19 +219,8 @@ begin
       Code.Execute;
     end;
     TNative := Elapsed(T0);
-    Writeln(
-      Format(
-        '%-22s interp %7.1f   ir %7.1f   native %6.1f ns   speedup %5.2fx / %5.2fx',
-        [
-          Name,
-          TInterp / Count * 1E9,
-          TIr / Count * 1E9,
-          TNative / Count * 1E9,
-          TInterp / TNative,
-          TIr / TNative
-        ]
-      )
-    );
+    Writeln(Format('%-22s interp %7.1f   ir %7.1f   native %6.1f ns   speedup %5.2fx / %5.2fx',
+      [Name, TInterp / Count * 1E9, TIr / Count * 1E9, TNative / Count * 1E9, TInterp / TNative, TIr / TNative]));
     Report('native/' + Name, TInterp / Count * 1E9, TNative / Count * 1E9, Count);
     Flush(Output);
     Script := nil;

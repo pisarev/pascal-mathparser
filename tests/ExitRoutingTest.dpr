@@ -12,7 +12,7 @@ program ExitRoutingTest;
 {$B-}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   SysUtils, Parser, ParseTypes, ParseErrors, ValueTypes, ValueUtils, TestKit in 'TestKit.pas';
 
 {

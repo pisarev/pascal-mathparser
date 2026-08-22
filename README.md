@@ -6,6 +6,34 @@ compile that bytecode to machine code.
 
 Delphi and Free Pascal, Windows and Linux, one source. MIT licensed.
 
+## What it does that others do not
+
+Each line is a link to the thing that proves it, not a claim standing alone.
+
+- **It compiles rather than walks.** A formula becomes a flat byte array, and
+  evaluation is a linear pass over it with no allocations. Most parsers build a
+  tree of objects and walk that.
+- **Machine code, if you want it.** Change `TMathParser` to `TJitParser` and the
+  hot path is compiled for x86-64; the [measured table][accelerator] says by how
+  much and on what. Whatever the compiler declines falls to a slower stage
+  without a word, so an answer is never fast but wrong.
+- **It caches by shape.** Once `2 + 3` has been compiled, `5 + 7` reuses the same
+  script and only writes the numbers into a copy.
+- **A formula can be stopped.** `while` and `repeat` can be written so they never
+  end; a turn budget and a cancellation flag take control back. Inside
+  WebAssembly that is the only way out at all.
+- **`parse` and `deriv`.** A formula can compile another formula while it runs,
+  and differentiate one symbolically.
+- **One source, six compilers.** Delphi 10.2 through 13, Free Pascal 3.2.2 and
+  3.3.1, Windows and Linux - and the same sources, compiled to WebAssembly, run
+  the [live demo][demo] in your browser.
+- **The documentation is executed.** Every listing on this page is a file the
+  build matrix compiles and runs, and every claim about the language is asserted
+  by a test. A sentence here is either checked there or it is not published.
+
+[accelerator]: https://pisarev.github.io/mathparser-live/accelerator.html
+[demo]: https://pisarev.github.io/mathparser-live/demo/
+
 Try it without installing anything: the
 [live demo](https://pisarev.github.io/mathparser-live/demo/) runs this very
 parser, compiled to WebAssembly, in your browser. The pages around it walk

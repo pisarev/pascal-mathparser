@@ -149,7 +149,7 @@ any parser stayed on the interpreter forever.
 and win64 (ParserBugTests: 75), the redirection contract (JitRedirectTest: 47),
 the documented syntax (DocumentedSyntaxTest: 34), the fuzzer against the
 interpreter (JitParserTest: 48), the machine-code contract (JitContractTest: 80),
-the public API from the outside (PublicApiTest: 23), plus the IR dump and the
+the public API from the outside (PublicApiTest: 28), plus the IR dump and the
 benchmarks.
 
 The numbers in brackets are not typed in: the run prints them, the same script

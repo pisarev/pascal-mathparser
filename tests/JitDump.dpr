@@ -5,13 +5,14 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 program JitDump;
 
 {$APPTYPE CONSOLE}
 {$B-}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Decoder, TestKit in 'TestKit.pas';
 
 var
@@ -31,21 +32,9 @@ begin
       if Show then
       begin
         Writeln;
-        Writeln(
-          '  ',
-          Formula,
-          '   (',
-          Decoder.ScriptSize,
-          ' bytes, ',
-          Decoder.Count,
-          ' ops, depth ',
-          Decoder.MaxDepth,
-          ', calls ',
-          Decoder.CallCount,
-          ', vars ',
-          Decoder.VariableCount,
-          ')'
-        );
+        Writeln('  ', Formula, '   (', Decoder.ScriptSize, ' bytes, ', Decoder.Count,
+          ' ops, depth ', Decoder.MaxDepth, ', calls ', Decoder.CallCount, ', vars ',
+          Decoder.VariableCount, ')');
         Write(Decoder.Dump);
         Flush(Output);
       end;

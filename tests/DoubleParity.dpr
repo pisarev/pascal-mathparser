@@ -5,6 +5,7 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 { Bit-for-bit comparison of results across platforms.
 
   The fuzzer in JitParserTest compares machine code against the interpreter
@@ -26,7 +27,7 @@ program DoubleParity;
 {$ENDIF}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Parser;
 
 const

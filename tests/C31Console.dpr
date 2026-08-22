@@ -5,6 +5,7 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 { C31: TCalculator in a CONSOLE application.
 
   The C31 report read "TCalculator crashes when created in a console
@@ -29,7 +30,7 @@ program C31Console;
 {$ENDIF}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   { On Delphi this is a pure console. On FPC, Calculator pulls in SyncThread and
     that pulls in the LCL widgetset, so FPC needs Interfaces or the linker fails
     on the WSRegister* symbols. The widgetset is never started: the pool runs on

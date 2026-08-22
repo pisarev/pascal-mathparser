@@ -12,7 +12,7 @@ program DocumentedSyntaxTest;
 {$B-}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   SysUtils, Parser, CalcUtils, TestKit in 'TestKit.pas';
 
 {

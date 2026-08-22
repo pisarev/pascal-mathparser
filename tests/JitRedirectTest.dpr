@@ -15,7 +15,7 @@ program JitRedirectTest;
 {$ENDIF}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   SysUtils, Classes, Math,
   { BaseTypes is here for one reason: on Delphi 12 and later it redefines
     NativeInt as a distinct type, and GetRedirect takes its target as a var

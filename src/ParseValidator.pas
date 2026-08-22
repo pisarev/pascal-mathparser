@@ -53,7 +53,24 @@ uses
   MemoryUtils, NumberUtils, ParseConsts, ParseUtils, TextTypes, TextUtils;
   {$ENDIF}
 
-{ TValidator }
+function NumberName(const AText: string): Boolean;
+var
+  I: Integer;
+  Digits: TSysCharSet;
+begin
+  if Length(AText) < 2 then Exit(False);
+  case AText[1] of
+    'E', 'e': Digits := ['0'..'9'];
+    'X', 'x', '$': Digits := ['0'..'9', 'A'..'F', 'a'..'f'];
+    '&': Digits := ['0'..'7'];
+    '%': Digits := ['0'..'1'];
+  else
+    Exit(False);
+  end;
+  for I := 2 to Length(AText) do
+    if not CharInSet(AText[I], Digits) then Exit(False);
+  Result := True;
+end;
 
 {$WARNINGS OFF}
 function TValidator.Check(const AText: string; const AType: TReserveType): TError;
@@ -74,6 +91,8 @@ begin
   end;
   if (AType = rtName) and (Length(AText) > 0) and IsNumber(AText[1]) then
     Result := MakeError(etDefinitionError, EText(DefinitionError, [AText]))
+  else if (AType = rtName) and NumberName(AText) then
+    Result := MakeError(etNumberNameError, EText(NumberNameError, [AText]))
   else
     FillChar(Result, SizeOf(TError), 0);
 end;

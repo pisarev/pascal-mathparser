@@ -48,7 +48,6 @@ type
     Event: THandle;
     {$ENDIF}
   end;
-  { TThread }
 
   TThread = class(TComponent)
   private
@@ -110,10 +109,10 @@ type
 
 const
   {$IFDEF FPC}
-  SCheckSynchronizeError = 'CheckSynchronize called from thread $%x, which is NOT the main thread';
+  SCheckSynchronizeError = 'CheckSynchronize was called from thread $%x, which is not the main thread';
   Priorities: array[TThreadPriority] of Integer = (-15, -10, -5, 0, 5, 10, 15);
   {$ELSE}
-  ThreadCreateError = 'Thread creation error: %s';
+  ThreadCreateError = 'Cannot create a thread: %s';
   ThreadError = 'Thread error: %s (%d)';
   STACK_SIZE_PARAM_IS_A_RESERVATION = $00010000;
   Priorities: array [TThreadPriority] of Integer = (
@@ -280,8 +279,6 @@ begin
     LeaveCriticalSection(ThreadSync);
   end;
 end;
-
-{ TThread }
 
 function TThread.Abort: Boolean;
 begin

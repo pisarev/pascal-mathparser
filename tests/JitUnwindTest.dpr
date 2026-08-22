@@ -12,7 +12,7 @@ program JitUnwindTest;
 {$B-}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   {$IFDEF MSWINDOWS}Windows,{$ENDIF}
   SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Parser, TestKit in 'TestKit.pas';
 

@@ -22,7 +22,7 @@ type
   EValueError = class(Exception);
 
 const
-  UnknownTypeError = 'Unknown type error';
+  UnknownTypeError = 'Unknown value type';
 
 function Error(const Message: string): Exception; overload;
 function Error(const Message: string; const Arguments: array of const): Exception; overload;

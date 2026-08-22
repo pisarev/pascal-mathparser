@@ -3336,6 +3336,15 @@ function TParser.Order(const Coverage: TPriorityCoverage; var ItemArray: TTextIt
       (AFunction.Method.Parameter.L or AFunction.Method.Parameter.R);
   end;
 
+  function Prefix(const ItemArray: TTextItemArray1; const Index: Integer): Boolean;
+  var
+    AFunction: PFunction;
+  begin
+    Result := (Index >= Low(ItemArray)) and (Index <= High(ItemArray)) and
+      GetFunction(ItemArray[Index].FHandle, AFunction) and AFunction.Method.Parameter.R and
+      not AFunction.Method.Parameter.L;
+  end;
+
   function Match(const AArray, BArray: TTextItemArray1): Boolean;
   var
     I: Integer;
@@ -3471,8 +3480,8 @@ begin
                   else
                     AItem := ItemText(@ItemArray[J]) + Space + AItem;
                   AddItem(Array1.B, ItemArray[J]);
-                  if not GetFunction(ItemArray[J].FHandle, BFunction) or
-                    not BFunction.Method.Parameter.L then
+                  if (not GetFunction(ItemArray[J].FHandle, BFunction) or
+                    not BFunction.Method.Parameter.L) and not Prefix(ItemArray, J - 1) then
                     begin
                       Reset(Array1.A, Array1.Data);
                       try

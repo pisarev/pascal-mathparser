@@ -5,13 +5,14 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 program PublicApiTest;
 
 {$APPTYPE CONSOLE}
 {$B-}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   SysUtils, BaseTypes, Parser, ParseTypes, ValueTypes, ValueUtils, TestKit in 'TestKit.pas';
 
 {
@@ -186,6 +187,60 @@ begin
   end;
 end;
 
+procedure NumberLikeNamesAreRefused;
+var
+  P: TMathParser;
+  Value, Keeper: Double;
+  Refused: Boolean;
+
+  function Rejected(const Name: string): Boolean;
+  begin
+    Result := False;
+    try
+      P.AddVariable(Name, Value);
+    except
+      on E: Exception do Result := True;
+    end;
+  end;
+
+begin
+  BeginSection('a name that reads as a number is refused at registration');
+  {
+    Guards two sides of one rule at once.
+
+    The refusal side: a registered name that reads as a number - E3, X1A,
+    1.5 in disguise - used to be silently swallowed by number reading, so
+    registration refuses such names outright.
+
+    The acceptance side is what the refusal almost broke. The graph engine
+    registers one variable per worker thread and builds the name from the
+    object address: X plus hex digits. Such a name reads as a number, the
+    fresh refusal killed the engine constructor, and the editor plugin
+    answered with an access violation instead of a panel (21.08.2026). The
+    cure is a letter outside A-F between the name and the address - and that
+    exact shape is pinned here as LEGAL, so the ban cannot quietly widen.
+  }
+  P := TMathParser.Create(nil);
+  try
+    Value := 7;
+    Check('E followed by digits is refused', Rejected('E3'));
+    Check('X followed by hex digits is refused', Rejected('X1A2B3C'));
+    Check('lower case changes nothing', Rejected('x0ff'));
+    Refused := False;
+    try
+      P.AddVariable('XP' + IntToHex(NativeInt(@Keeper), 0), Keeper);
+    except
+      on E: Exception do Refused := True;
+    end;
+    Check('a letter outside A-F unties the name from the number', not Refused);
+    Keeper := 41;
+    CheckDouble('and the variable works', P.AsDouble('XP'
+      + IntToHex(NativeInt(@Keeper), 0) + ' + 1'), 42);
+  finally
+    P.Free;
+  end;
+end;
+
 begin
   Writeln('=== the public surface, used the way a stranger uses it ===');
   OwnFunctionOfTwoArguments;
@@ -193,5 +248,6 @@ begin
   VariablesAreBoundByAddress;
   NamesIgnoreCase;
   UnknownNamesAreRefused;
+  NumberLikeNamesAreRefused;
   ExitCode := TestSummary;
 end.

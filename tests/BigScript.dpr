@@ -5,13 +5,14 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 program BigScript;
 
 {$APPTYPE CONSOLE}
 {$B-}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Parser, ParseJit.Decoder,
   TestKit in 'TestKit.pas';
 

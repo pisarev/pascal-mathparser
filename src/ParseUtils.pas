@@ -63,20 +63,17 @@ procedure BuildScript(const Parser: TCustomParser; const ItemArray: TScriptArray
 function CheckFHandle(const FData: PFunctionData; const Handle: NativeInt): Boolean; {$IFDEF DELPHI_10.2}inline;{$ENDIF}
 function CheckTHandle(const TData: PTypeData; const Handle: NativeInt): Boolean; {$IFDEF DELPHI_10.2}inline;{$ENDIF}
 
-function RestoreText(const Parser: TCustomParser; const Source: string;
-  out Target: string; const SA: TScriptArray;
+function RestoreText(const Parser: TCustomParser; const Source: string; out Target: string;
+  const SA: TScriptArray;
   const Parameter: Boolean = False): NativeInt; {$IFDEF DELPHI_10.2}inline;{$ENDIF}overload;
-function RestoreText(const Parser: TCustomParser; const Text: string;
-  const SA: TScriptArray;
+function RestoreText(const Parser: TCustomParser; const Text: string; const SA: TScriptArray;
   const Parameter: Boolean = False): string; {$IFDEF DELPHI_10.2}inline;{$ENDIF}overload;
-function RestoreText(const Parser: TCustomParser; const TextArray: TTextItemArray1;
-  const SA: TScriptArray;
+function RestoreText(const Parser: TCustomParser; const TextArray: TTextItemArray1; const SA: TScriptArray;
   const Parameter: Boolean = False): string; {$IFDEF DELPHI_10.2}inline;{$ENDIF}overload;
 
 procedure Read(const Parser: TCustomParser; var Index: NativeInt; out AFunction: PFunction); {$IFDEF DELPHI_10.2}inline;{$ENDIF}
 function ParameterToScript(const Script: TScript; const THandle: NativeInt = -1): TScript; {$IFDEF DELPHI_10.2}inline;{$ENDIF}
-function GetScriptFromValue(const Parser: TCustomParser; Value: TValue;
-  const TypeFlag: Boolean;
+function GetScriptFromValue(const Parser: TCustomParser; Value: TValue; const TypeFlag: Boolean;
   const ScriptType: TScriptType): TScript; {$IFDEF DELPHI_10.2}inline;{$ENDIF}overload;
 function GetScriptFromValue(const Parser: TCustomParser; const Number: TNumber;
   const ScriptType: TScriptType): TScript; {$IFDEF DELPHI_10.2}inline;{$ENDIF}overload;
@@ -152,6 +149,8 @@ function WholeValue(const Parser: TCustomParser; const Text: string; const Index
 function Dequote(const Text: string): string;
 function DequoteDouble(const Text, FunctionName: string; const Bracket: TBracket): string;
 function Quoted(const Text: string): Boolean;
+
+function ExpandScientific(const S: string): string;
 
 function MakeTemplate(const Parser: TCustomParser; const Text: string; const ValueArray: PValueArray;
   const NumberTemplate: string = Inquiry): string;
@@ -269,8 +268,6 @@ uses
 
 const
   ArrayIncrement: Integer = 64;
-
-{ TParseHelper }
 
 function TParseHelper.FAMethod(var Index: NativeInt; const Header: PScriptHeader;
   const ItemHeader: PItemHeader; const Item: PScriptItem; const P: Pointer): Boolean;
@@ -522,8 +519,7 @@ begin
         PNativeInt(@Script[J])^ := K + FlagArray[I];
         Inc(J, SizeOf(NativeInt));
       end;
-      for I := Low(AItemArray) to High(AItemArray) do
-        AddScript(Script, AItemArray[I]);
+      for I := Low(AItemArray) to High(AItemArray) do AddScript(Script, AItemArray[I]);
       Header^.ScriptSize := Length(Script);
       Header^.HeaderSize := K;
     finally
@@ -729,8 +725,7 @@ begin
     StringCode:
       begin
         J := Item^.ScriptString.Size;
-        if J > SizeOf(TString) - SizeOf(Char) then
-          J := SizeOf(TString) - SizeOf(Char);
+        if J > SizeOf(TString) - SizeOf(Char) then J := SizeOf(TString) - SizeOf(Char);
         ZeroMemory(@Result.Text, SizeOf(TString));
         CopyMemory(@Result.Text, PAnsiChar(I) + SizeOf(TCode) + SizeOf(TScriptString), J);
       end;
@@ -885,6 +880,33 @@ begin
   GetFunction(Data, Index, Result);
 end;
 
+function NumberSpan(const Text: string; const Index, Count: NativeInt): NativeInt;
+var
+  I: NativeInt;
+begin
+  if not CharInSet(Text[Index], Digits) then Exit(0);
+  I := Index;
+  while (I <= Count) and CharInSet(Text[I], Digits) do Inc(I);
+  if (I < Count) and (Text[I] = ParseFormat.DecimalSeparator) and CharInSet(Text[I + 1], Digits) then
+  begin
+    Inc(I);
+    while (I <= Count) and CharInSet(Text[I], Digits) do Inc(I);
+  end;
+  if (I < Count) and CharInSet(Text[I], Exponents) then
+    if CharInSet(Text[I + 1], Digits) then
+    begin
+      Inc(I, 2);
+      while (I <= Count) and CharInSet(Text[I], Digits) do Inc(I);
+    end
+    else if (I + 2 <= Count) and CharInSet(Text[I + 1], Operators) and
+      CharInSet(Text[I + 2], Digits) then
+      begin
+        Inc(I, 3);
+        while (I <= Count) and CharInSet(Text[I], Digits) do Inc(I);
+      end;
+  Result := I - Index;
+end;
+
 function GetFFArray(const Text: string; const LockType: TLockType; const FData: PFunctionData;
   const TData: PTypeData; out FFArray: TFunctionFlagArray; const CleanText: PString;
   const TypeArray: PHandleArray; const Method: TFunctionFlagMethod): Boolean;
@@ -1013,25 +1035,30 @@ begin
         Count := Length(AText);
         while I <= Count do if Locked(I, FlagArray) or CharInSet(AText[I], Blanks) then Inc(I)
         else begin
-          J := Low(FData.FOrder);
-          K := 1;
-          while GetFunction(FData, J, AFunction) do
-          begin
-            K := StrLen(AFunction.Name);
-            if (K = 0) or (I + K - 1 > Count) or not SameText(AFunction.Name, @AText[I], K) then
+          K := NumberSpan(AText, I, Count);
+          if K > 0 then
+            Inc(I, K)
+          else begin
+            J := Low(FData.FOrder);
+            K := 1;
+            while GetFunction(FData, J, AFunction) do
             begin
-              Inc(J);
-              K := 1;
-            end
-            else begin
-              if Assigned(AFunction.Handle) then
-                Add(Data, I, AFunction.Handle^)
-              else
-                Add(Data, I, -1);
-              Break;
+              K := StrLen(AFunction.Name);
+              if (K = 0) or (I + K - 1 > Count) or not SameText(AFunction.Name, @AText[I], K) then
+              begin
+                Inc(J);
+                K := 1;
+              end
+              else begin
+                if Assigned(AFunction.Handle) then
+                  Add(Data, I, AFunction.Handle^)
+                else
+                  Add(Data, I, -1);
+                Break;
+              end;
             end;
+            Inc(I, K);
           end;
-          Inc(I, K);
         end;
       finally
         Apply(FFArray, Data);
@@ -1116,8 +1143,7 @@ begin
       S := Trim(AText);
       if S <> '' then AddItem(TIArray, S, -1, GetHandle(0));
     end;
-    if Assigned(FData.ItemCache) then
-      TItemCache(FData.ItemCache).Add(Text, TIArray);
+    if Assigned(FData.ItemCache) then TItemCache(FData.ItemCache).Add(Text, TIArray);
   end;
   Result := Assigned(TIArray);
 end;
@@ -1142,8 +1168,7 @@ begin
   Result := (Index > 0) and (Index <= Length(Text));
   if Result then
   begin
-    while (Index <= Length(Text)) and CharInSet(Text[Index], Blanks) do
-      Inc(Index);
+    while (Index <= Length(Text)) and CharInSet(Text[Index], Blanks) do Inc(Index);
     for J := Low(TOperatorArray) to High(TOperatorArray) do
       if Text[Index] = TOperatorArray[J] then
       begin
@@ -1566,12 +1591,155 @@ begin
   Result := (Length(Text) > 1) and (Text[1] = LockText) and (Text[Length(Text)] = LockText);
 end;
 
+function ExpandScientific(const S: string): string;
+
+  function NormalizeNumber(const S: string; const DecimalSeparator: Char): string;
+  var
+    P: Integer;
+    R: string;
+  begin
+    R := S;
+    P := Pos(DecimalSeparator, R);
+    if P > 0 then
+    begin
+      while (Length(R) > P) and (R[Length(R)] = '0') do
+        System.Delete(R, Length(R), 1);
+      if (Length(R) > 0) and (R[Length(R)] = DecimalSeparator) then
+        System.Delete(R, Length(R), 1);
+    end;
+    P := Pos(DecimalSeparator, R);
+    if P = 0 then
+      P := Length(R) + 1;
+    while (P > 2) and (R[1] = '0') do
+    begin
+      System.Delete(R, 1, 1);
+      Dec(P);
+    end;
+    Result := R;
+  end;
+
+const
+  MaxLength = 1024;
+type
+  TDecimalPosition = record
+    Old: Integer;
+    New: Int64;
+  end;
+var
+  I, ExponentPosition, DigitValue: Integer;
+  ExponentValue, ZeroCount: Int64;
+  Position: TDecimalPosition;
+  Mantissa, ExponentText, Digits, Sign, Plain: string;
+  DecimalSeparator, OutputDecimalSeparator: Char;
+  ExponentNegative, AllZero: Boolean;
+begin
+  if S = '' then
+    Exit(S);
+  ExponentPosition := 0;
+  for I := 1 to Length(S) do
+    if CharInSet(S[I], Exponents) then
+    begin
+      if ExponentPosition <> 0 then
+        Exit(S);
+      ExponentPosition := I;
+    end;
+  if ExponentPosition = 0 then
+    Exit(S);
+  if (ExponentPosition = 1) or (ExponentPosition = Length(S)) then
+    Exit(S);
+  Mantissa := Copy(S, 1, ExponentPosition - 1);
+  ExponentText := Copy(S, ExponentPosition + 1, MaxInt);
+  Sign := '';
+  if (Mantissa <> '') and ((Mantissa[1] = '+') or (Mantissa[1] = '-')) then
+  begin
+    Sign := Mantissa[1];
+    System.Delete(Mantissa, 1, 1);
+  end;
+  if Mantissa = '' then
+    Exit(S);
+  Digits := '';
+  DecimalSeparator := #0;
+  FillChar(Position, SizeOf(TDecimalPosition), 0);
+  Position.Old := -1;
+  for I := 1 to Length(Mantissa) do
+    if CharInSet(Mantissa[I], NumberConsts.Digits) then
+      Digits := Digits + Mantissa[I]
+    else
+      if (Mantissa[I] = '.') or (Mantissa[I] = ',') then
+      begin
+        if DecimalSeparator <> #0 then
+          Exit(S);
+        DecimalSeparator := Mantissa[I];
+        Position.Old := Length(Digits);
+      end
+      else
+        Exit(S);
+  if Digits = '' then
+    Exit(S);
+  if Position.Old < 0 then
+    Position.Old := Length(Digits);
+  I := 1;
+  ExponentNegative := False;
+  if (ExponentText[I] = '+') or (ExponentText[I] = '-') then
+  begin
+    ExponentNegative := ExponentText[I] = '-';
+    Inc(I);
+  end;
+  if I > Length(ExponentText) then
+    Exit(S);
+  ExponentValue := 0;
+  while I <= Length(ExponentText) do
+  begin
+    if not CharInSet(ExponentText[I], NumberConsts.Digits) then
+      Exit(S);
+    DigitValue := Ord(ExponentText[I]) - Ord('0');
+    if ExponentValue > (MaxInt - DigitValue) div 10 then
+      Exit(S);
+    ExponentValue := ExponentValue * 10 + DigitValue;
+    Inc(I);
+  end;
+  if ExponentNegative then
+    ExponentValue := -ExponentValue;
+  AllZero := True;
+  for I := 1 to Length(Digits) do
+    if Digits[I] <> '0' then
+    begin
+      AllZero := False;
+      Break;
+    end;
+  if AllZero then
+    Exit('0');
+  Position.New := Int64(Position.Old) + ExponentValue;
+  if DecimalSeparator <> #0 then
+    OutputDecimalSeparator := DecimalSeparator
+  else
+    OutputDecimalSeparator := '.';
+  if Position.New <= 0 then
+  begin
+    ZeroCount := -Position.New;
+    if ZeroCount > MaxLength - Length(Digits) - 2 then
+      Exit(S);
+    Plain := '0' + OutputDecimalSeparator + StringOfChar('0', Integer(ZeroCount)) + Digits;
+  end
+  else if Position.New >= Length(Digits) then
+  begin
+    ZeroCount := Position.New - Length(Digits);
+    if ZeroCount > MaxLength - Length(Digits) then
+      Exit(S);
+    Plain := Digits + StringOfChar('0', Integer(ZeroCount));
+  end
+  else
+    Plain := Copy(Digits, 1, Integer(Position.New)) + OutputDecimalSeparator +
+      Copy(Digits, Integer(Position.New) + 1, MaxInt);
+  Result := Sign + NormalizeNumber(Plain, OutputDecimalSeparator);
+end;
+
 function MakeTemplate(const Parser: TCustomParser; const Text: string; const ValueArray: PValueArray;
   const NumberTemplate: string): string;
 var
   B: TTextBuilder;
   FlagArray: TFlagArray;
-  I, J, K, L, Count: NativeInt;
+  I, J, K, L, Index, Count: NativeInt;
   Sign, Flag: Boolean;
   Value: TValue;
 begin
@@ -1600,24 +1768,34 @@ begin
             while (I <= Count) and CharInSet(Text[I], Blanks) do Inc(I);
             J := I;
             L := 0;
-            while (J <= Count) and CharInSet(Text[J], Digits) do
+            for Index := 0 to 1 do
             begin
+              while (J <= Count) and CharInSet(Text[J], Digits) do
+              begin
+                Inc(J);
+                if (J < Count) and (Text[J] = ParseFormat.DecimalSeparator) and CharInSet(Text[J + 1], Digits) then
+                  if L = 0 then
+                  begin
+                    Inc(J);
+                    Inc(L);
+                  end
+                  else
+                    Break;
+              end;
+              if (Index > 0) or (J > Count) or not CharInSet(Text[J], Exponents) then Break;
               Inc(J);
-              if (J < Count) and (Text[J] = ParseFormat.DecimalSeparator) and CharInSet(Text[J + 1], Digits) then
-                if L = 0 then
-                begin
-                  Inc(J);
-                  Inc(L);
-                end
-                else
-                  Break;
+              if (J < Count) and CharInSet(Text[J], Operators) and CharInSet(Text[J + 1], Digits) then
+                Inc(J);
             end;
             Dec(J, I);
             repeat
               if (J > 0) and WholeValue(Parser, Text, I, J) and TryTextToValue(Copy(Text, I, J), Value) then
               begin
                 if Flag then
-                  B.Append(TOperatorArray[toPositive] + NumberTemplate)
+                  if Sign then
+                    B.Append(TOperatorArray[toNegative] + NumberTemplate)
+                  else
+                    B.Append(TOperatorArray[toPositive] + NumberTemplate)
                 else
                   B.Append(NumberTemplate);
                 if Assigned(ValueArray) then
@@ -1627,7 +1805,7 @@ begin
                     ValueTypes.AddValue(ValueArray^, Value);
                 Break;
               end;
-              while K <= I + J do
+              while K <= Min(I + J - 1, Count) do
               begin
                 if not CharInSet(Text[K], Blanks) then B.Append(Text[K]);
                 Inc(K);
@@ -1671,9 +1849,11 @@ begin
             case Item^.Code of
               NumberCode:
                 begin
-                  if not Boolean(ItemHeader^.Sign) then
-                    ItemHeader^.Sign := NativeInt(LessZero(ValueArray[ValueIndex]));
-                  Item^.ScriptNumber.Value := Positive(ValueArray[ValueIndex]);
+                  if not Boolean(ItemHeader^.Sign) and
+                    not GreaterZero(Item^.ScriptNumber.Value) then
+                      Item^.ScriptNumber.Value := ValueArray[ValueIndex]
+                  else
+                    Item^.ScriptNumber.Value := Positive(ValueArray[ValueIndex]);
                   Inc(ValueIndex);
                   if ValueIndex > High(ValueArray) then Exit;
                   Inc(Index, SizeOf(TCode) + SizeOf(TScriptNumber));
@@ -1703,9 +1883,11 @@ begin
               case Item^.Code of
                 NumberCode:
                   begin
-                    if not Boolean(ItemHeader^.Sign) then
-                      ItemHeader^.Sign := NativeInt(LessZero(ValueArray[ValueIndex]));
-                    Item^.ScriptNumber.Value := Positive(ValueArray[ValueIndex]);
+                    if not Boolean(ItemHeader^.Sign) and
+                      not GreaterZero(Item^.ScriptNumber.Value) then
+                        Item^.ScriptNumber.Value := ValueArray[ValueIndex]
+                    else
+                      Item^.ScriptNumber.Value := Positive(ValueArray[ValueIndex]);
                     Inc(ValueIndex);
                     if ValueIndex > High(ValueArray) then Exit;
                     Inc(Index, SizeOf(TCode) + SizeOf(TScriptNumber));

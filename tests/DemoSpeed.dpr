@@ -5,13 +5,14 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 program DemoSpeed;
 
 {$APPTYPE CONSOLE}
 {$B-}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Parser, TestKit in 'TestKit.pas';
 
 { repeats the demo scenario: integer variables, compile, optimise, run in a loop }

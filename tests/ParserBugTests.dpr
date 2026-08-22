@@ -5,13 +5,14 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 program ParserBugTests;
 
 {$APPTYPE CONSOLE}
 {$B-}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   {$IFDEF FPC}Interfaces,{$ENDIF}
   SysUtils, Classes, Math, BaseTypes, Parser, ParseTypes, TextTypes, ValueTypes,
   ValueConsts, ValueUtils, Calculator, BlobManager, FastList, ParseManager, EventUtils,

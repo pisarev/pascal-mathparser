@@ -14,7 +14,7 @@ program JitParserTest;
 uses
   { The thread driver comes FIRST: units start up in the order they are declared, and
     Classes, standing earlier, gets to touch threads before it. }
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   Classes, SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, ParseJit.Decoder,
   ParseJit.CodeGen, ParseJit.Parser, TestKit in 'TestKit.pas';
 

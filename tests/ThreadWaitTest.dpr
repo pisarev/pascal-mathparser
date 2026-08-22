@@ -5,6 +5,7 @@
 { Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
 {                                                                            }
 { ************************************************************************** }
+
 { The contract of TThread.WaitFor.
 
   In Delphi it is one line:
@@ -25,7 +26,7 @@ program ThreadWaitTest;
 {$ENDIF}
 
 uses
-  {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
+  {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
   {$IFDEF FPC}Interfaces,{$ENDIF}
   SysUtils, DateUtils, Classes, Forms, Thread, TestKit in 'TestKit.pas';
 

@@ -18,12 +18,11 @@ interface
 uses SysUtils, TextConsts, Types;
 
 type
-  TNumberType = (ntZero, ntOne, ntTwo, ntThree, ntFour, ntFive, ntSix, ntSeven,
-    ntEight, ntNine);
+  TNumberType = (ntZero, ntOne, ntTwo, ntThree, ntFour, ntFive, ntSix, ntSeven, ntEight, ntNine);
   TNumberTypeSet = set of TNumberType;
 
-  TCharFlag = (ifA, ifB, ifC, ifD, ifE, ifF, ifG, ifH, ifI, ifJ, ifK, ifL, ifM,
-    ifN, ifO, ifP, ifQ, ifR, ifS, ifT, ifU, ifV, ifW, ifX, ifY, ifZ);
+  TCharFlag = (ifA, ifB, ifC, ifD, ifE, ifF, ifG, ifH, ifI, ifJ, ifK, ifL, ifM, ifN, ifO, ifP, ifQ,
+    ifR, ifS, ifT, ifU, ifV, ifW, ifX, ifY, ifZ);
   TCharFlagSet = set of TCharFlag;
 
 const
@@ -72,6 +71,7 @@ const
 
 const
   Operators: TSysCharSet = [Plus, Minus];
+  Exponents: TSysCharSet = ['E', 'e'];
   Digits: TSysCharSet = ['0', '1', '2', '3', '4', '5', '6', '7', '8', '9'];
 
 implementation

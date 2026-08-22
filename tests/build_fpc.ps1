@@ -114,7 +114,7 @@ if ($Have -ne $Want) {
     exit 1
 }
 
-$Targets = if ($args.Count -gt 0) { $args } else { @('ParserBugTests', 'JitParserTest', 'JitContractTest', 'PublicApiTest', 'DocumentedSyntaxTest', 'JitRedirectTest', 'ThreadWaitTest', 'ThreadSafetyTest', 'ThreadShareTest', 'ExitRoutingTest', 'LoopGuardTest', 'LoopScopeTest', 'FpuMaskTest', 'MethodLockTest', 'MathFamilyTest', 'C31Console') }
+$Targets = if ($args.Count -gt 0) { $args } else { @('ParserBugTests', 'JitParserTest', 'JitContractTest', 'PublicApiTest', 'DocumentedSyntaxTest', 'JitRedirectTest', 'ThreadWaitTest', 'ThreadSafetyTest', 'ThreadShareTest', 'ExitRoutingTest', 'LoopGuardTest', 'LoopScopeTest', 'FpuMaskTest', 'MethodLockTest', 'MathFamilyTest', 'ConstantsTest', 'ScientificTest', 'SignCacheTest', 'PlatformTextTest', 'CacheContractTest', 'C31Console') }
 $Failed = 0
 $Skipped = 0
 
