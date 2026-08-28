@@ -106,7 +106,7 @@ RUN=""
 # ExitRoutingTest, LoopGuardTest, ThreadSafetyTest, ThreadShareTest - did
 # not run here at all, and ConstantsTest is among them: it is the set that
 # holds both debts of the parser.
-TARGETS="${@:-ParserBugTests ThreadWaitTest JitDump JitBench JitParserTest JitContractTest PublicApiTest DocumentedSyntaxTest JitRedirectTest ExitRoutingTest LoopGuardTest LoopScopeTest ThreadSafetyTest ThreadShareTest DemoSpeed BigScript MathFamilyTest FpuMaskTest MethodLockTest ConstantsTest ScientificTest SignCacheTest PlatformTextTest CacheContractTest C31Console}"
+TARGETS="${@:-ParserBugTests ThreadWaitTest JitDump JitBench JitParserTest JitContractTest PublicApiTest DocumentedSyntaxTest JitRedirectTest ExitRoutingTest LoopGuardTest LoopScopeTest ThreadSafetyTest ThreadShareTest DemoSpeed BigScript MathFamilyTest FpuMaskTest MethodLockTest ConstantsTest ScientificTest SignCacheTest PlatformTextTest CacheContractTest ConnectorLoopTest C31Console}"
 
 # Two ways of building, and the difference is fundamental.
 #

@@ -162,10 +162,8 @@ uses
 
 procedure Register;
 begin
-  RegisterComponents('Samples', [TParseManager]);
+  RegisterComponents('CrossPascal', [TParseManager]);
 end;
-
-{ TParseManager }
 
 procedure TParseManager.AppendTo(Target: TParseManager);
 var
@@ -398,8 +396,7 @@ begin
         itNumber: Result := AItem.Item.Value;
         itScript:
           begin
-            if State[AItem, stPermanentExecute] then
-              Include(AItem.Flags, ifPermanentExecute);
+            if State[AItem, stPermanentExecute] then Include(AItem.Flags, ifPermanentExecute);
             if State[AItem, stNecessaryExecute] then
               Result := Parser.ExecuteScript(AItem.Item.Script)^
             else

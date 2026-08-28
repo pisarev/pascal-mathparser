@@ -4738,6 +4738,7 @@ begin
 end;
 
 initialization
-  Randomize;
+  if RandSeed = 0 then
+    Randomize;
 
 end.

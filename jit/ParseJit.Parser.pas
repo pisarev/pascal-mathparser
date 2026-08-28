@@ -96,10 +96,21 @@ type
 const
   JitOrphanMessage = 'the parser that compiled this script is gone';
 
+procedure Register;
+
 implementation
+
+{$IFDEF FPC}
+{$R crosspascal_parserjit_icons.res}
+{$ENDIF}
 
 uses
   ParseErrors;
+
+procedure Register;
+begin
+  RegisterComponents('CrossPascal', [TJitParser]);
+end;
 
 destructor TJitEntry.Destroy;
 begin
@@ -147,7 +158,8 @@ begin
     Result := 'no code';
 end;
 
-procedure ArmMask(const Want: TFPUExceptionMask; out Saved: TFPUExceptionMask; out Changed: Boolean);
+procedure ArmMask(const Want: TFPUExceptionMask; out Saved: TFPUExceptionMask;
+  out Changed: Boolean);
 begin
   Saved := GetExceptionMask;
   Changed := Saved <> Want;

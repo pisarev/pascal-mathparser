@@ -8,6 +8,12 @@
 *.identcache
 *.dsk
 *.res
+# The palette icons are an input, not a build product: Parser.pas carries
+# {$R crosspascal_parser_icons.res} and the unit does not compile without it.
+!src/crosspascal_parser_icons.res
+# The same for the accelerator: the icon of TJitParser lives in a resource of
+# its own, and ParseJit.Parser.pas carries {$R crosspascal_parserjit_icons.res}.
+!jit/crosspascal_parserjit_icons.res
 out/
 lib/
 bin/

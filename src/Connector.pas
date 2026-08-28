@@ -62,6 +62,7 @@ type
     FPriority: Integer;
     function GetConnector: TConnector;
     function GetParser: TParser;
+    function Loops(const Value: TComponent): Boolean;
     procedure SetConnector(const Value: TConnector);
     procedure SetParser(const Value: TParser);
   protected
@@ -116,10 +117,8 @@ uses
 
 procedure Register;
 begin
-  RegisterComponents('Samples', [TConnector]);
+  RegisterComponents('CrossPascal', [TConnector]);
 end;
-
-{ TConnector }
 
 function TConnector.Add(var Index: NativeInt; const Name: string; const Priority: Integer;
   const Event: TFunctionEvent): Boolean;
@@ -231,17 +230,26 @@ end;
 
 function TConnector.GetRemoteParser: TParser;
 var
-  AConnector: TCustomConnector;
+  Node, Trail: TComponent;
+  Step: Boolean;
 begin
   Result := Parser;
-  if not Assigned(Result) then
+  if Assigned(Result) then Exit;
+  Node := Connector;
+  Trail := Connector;
+  Step := False;
+  while Assigned(Node) and (Node is TCustomAddressee) do
   begin
-    AConnector := Connector;
-    while Assigned(AConnector) and not Assigned(Result) do
+    Result := TParser(TCustomAddressee(Node).Parser);
+    if Assigned(Result) then Exit;
+    Node := TCustomAddressee(Node).Connector;
+    if Step then
     begin
-      Result := TParser(AConnector.Parser);
-      AConnector := TCustomConnector(AConnector.Connector);
+      if not (Trail is TCustomAddressee) then Break;
+      Trail := TCustomAddressee(Trail).Connector;
+      if Node = Trail then Break;
     end;
+    Step := not Step;
   end;
 end;
 
@@ -258,11 +266,31 @@ begin
   Result := -1;
 end;
 
+function TConnector.Loops(const Value: TComponent): Boolean;
+var
+  Slow, Fast: TComponent;
+begin
+  Result := True;
+  Slow := Value;
+  Fast := Value;
+  while Assigned(Fast) and (Fast is TCustomAddressee) do
+  begin
+    if Fast = Self then Exit;
+    Fast := TCustomAddressee(Fast).Connector;
+    if not (Assigned(Fast) and (Fast is TCustomAddressee)) then Break;
+    if Fast = Self then Exit;
+    Fast := TCustomAddressee(Fast).Connector;
+    if not (Slow is TCustomAddressee) then Break;
+    Slow := TCustomAddressee(Slow).Connector;
+    if Fast = Slow then Break;
+  end;
+  Result := False;
+end;
+
 procedure TConnector.Notification(Component: TComponent; Operation: TOperation);
 begin
   inherited;
-  if ((Component = Parser) or (Component = Connector)) and (Operation = opRemove) then
-    Disconnect;
+  if ((Component = Parser) or (Component = Connector)) and (Operation = opRemove) then Disconnect;
 end;
 
 procedure TConnector.Notify(const NotifyType: TNotifyType; const Sender: TComponent);
@@ -273,14 +301,21 @@ begin
     ntSuspend: Suspend;
     ntDisconnect: Disconnect;
   end;
-  if NotifyAttribute[NotifyType].Redirect then
-    Notifier.Notify(NotifyType, Sender);
+  if NotifyAttribute[NotifyType].Redirect then Notifier.Notify(NotifyType, Sender);
 end;
 
 procedure TConnector.SetConnector(const Value: TConnector);
 begin
   if (Value <> Self) and (Value <> Connector) then
   begin
+    if Loops(Value) then
+      raise EComponentError.CreateFmt(
+        'A connector chain must not close on itself: %s -> %s',
+        [
+          Name,
+          Value.Name
+        ]
+      );
     Disconnect;
     inherited Connector := Value;
     inherited Parser := nil;

@@ -38,8 +38,6 @@ type
   {$IFDEF FPC}
   TExactTimer = class;
 
-  { TTimerThread }
-
   TTimerThread = class(TThread)
   private
     FExactTimer: TExactTimer;
@@ -54,8 +52,6 @@ type
     constructor Create(AOwner: TComponent); override;
   end;
   {$ENDIF}
-
-  { TExactTimer }
 
   TExactTimer = class(TComponent)
   private
@@ -98,11 +94,10 @@ uses
 
 procedure Register;
 begin
-  RegisterComponents('Samples', [TExactTimer]);
+  RegisterComponents('CrossPascal', [TExactTimer]);
 end;
 
 {$IFDEF FPC}
-{ TTimerThread }
 
 procedure TTimerThread.Work;
 var
@@ -134,8 +129,6 @@ begin
   if AOwner is TExactTimer then FExactTimer := TExactTimer(AOwner);
 end;
 {$ENDIF}
-
-{ TExactTimer }
 
 procedure TExactTimer.DoTimer;
 begin

@@ -434,7 +434,7 @@ uses ZUtils, TextConsts, TextUtils;
 
 procedure Register;
 begin
-  RegisterComponents('Samples', [TBlobManager]);
+  RegisterComponents('CrossPascal', [TBlobManager]);
 end;
 
 function MakeItem(const AKind: TDataKind; const AStream: TMemoryStream): TItem;

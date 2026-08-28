@@ -141,7 +141,6 @@ uses
   {$ELSE}
   Math, {$IFNDEF UNICODE}TextUtils,{$ENDIF}Types, ScriptFormat;
   {$ENDIF}
-{ TBits }
 procedure TBits.Open(const Value: Int64);
 var
   I: Integer;
@@ -168,24 +167,21 @@ var
   I: Integer;
 begin
   Value := 0;
-  for I := 0 to Size - 1 do
-    if Bits[I] then Value := Value or Round(IntPower(2, I));
+  for I := 0 to Size - 1 do if Bits[I] then Value := Value or Round(IntPower(2, I));
 end;
 procedure TBits.Save(out Value: Integer);
 var
   I: Integer;
 begin
   Value := 0;
-  for I := 0 to Size - 1 do
-    if Bits[I] then Value := Value or Round(IntPower(2, I));
+  for I := 0 to Size - 1 do if Bits[I] then Value := Value or Round(IntPower(2, I));
 end;
 procedure TBits.Save(out Value: Byte);
 var
   I: Integer;
 begin
   Value := 0;
-  for I := 0 to Size - 1 do
-    if Bits[I] then Value := Value or Round(IntPower(2, I));
+  for I := 0 to Size - 1 do if Bits[I] then Value := Value or Round(IntPower(2, I));
 end;
 function Bit(const Value: Int64; const Index: Integer): Boolean;
 begin
@@ -379,7 +375,6 @@ begin
 end;
 {$ENDIF}
 {$IFNDEF FPC}
-{ TNumber }
 class function TNumber.Swap<T>(var A, B: T): Boolean;
 var
   C: T;
@@ -390,7 +385,6 @@ begin
   Result := True;
 end;
 {$ENDIF}
-{ TFloatFormat }
 class function TFloatFormat.Get(const Precision: Integer): string;
 const
   Template = '0.';
@@ -621,8 +615,7 @@ begin
   for I := Low(Target) to High(Target) do
   begin
     Sum := 0;
-    for J := Max(0, I - WindowSize) to Min(High(Target), I + WindowSize) do
-      Sum := Sum + Target[J];
+    for J := Max(0, I - WindowSize) to Min(High(Target), I + WindowSize) do Sum := Sum + Target[J];
     Result[I] := Sum / (Min(High(Target), I + WindowSize) - Max(0, I - WindowSize) + 1);
     if MinLimit and (Result[I] < MinValue) then Result[I] := MinValue;
     if MaxLimit and (Result[I] > MaxValue) then Result[I] := MaxValue;
@@ -799,7 +792,8 @@ begin
 end;
 
 initialization
-  Randomize;
+  if RandSeed = 0 then
+    Randomize;
   Bits := TBits.Create;
 
 finalization

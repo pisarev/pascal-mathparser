@@ -113,6 +113,7 @@ type
     FParameter: TParseCache;
     FCacheArray: TCacheArray;
     function GetCache(CacheType: TCacheType): TParseCache;
+    procedure SetSubcache(const Value: TParseCache);
     {$IFDEF DELPHI_7}
     procedure SetNameValueSeparator(const Value: Char);
     {$ENDIF}
@@ -134,11 +135,11 @@ type
     {$IFDEF DELPHI_7}
     property NameValueSeparator: Char read FNameValueSeparator write SetNameValueSeparator default CacheSeparator;
     {$ENDIF}
-    property Rawscript: TParseCache read FRawscript;
-    property Script: TParseCache read FScript;
-    property Parameter: TParseCache read FParameter;
-    property Subscript: TParseCache read FSubscript;
-    property Subparameter: TParseCache read FSubparameter;
+    property Rawscript: TParseCache read FRawscript write SetSubcache;
+    property Script: TParseCache read FScript write SetSubcache;
+    property Parameter: TParseCache read FParameter write SetSubcache;
+    property Subscript: TParseCache read FSubscript write SetSubcache;
+    property Subparameter: TParseCache read FSubparameter write SetSubcache;
   end;
 
   TParameterType = (ptParameter, ptScript);
@@ -572,7 +573,7 @@ type
     property DoubleHandle: NativeInt read FDoubleHandle;
     property ExtendedHandle: NativeInt read FExtendedHandle;
   published
-    property Cache: TCache read FCache;
+    property Cache: TCache read FCache stored False;
     property Cached: Boolean read FCached write FCached default True;
     property Text: string read FText write FText;
     property ExceptionTypeSet: TExceptionTypeSet read FExceptionTypeSet write FExceptionTypeSet default DefaultExceptionTypeSet;
@@ -947,6 +948,10 @@ procedure RestoreDecimalSeparator;
 
 implementation
 
+{$IFDEF FPC}
+{$R crosspascal_parser_icons.res}
+{$ENDIF}
+
 uses
   {$IFDEF FPC}
   DateUtils, Connector, FlagCache, ItemCache, NumberConsts, NumberUtils, ParseCommon,
@@ -967,7 +972,7 @@ uses
 
 procedure Register;
 begin
-  RegisterComponents('Samples', [TParser, TMathParser]);
+  RegisterComponents('CrossPascal', [TParser, TMathParser]);
 end;
 
 var
@@ -1108,6 +1113,10 @@ end;
 function TCache.GetCache(CacheType: TCacheType): TParseCache;
 begin
   Result := FCacheArray[CacheType];
+end;
+
+procedure TCache.SetSubcache(const Value: TParseCache);
+begin
 end;
 
 procedure TCache.Prepare;

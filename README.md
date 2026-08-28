@@ -142,6 +142,16 @@ them needs no `Interfaces` in its uses clause. Delphi is untouched by any of
 this: it builds from the sources, where neither define is set and `TGraphic` is
 the VCL one.
 
+`Thread` also ends a worker by force when it is asked to stop, and that is worth
+knowing before you own one. `Abort` calls `Stop`, waits up to `AbortTime`
+milliseconds - a hundred by default - and then kills the thread outright:
+`KillThread` under Free Pascal, `TerminateThread` under Delphi. The destructor
+calls `Abort` itself while the thread is still running, so an ordinary `Free`
+reaches it too. A thread killed that way tidies nothing after itself: a `finally`
+does not run, a lock it holds is never released, and a memory manager caught
+mid-operation can leave the heap damaged. Give a worker of your own a longer
+`AbortTime`, or stop it and wait for it yourself before freeing it.
+
 Want those two features under Lazarus? Drop the defines from
 `packages/lazarus/crosspascal_parser.lpk` and add the LCL to its required
 packages. Nothing else about the package changes.
@@ -355,7 +365,7 @@ open any `.lpi` and build it.
 
 Both packages also install into the IDE. Open `crosspascal_parser.lpk` and press
 `Install`: the IDE rebuilds itself, and eleven components appear on the
-`Samples` palette page - `TParser`, `TMathParser`, `TCalculator`, `TCalcThread`,
+`CrossPascal` palette page - `TParser`, `TMathParser`, `TCalculator`, `TCalcThread`,
 `TParseManager`, `TParseValueList`, `TConnector`, `TBlobManager`, `TSyncThread`,
 `TSyncTimer` and `TExactTimer`. You do not need any of that to use the library
 from code; install it only if you want to drop those components on a form.

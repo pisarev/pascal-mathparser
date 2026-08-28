@@ -259,7 +259,7 @@ uses
 
 procedure Register;
 begin
-  RegisterComponents('Samples', [TCalcThread, TCalculator]);
+  RegisterComponents('CrossPascal', [TCalcThread, TCalculator]);
 end;
 
 constructor TCalcThread.Create(AOwner: TComponent);

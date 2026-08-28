@@ -31,8 +31,6 @@ const
   SyncTime = 10;
 
 type
-  { TSyncTimer }
-
   {$IFDEF FPC}
   TSyncTimer = class(TComponent)
   private
@@ -116,10 +114,8 @@ uses
 
 procedure Register;
 begin
-  RegisterComponents('Samples', [TSyncTimer, TSyncThread]);
+  RegisterComponents('CrossPascal', [TSyncTimer, TSyncThread]);
 end;
-
-{ TSyncTimer }
 
 {$IFDEF FPC}
 procedure TSyncTimer.Timer(Sender: TObject);
@@ -228,8 +224,6 @@ begin
       Message.Result := DefWindowProc(FHandle, Message.Msg, Message.WParam, Message.LParam);
 end;
 {$ENDIF}
-
-{ TSyncThread }
 
 procedure TSyncThread.DoDone;
 begin

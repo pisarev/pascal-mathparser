@@ -2,6 +2,7 @@
 # program	checks
 BigScript	5
 CacheContractTest	48
+ConnectorLoopTest	5
 ConstantsTest	34
 DemoSpeed	6
 DocumentedSyntaxTest	34

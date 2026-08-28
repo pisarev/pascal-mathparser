@@ -126,7 +126,7 @@ uses
 
 procedure Register;
 begin
-  RegisterComponents('Samples', [TParseValueList]);
+  RegisterComponents('CrossPascal', [TParseValueList]);
 end;
 
 function TParseValueList.AssignValue(const AName, Value: string; out Index: Integer): Boolean;
