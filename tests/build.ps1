@@ -154,7 +154,7 @@ foreach ($Target in @('win32', 'win64')) {
 # remembers to start it.
 $Out = Join-Path $RunRoot 'win64'
 $Rtl = Join-Path (Split-Path $Bin) 'lib\win64\release'
-foreach ($Test in @('JitDump', 'JitBench', 'JitParserTest', 'JitContractTest', 'PublicApiTest', 'DocumentedSyntaxTest', 'DemoSpeed', 'BigScript', 'ThreadWaitTest', 'ThreadSafetyTest', 'ThreadShareTest', 'ExitRoutingTest', 'LoopGuardTest', 'LoopScopeTest', 'FpuMaskTest', 'MethodLockTest', 'MathFamilyTest', 'ConstantsTest', 'ScientificTest', 'SignCacheTest', 'PlatformTextTest', 'CacheContractTest', 'ConnectorLoopTest', 'C31Console')) {
+foreach ($Test in @('JitDump', 'JitBench', 'JitParserTest', 'JitContractTest', 'PublicApiTest', 'DocumentedSyntaxTest', 'DemoSpeed', 'BigScript', 'ThreadWaitTest', 'ThreadSafetyTest', 'ThreadShareTest', 'ExitRoutingTest', 'LoopGuardTest', 'LoopScopeTest', 'FpuMaskTest', 'MethodLockTest', 'MathFamilyTest', 'ConstantsTest', 'ScientificTest', 'SignCacheTest', 'PlatformTextTest', 'CacheContractTest', 'ConnectorLoopTest', 'C31Console', 'TextDcRace')) {
     Write-Host "=== BUILD $Test (win64) ==="
     & (Join-Path $Bin 'dcc64.exe') -B -Q ('-U' + $Src + ';' + $Jit + ';' + $Rtl) ('-I' + $Src) ('-E' + $Out) ('-N0' + (Join-Path $Out 'dcu')) '-NSSystem;System.Win;WinApi;Vcl' (Join-Path $PSScriptRoot "$Test.dpr")
     if ($LASTEXITCODE -ne 0) { throw "build failed: $Test" }

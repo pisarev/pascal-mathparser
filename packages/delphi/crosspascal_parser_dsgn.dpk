@@ -31,12 +31,12 @@ package crosspascal_parser_dsgn;
 {$IMAGEBASE $400000}
 {$DEFINE RELEASE}
 {$DESIGNONLY}
+{$DESCRIPTION 'CrossPascal Components'}
 {$IMPLICITBUILD OFF}
 
 requires
   rtl,
   vcl,
-  designide,
   crosspascal_parser,
   crosspascal_parserjit;
 

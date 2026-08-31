@@ -146,12 +146,12 @@ if ($null -eq $RunRoot) { exit 1 }
     $Out = Join-Path $RunRoot "$Target"
     New-Item -ItemType Directory -Force $Out | Out-Null
 
-    # The palette package builds for 32 bits only: there is no designide for 64.
-    $Packages = if ($Target -eq 'win32') {
-        @('crosspascal_parser', 'crosspascal_parserjit', 'crosspascal_parser_dsgn')
-    } else {
-        @('crosspascal_parser', 'crosspascal_parserjit')
-    }
+    # All three packages build for both platforms. The palette package used to be
+    # 32-bit only because it required designide, which has no 64-bit build. That
+    # requirement existed for one call - ForceDemandLoadState - and measurement on
+    # 30.08.2026 showed the call changed nothing. Without it the package needs
+    # nothing beyond rtl and vcl, so it builds wherever they do.
+    $Packages = @('crosspascal_parser', 'crosspascal_parserjit', 'crosspascal_parser_dsgn')
 
     foreach ($Pkg in $Packages) {
         Write-Host "=== $Pkg ($Target)"

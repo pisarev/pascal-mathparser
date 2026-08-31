@@ -15,7 +15,7 @@ procedure Register;
 implementation
 
 uses
-  Classes, DesignIntf, BlobManager, Calculator, Connector, ExactTimer, ParseJit.Parser,
+  Classes, BlobManager, Calculator, Connector, ExactTimer, ParseJit.Parser,
   ParseManager, ParseValueList, Parser, SyncThread;
 
 {$R CrossPascalIcons.dcr}
@@ -25,7 +25,6 @@ const
 
 procedure Register;
 begin
-  ForceDemandLoadState(dlDisable);
   RegisterComponents(Palette, [TParser, TMathParser, TJitParser, TCalculator]);
   RegisterComponents(Palette, [TParseValueList, TParseManager, TConnector]);
   RegisterComponents(Palette, [TCalcThread, TSyncThread, TSyncTimer, TExactTimer]);

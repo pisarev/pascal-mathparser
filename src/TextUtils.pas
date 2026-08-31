@@ -107,12 +107,12 @@ function DeletePrefix(var Text: string; const Prefix: string; const Trim: Boolea
 function GetPrefix(const Text: string; const IgnoreCase: Boolean = True;
   const Direction: Integer = 1): {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF};
 function KMPSearch(const Text, SubStr: string;
-  const Prefix: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF};
-  const Offset: Integer; const Event: TKMPEvent; const P: Pointer;
-  const IgnoreCase: Boolean = True; const Direction: Integer = 1): Integer;
+  const Prefix: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF}; const Offset: Integer;
+  const Event: TKMPEvent; const P: Pointer; const IgnoreCase: Boolean = True;
+  const Direction: Integer = 1): Integer;
 function IndexOf(const Text, SubStr: string;
-  const Prefix: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF};
-  const IgnoreCase: Boolean; const Offset: Integer = 1; const Direction: Integer = 1;
+  const Prefix: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF}; const IgnoreCase: Boolean;
+  const Offset: Integer = 1; const Direction: Integer = 1;
   const FlagArray: TFlagArray = nil): Integer; overload;
 function IndexOf(const Text, SubStr: string; const IgnoreCase: Boolean; const Offset: Integer = 1;
   const Direction: Integer = 1; const FlagArray: TFlagArray = nil): Integer; overload;
@@ -128,9 +128,8 @@ function SubStr(const Text, Delimiter: string; const FromIndex, TillIndex: Integ
   const IgnoreCase: Boolean): string; overload;
 function SubStrCnt(const Text, SubStr: string; const IgnoreCase: Boolean): Integer;
 function Split(const Text, Delimiter: string;
-  var SArray: {$IFDEF DELPHI_10.2}TArray<string>{$ELSE}TStringDynArray{$ENDIF};
-  const IgnoreCase: Boolean; const MaxCount: Integer = 0;
-  const FlagArray: TFlagArray = nil): Boolean;
+  var SArray: {$IFDEF DELPHI_10.2}TArray<string>{$ELSE}TStringDynArray{$ENDIF}; const IgnoreCase: Boolean;
+  const MaxCount: Integer = 0; const FlagArray: TFlagArray = nil): Boolean;
 
 function Duplicated(const Text: string; Index: Integer): Boolean;
 
@@ -194,8 +193,6 @@ const
   AnsiFlags = WC_COMPOSITECHECK or WC_DISCARDNS or WC_SEPCHARS or WC_DEFAULTCHAR;
   WideFlags = MB_PRECOMPOSED;
 
-var
-  DC: HDC;
 {$ENDIF}
 
 procedure Reset(var Target: TLockArray; var Data: TArrayData); forward;
@@ -676,8 +673,7 @@ var
 begin
   Resize(Result, Length(Text));
   for I := Low(LockArray) to High(LockArray) do
-    for J := LockArray[I].FromIndex to LockArray[I].TillIndex do
-      Result[J - 1] := Ord(True);
+    for J := LockArray[I].FromIndex to LockArray[I].TillIndex do Result[J - 1] := Ord(True);
 end;
 
 function GetFlagArray(const Text: string; const LockType: TLockType): TFlagArray;
@@ -821,8 +817,8 @@ begin
 end;
 
 function Contains(const Text, SubStr: string;
-  const Prefix: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF};
-  const IgnoreCase: Boolean; const Direction: Integer): Boolean;
+  const Prefix: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF}; const IgnoreCase: Boolean;
+  const Direction: Integer): Boolean;
 var
   P: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF};
 begin
@@ -928,9 +924,8 @@ begin
 end;
 
 function KMPSearch(const Text, SubStr: string;
-  const Prefix: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF};
-  const Offset: Integer; const Event: TKMPEvent; const P: Pointer;
-  const IgnoreCase: Boolean; const Direction: Integer): Integer;
+  const Prefix: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF}; const Offset: Integer;
+  const Event: TKMPEvent; const P: Pointer; const IgnoreCase: Boolean; const Direction: Integer): Integer;
 var
   A, B, C, D, I, J, K: Integer;
 begin
@@ -979,9 +974,8 @@ begin
 end;
 
 function IndexOf(const Text, SubStr: string;
-  const Prefix: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF};
-  const IgnoreCase: Boolean; const Offset, Direction: Integer;
-  const FlagArray: TFlagArray): Integer;
+  const Prefix: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF}; const IgnoreCase: Boolean;
+  const Offset, Direction: Integer; const FlagArray: TFlagArray): Integer;
 var
   A, B: Integer;
 begin
@@ -990,8 +984,7 @@ begin
   while True do
   begin
     Result := KMPSearch(Text, SubStr, Prefix, A, nil, nil, IgnoreCase, Direction);
-    if (FlagArray = nil) or (Result = 0) or not Locked(Result, FlagArray) then
-      Break;
+    if (FlagArray = nil) or (Result = 0) or not Locked(Result, FlagArray) then Break;
     if Direction < 0 then
       A := Result - B
     else
@@ -1150,9 +1143,8 @@ begin
 end;
 
 function Split(const Text, Delimiter: string;
-  var SArray: {$IFDEF DELPHI_10.2}TArray<string>{$ELSE}TStringDynArray{$ENDIF};
-  const IgnoreCase: Boolean; const MaxCount: Integer;
-  const FlagArray: TFlagArray): Boolean;
+  var SArray: {$IFDEF DELPHI_10.2}TArray<string>{$ELSE}TStringDynArray{$ENDIF}; const IgnoreCase: Boolean;
+  const MaxCount: Integer; const FlagArray: TFlagArray): Boolean;
 var
   A, I, J: Integer;
   Prefix: {$IFDEF DELPHI_10.2}TArray<Integer>{$ELSE}TIntegerDynArray{$ENDIF};
@@ -1316,25 +1308,37 @@ end;
 function GetTextHeight(const Text: string; Rect: TRect; const FontHandle: THandle): Integer;
 var
   Handle: THandle;
+  DC: HDC;
 begin
-  Handle := SelectObject(DC, FontHandle);
+  DC := GetDC(0);
   try
-    Result := DrawText(DC, PChar(Text), Length(Text), Rect,
-      DT_LEFT or DT_WORDBREAK or DT_EXPANDTABS or DT_NOPREFIX or DT_CALCRECT);
+    Handle := SelectObject(DC, FontHandle);
+    try
+      Result := DrawText(DC, PChar(Text), Length(Text), Rect,
+        DT_LEFT or DT_WORDBREAK or DT_EXPANDTABS or DT_NOPREFIX or DT_CALCRECT);
+    finally
+      SelectObject(DC, Handle);
+    end;
   finally
-    SelectObject(DC, Handle);
+    ReleaseDC(0, DC);
   end;
 end;
 
 function GetTextSize(const Text: string; const FontHandle: THandle): TSize;
 var
   Handle: THandle;
+  DC: HDC;
 begin
-  Handle := SelectObject(DC, FontHandle);
+  DC := GetDC(0);
   try
-    GetTextExtentPoint(DC, PChar(Text), Length(Text), Result);
+    Handle := SelectObject(DC, FontHandle);
+    try
+      GetTextExtentPoint(DC, PChar(Text), Length(Text), Result);
+    finally
+      SelectObject(DC, Handle);
+    end;
   finally
-    SelectObject(DC, Handle);
+    ReleaseDC(0, DC);
   end;
 end;
 {$ENDIF}
@@ -1370,13 +1374,5 @@ end;
 initialization
   LockBracket := LParenthesis + RParenthesis;
   LockString := DoubleQuote;
-  {$IFNDEF FPC}
-  DC := GetDC(0);
-  {$ENDIF}
-
-finalization
-  {$IFNDEF FPC}
-  ReleaseDC(0, DC);
-  {$ENDIF}
 
 end.

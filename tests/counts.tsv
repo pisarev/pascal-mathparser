@@ -22,6 +22,7 @@ PlatformTextTest	10
 PublicApiTest	28
 ScientificTest	53
 SignCacheTest	80
+TextDcRace	6
 ThreadSafetyTest	29
 ThreadShareTest	12
 ThreadWaitTest	6
