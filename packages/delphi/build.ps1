@@ -7,8 +7,11 @@
   if a unit appeared in or vanished from MANIFEST.md while the .dpk was not
   regenerated, the build falls here.
 
-  The design-time package exists for 32 bits only: the Delphi IDE is 32-bit and
-  needs a .bpl to match.
+  All three build for both platforms. The design-time one was 32-bit only until
+  1.3.5: it required designide, which has no 64-bit build. The requirement came
+  from a single call - ForceDemandLoadState - and measurement showed the call
+  changed nothing, so the package now needs nothing beyond rtl and vcl. The .bpl
+  the IDE loads is still the 32-bit one, because the IDE itself is 32-bit.
 
   Run: powershell -ExecutionPolicy Bypass -File build.ps1
   The exit code is the number of packages that did not build.

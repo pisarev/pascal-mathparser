@@ -131,8 +131,10 @@ implementation
 
 uses
   {$IFDEF FPC}
-  Messages, Math, ParseMessages, Parser, SysUtils, TextConsts, TextUtils, ValueConsts,
+  {$IFDEF MSWINDOWS}Messages,{$ELSE}Compat.Messages,{$ENDIF}
+  Math, ParseMessages, Parser, SysUtils, TextConsts, TextUtils, ValueConsts,
   ValueUtils;
+
   {$ELSE}
   {$IFDEF DELPHI_XE7}
   WinApi.Windows, WinApi.Messages, System.Math, ParseMessages, Parser, SysUtils,
@@ -147,8 +149,6 @@ uses
 type
   TCustomParser = class(Parser.TCustomParser);
 {$ENDIF}
-
-{ TCache }
 
 procedure TCache.Clear;
 begin

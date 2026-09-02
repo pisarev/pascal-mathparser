@@ -40,7 +40,7 @@ if (TargetOS &lt;&gt; 'win32') and (TargetOS &lt;&gt; 'win64') then
     </CompilerOptions>
     <Description Value="MathParser: a compiler and interpreter of mathematical expressions (core)"/>
     <License Value="MIT"/>
-    <Version Major="1" Minor="3" Release="5"/>
+    <Version Major="1" Minor="3" Release="6"/>
     <Files>
       <Item>
         <Filename Value="../../src/Parser.pas"/>

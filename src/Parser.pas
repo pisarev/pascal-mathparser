@@ -18,9 +18,10 @@ interface
 
 uses
   {$IFDEF FPC}
-  {$IFDEF MSWINDOWS}Windows,{$ELSE}WinMem,{$ENDIF}Messages, SysUtils, Classes,
-  Types, Math, FlexibleList, MemoryUtils, Notifier, ParseCache, ParseConsts, ParseErrors,
-  ParseMethod, ParseTypes, TextConsts, TextBuilder, TextTypes, ValueTypes;
+  {$IFDEF MSWINDOWS}Windows, Messages,{$ELSE}WinMem, Compat.Messages,{$ENDIF}
+  SysUtils, Classes, Types, Math, FlexibleList, MemoryUtils, Notifier, ParseCache,
+  ParseConsts, ParseErrors, ParseMethod, ParseTypes, TextConsts, TextBuilder, TextTypes,
+  ValueTypes;
   {$ELSE}
   {$IFDEF DELPHI_XE7}
   WinApi.Windows, WinApi.Messages, System.SysUtils, System.Classes, System.Types,
