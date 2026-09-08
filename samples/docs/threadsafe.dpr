@@ -1,19 +1,11 @@
-﻿{ ************************************************************************** }
-{                                                                            }
-{ ThreadSafe                                                                 }
-{                                                                            }
-{ Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
-{                                                                            }
-{ ************************************************************************** }
-
-program ThreadSafe;
+﻿program ThreadSafe;
 
 { expect: 4 workers, 0 wrong }
 {$APPTYPE CONSOLE}
 
 uses
-  { On Unix the thread driver has to come first: without it the program dies
-    at startup rather than where it starts a thread. }
+  { On Unix the thread driver has to come first: without it the program
+    fails at startup, not where it starts a thread. }
   {$IFDEF UNIX}{$IFDEF FPC}cthreads,{$ENDIF}{$ENDIF}
   SysUtils, Parser, ParseTypes, ValueTypes, ValueUtils, Thread;
 

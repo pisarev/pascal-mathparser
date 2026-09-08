@@ -1,11 +1,4 @@
-﻿{ ************************************************************************** }
-{                                                                            }
-{ extend                                                                     }
-{                                                                            }
-{ Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
-{                                                                            }
-{ ************************************************************************** }
-program Extend;
+﻿program Extend;
 
 { expect: 800.00 }
 {$APPTYPE CONSOLE}

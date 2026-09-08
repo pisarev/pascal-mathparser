@@ -1,11 +1,4 @@
-﻿{ ************************************************************************** }
-{                                                                            }
-{ quickstart                                                                 }
-{                                                                            }
-{ Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
-{                                                                            }
-{ ************************************************************************** }
-program QuickStart;
+﻿program QuickStart;
 
 { expect: 21.0000 }
 {$APPTYPE CONSOLE}

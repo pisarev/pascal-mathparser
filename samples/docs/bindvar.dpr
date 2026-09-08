@@ -1,11 +1,4 @@
-﻿{ ************************************************************************** }
-{                                                                            }
-{ bindvar                                                                    }
-{                                                                            }
-{ Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
-{                                                                            }
-{ ************************************************************************** }
-program BindVar;
+﻿program BindVar;
 
 { expect: 6.0 }
 {$APPTYPE CONSOLE}

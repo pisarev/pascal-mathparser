@@ -1,12 +1,4 @@
-﻿{ ************************************************************************** }
-{                                                                            }
-{ LoopGuard                                                                  }
-{                                                                            }
-{ Copyright © 2026 Yuriy Pisarev (ypisareff@outlook.com)                     }
-{                                                                            }
-{ ************************************************************************** }
-
-program LoopGuard;
+﻿program LoopGuard;
 
 { expect: Loop limit stopped it, cnt reached 999 }
 {$APPTYPE CONSOLE}

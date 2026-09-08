@@ -109,7 +109,7 @@ refusal - it is evaluated the ordinary way and returns `True` just as machine
 code does. `MachineCount` and `ExecutorCount` tell the two apart, and
 `CodeReason` names the reason for the retreat.
 
-The defect found on 2026-07-27 was a different thing: the generation of the
+The case found on 2026-07-27 was a different thing: the generation of the
 cache entry was stamped before the script was compiled, so the first formula of
 any parser stayed on the interpreter forever.
 `../tests/JitContractTest.dpr` stands guard over that.

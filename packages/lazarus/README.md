@@ -3,7 +3,7 @@
 The parser library and the accelerator build and run under FPC 3.2.2 and 3.3.1,
 machine code generation included. Verified by a full run of the test suite: 467
 checks on 3.3.1 (x86_64-win64), 454 on 3.2.2 (x86_64-linux) - the difference is
-the programs that are not there on Linux. No failures on either.
+the programs that are not there on Linux. All passed on both.
 
 The stable 3.2.2 is named first on purpose: the project has to build for someone
 who has not installed trunk.
@@ -92,7 +92,7 @@ the run writes them.
 5. **Poly** is implemented with Horner's scheme, since the FPC branch has no
    `Math.Poly`.
 6. **CleanDateTime** no longer glues the date to the time: under FPC that broke
-   `strtodatetime("01.02.2020 10:30")`. On a modern Delphi RTL the defect did
+   `strtodatetime("01.02.2020 10:30")`. On a modern Delphi RTL it did
    not show.
 7. **Graphics became optional.** BlobManager pulled in the Graphics unit and
    with it the whole LCL; with `-dNOGRAPHICS` the graphical methods are switched
