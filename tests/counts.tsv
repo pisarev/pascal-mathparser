@@ -7,13 +7,13 @@ ConstantsTest	34
 DemoSpeed	6
 DocumentedSyntaxTest	34
 ExitRoutingTest	32
-FpuMaskTest	17
+FpuMaskTest	33
 JitBench	35
 JitContractTest	80
 JitDump	37
 JitParserTest	48
 JitRedirectTest	47
-LoopGuardTest	23
+LoopGuardTest	57
 LoopScopeTest	19
 MathFamilyTest	24
 MethodLockTest	13

@@ -422,11 +422,20 @@ begin
   begin
     ArmMask(ExceptionMask, Saved, Changed);
     try
-      for I := Low(Inputs) to High(Inputs) do
-      begin
-        Variable := Inputs[I];
-        Outputs[I] := Code.Execute;
-      end;
+      if not Assigned(Code.Owner) then
+        raise EJitOrphan.Create(JitOrphanMessage);
+      if Assigned(Code.Code) and Code.Code.Ready then
+        for I := Low(Inputs) to High(Inputs) do
+        begin
+          Variable := Inputs[I];
+          Outputs[I] := Code.Code.Execute;
+        end
+      else
+        for I := Low(Inputs) to High(Inputs) do
+        begin
+          Variable := Inputs[I];
+          Outputs[I] := GetDouble(Code.Executor.Execute);
+        end;
     finally
       DisarmMask(Saved, Changed);
     end;

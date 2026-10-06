@@ -13,50 +13,13 @@ program FpuMaskTest;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
-  SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, Thread, TestKit in 'TestKit.pas';
-
-{
-  Who the floating point exception mask belongs to.
-
-  The library promises numbers rather than exceptions: division by zero gives
-  infinity, the square root of minus one gives NaN, and the formula runs to the
-  end. The promise rests on the FPU mask: all six exceptions are masked, so the
-  processor writes a special value instead of interrupting the computation.
-
-  The mask is state of the THREAD. It used to be installed in the parser's
-  constructor, with the previous value restored in the destructor. Those are
-  different scopes, and they part in three places:
-
-  1. The parser is created in one thread and evaluates in another. Only the
-     first got the mask; the second is running with whatever the host set, and
-     division by zero raises instead of giving infinity. That is exactly how the
-     plotting component works: one parser, four worker threads.
-
-  2. While the parser is alive the mask stands for the WHOLE program.
-     Neighbouring code doing its own arithmetic in the same thread quietly stops
-     getting the exceptions it counted on.
-
-  3. The parser is created in one thread and destroyed in another: that third
-     one is handed a mask taken down long ago in the first.
-
-  THE MEASUREMENT WITHOUT WHICH THIS FILE WOULD BE EMPTY. A console program of
-  this studio starts with the processor FULLY masked: 8087CW = 027F, MXCSR =
-  1F80, and 1/0 gives +Inf before any parser exists. In the case one observes by
-  default the constructor therefore changes nothing, and a check written
-  "as it comes" would be green on any code at all.
-
-  So the mask here is narrowed ON PURPOSE - the way a program does when it wants
-  exceptions in its own arithmetic (a long habit of VCL applications). The
-  divergence shows on a narrowed mask.
-}
+  SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, Thread,
+  ParseJit.Parser, TestKit in 'TestKit.pas';
 
 const
-  { The mask of an application that wants exceptions in its own arithmetic: the
-    three harmless ones masked, the three that matter not. }
   HostMask = [exDenormalized, exUnderflow, exPrecision];
 
 type
-  { Evaluates a formula in ITS OWN thread on somebody else's parser, having narrowed the mask to suit itself. }
   TRunner = class(TThread)
   private
     FParser: TMathParser;
@@ -71,7 +34,6 @@ type
   end;
 
 type
-  { Holder of a formula function: it calls a NESTED parser that has a mask of its own. }
   THolder = class
   private
     FInner: TMathParser;
@@ -157,9 +119,6 @@ begin
   if Result = '' then Result := '(empty)';
 end;
 
-{ 1 }
-
-{ While the parser is alive the mask of the thread belongs to the host, not to the parser. }
 procedure LivingParserDoesNotHoldTheMask;
 begin
   BeginSection('a living parser does not hold the mask of the thread');
@@ -168,9 +127,6 @@ begin
     MaskText(GetExceptionMask));
 end;
 
-{ 2 }
-
-{ A formula is evaluated by the library's contract, not by the host mask. }
 procedure FormulaKeepsItsContract;
 var
   Value: Double;
@@ -190,9 +146,6 @@ begin
     MaskText(GetExceptionMask));
 end;
 
-{ 3 }
-
-{ A foreign thread on a shared parser: the contract has to hold there too. }
 procedure ForeignThreadGetsTheNumber;
 var
   R: TRunner;
@@ -209,21 +162,6 @@ begin
   Check('the answer is NaN', IsNan(R.FValue), Format('%g', [R.FValue]));
 end;
 
-{ 4 }
-
-{
-  A nested parser installs ITS OWN mask instead of inheriting somebody else's.
-
-  The test for "is this the outermost evaluation" used to ask whether any frame
-  existed in the thread. A parser called from inside the evaluation of ANOTHER
-  parser therefore saw a foreign frame, concluded it was nested, and never
-  installed its own mask at all - while its ExceptionMask property could say
-  something different, and silently mean nothing.
-
-  Here the inner parser has its mask narrowed down to the host one: it MUST get
-  an exception on division by zero, because that is what it asked for, even
-  though the outer parser is holding a full mask at that moment.
-}
 procedure NestedParserInstallsItsOwnMask;
 var
   Value: Double;
@@ -253,12 +191,130 @@ begin
   end;
 end;
 
+procedure EveryEntryKeepsTheContract;
+var
+  J: TJitParser;
+  Held: TJitScript;
+  Script: TScript;
+  Inputs, Outputs: array of Double;
+  X, Value: Double;
+  Note: string;
+  Done: Boolean;
+begin
+  BeginSection('all three entries of the accelerator keep the mask contract');
+  J := TJitParser.Create(nil);
+  try
+    X := 0;
+    J.AddVariable('x', X);
+    Note := '';
+    Value := 0;
+    try
+      Value := J.AsDouble('Sqrt(0 - 1)');
+    except
+      on E: Exception do Note := E.ClassName + ': ' + E.Message;
+    end;
+    Check('AsDouble: no exception', Note = '', Note);
+    Check('AsDouble: the answer is NaN', IsNan(Value), Format('%g', [Value]));
+    Check('AsDouble: the host mask is back', GetExceptionMask = HostMask,
+      MaskText(GetExceptionMask));
+    Note := '';
+    Value := 0;
+    Script := nil;
+    J.StringToScript('Sqrt(x - 1)', Script);
+    J.OptimizeScript(Script);
+    Held := J.CompileScript(Script);
+    try
+      Check('held script: prepared', Held.Ready, Held.Reason);
+      try
+        Value := Held.Execute;
+      except
+        on E: Exception do Note := E.ClassName + ': ' + E.Message;
+      end;
+      Check('held script: no exception', Note = '', Note);
+      Check('held script: the answer is NaN', IsNan(Value), Format('%g', [Value]));
+      Check('held script: the host mask is back', GetExceptionMask = HostMask,
+        MaskText(GetExceptionMask));
+    finally
+      Held.Free;
+    end;
+    SetLength(Inputs, 3);
+    SetLength(Outputs, 3);
+    Inputs[0] := 0;
+    Inputs[1] := 3;
+    Inputs[2] := 4;
+    Outputs[0] := 0;
+    Outputs[1] := 0;
+    Outputs[2] := 0;
+    Note := '';
+    Done := False;
+    try
+      Done := J.ExecuteMany('Sqrt(x - 3)', X, Inputs, Outputs);
+      if not Done then Note := 'the set was not evaluated';
+    except
+      on E: Exception do Note := E.ClassName + ': ' + E.Message;
+    end;
+    Check('bulk: no exception', Note = '', Note);
+    Check('bulk: the special point gave NaN', IsNan(Outputs[0]), Format('%g', [Outputs[0]]));
+    Check('bulk: the other points were evaluated',
+      (Abs(Outputs[1]) < 1E-9) and (Abs(Outputs[2] - 1) < 1E-9),
+      Format('%g %g', [Outputs[1], Outputs[2]]));
+    Check('bulk: the host mask is back', GetExceptionMask = HostMask, MaskText(GetExceptionMask));
+    Check('bulk: the host variable did not drift to a special value',
+      not (IsInfinite(X) or IsNan(X)), Format('%g', [X]));
+  finally
+    J.Free;
+  end;
+end;
+
+procedure PreparationRunsUnderTheHostMask;
+var
+  J: TJitParser;
+  Script: TScript;
+  Note, Stage: string;
+
+  procedure Walk(const Tag: string; const Plain: Boolean);
+  begin
+    Script := nil;
+    Note := '';
+    Stage := 'parse';
+    try
+      try
+        if Plain then
+        begin
+          P.StringToScript('1 / 0', Script);
+          Stage := 'optimize';
+          P.OptimizeScript(Script);
+        end
+        else begin
+          J.StringToScript('1 / 0', Script);
+          Stage := 'optimize';
+          J.OptimizeScript(Script);
+        end;
+        Stage := 'preparation went through';
+      except
+        on E: Exception do Note := E.ClassName;
+      end;
+    finally
+      Check(Tag + ': the folding raised at the optimize stage',
+        (Stage = 'optimize') and (Note <> ''), Stage + ' ' + Note);
+      Check(Tag + ': the host mask was not touched by it',
+        GetExceptionMask = HostMask, MaskText(GetExceptionMask));
+    end;
+  end;
+
+begin
+  BeginSection('the preparation of a script runs under the host mask');
+  J := TJitParser.Create(nil);
+  try
+    Walk('ordinary parser', True);
+    Walk('accelerator', False);
+  finally
+    J.Free;
+  end;
+end;
+
 begin
   try
-    {
-      Narrowing the mask IS the host that wants exceptions. Without it the whole
-      file would be green on any code: by default everything is masked.
-    }
     SetExceptionMask(HostMask);
     P := TMathParser.Create(nil);
     Holder := THolder.Create;
@@ -268,6 +324,8 @@ begin
       FormulaKeepsItsContract;
       ForeignThreadGetsTheNumber;
       NestedParserInstallsItsOwnMask;
+      EveryEntryKeepsTheContract;
+      PreparationRunsUnderTheHostMask;
     finally
       P.Free;
       Holder.Free;

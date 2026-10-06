@@ -6,18 +6,46 @@ parser itself is untouched - this plugs in above it.
 
 ## What it gives you
 
-The numbers are the output of `../tests/JitParserTest.dpr` on the machine that
-prepared the 2026-07-31 release; two consecutive runs agreed to within a few per
-cent. Nothing here is typed in by hand.
+The numbers are the output of `../tests/JitParserTest.dpr` of 5 October 2026
+(dcc64, x86_64-win64), the last of five consecutive runs; the same run is the
+source of `bench.tsv`, from which the showcase takes its table. Nothing here is
+typed in by hand.
 
 | Scenario (Win64) | base parser | with the layer | speedup |
 |---|---:|---:|---:|
-| `AsDouble('x * 2 + 1')` | 928 ns | 42.0 ns | **22x** |
-| `AsDouble` of a degree-3 polynomial | 2337 ns | 59.3 ns | **39x** |
-| `AsDouble` of a sin/cos/sqrt/exp/ln chain | 2898 ns | 152 ns | **19x** |
-| **one turn of a `while` loop** with a counter | 4319 ns | 37.1 ns | **116x** |
-| bulk evaluation of `x * 2 + 1` over an array | 968 ns | 7.7 ns | **125x** |
-| bulk evaluation of a polynomial over an array | 2070 ns | 13.9 ns | **149x** |
+| `AsDouble('x * 2 + 1')` | 882 ns | 64.7 ns | **14x** |
+| `AsDouble` of a degree-3 polynomial | 1941 ns | 84.0 ns | **23x** |
+| `AsDouble` of a sin/cos/sqrt/exp/ln chain | 2633 ns | 171 ns | **15x** |
+| **one turn of a `while` loop** with a counter | 3953 ns | 41.6 ns | **95x** |
+| bulk evaluation of `x * 2 + 1` over an array | 877 ns | 9.4 ns | **93x** |
+| bulk evaluation of a polynomial over an array | 1929 ns | 14.6 ns | **132x** |
+
+The spread of the five `JitParserTest` runs, by multiplier: `AsDouble('x * 2 + 1')` 13.6x-14.4x,
+the polynomial 23.1x-28.3x, the chain 13.6x-17.0x, one turn of a loop 86x-113x,
+bulk mode 93x-98x and 132x-139x. The loop turn wanders more than the rest, and
+that is not rounding: its base is measured as twenty repetitions of a loop of ten
+thousand turns, and one of the five runs gave 4703 ns instead of 3953 ns. A
+number without its spread on values like these promises a precision that does not
+exist.
+
+THE TABLE WAS RE-MEASURED, and none of the old numbers were carried over. Until 5
+October 2026 this place held the run of 2026-07-27: 21x, 40x, 17x, 108x, 115x and
+165x. Two reasons why they could not stay, both measured:
+
+1. A turn of a loop costs one call more: since 4 October 2026 every turn of a
+   compiled loop asks the turn limit for permission. The price of the call,
+   measured separately by a probe, is 6.91 ns under dcc64; in the loop row that is
+   the difference between 35.9 ns and 41.6 ns. It is paid by whoever started a
+   loop: in formulas with no loops the check is not emitted at all, and the
+   bookkeeping of a refusal does not run.
+2. Bulk mode was evaluated through the wrapper of the entry, which armed the FPU
+   mask at every element although `ExecuteMany` had already armed it for the whole
+   set. Measured: `GetExceptionMask` costs 6.97 ns, and the whole wrapper cost
+   11.85 ns out of 21.4 ns per element. The stage itself now runs inside the set,
+   and an element costs 9.4 ns. The mask contract did not suffer and is covered by
+   a check: `tests/FpuMaskTest.dpr`, the section on the three entries of the
+   accelerator, which fails without the arming on the set - shown by a mutation,
+   EInvalidOp and a set that was not evaluated to the end.
 
 On FPC/Lazarus (x86_64-win64) the same machine code is generated. That is a
 DIFFERENT run with numbers of its own: they are given as one table in

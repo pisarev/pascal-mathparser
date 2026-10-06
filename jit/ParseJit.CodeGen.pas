@@ -21,11 +21,11 @@ interface
 
 uses
   {$IFDEF FPC}
-  SysUtils, NumberUtils, ParseTypes, Parser, ValueConsts, ValueTypes, ValueUtils,
-  ParseJit.Decoder, ParseJit.Memory;
+  SysUtils, NumberUtils, ParseTypes, ParseErrors, Parser, ValueConsts, ValueTypes,
+  ValueUtils, ParseJit.Decoder, ParseJit.Memory;
   {$ELSE}
-  System.SysUtils, NumberUtils, ParseTypes, Parser, ValueConsts, ValueTypes, ValueUtils,
-  ParseJit.Decoder, ParseJit.Memory;
+  System.SysUtils, NumberUtils, ParseTypes, ParseErrors, Parser, ValueConsts, ValueTypes,
+  ValueUtils, ParseJit.Decoder, ParseJit.Memory;
   {$ENDIF}
 
 type
@@ -46,6 +46,9 @@ type
     FReason: string;
     FSlot: Integer;
     FMaxSlot: Integer;
+    FGuardJumps: array[0..63] of Integer;
+    FGuardCount: Integer;
+    FHasGuard: Boolean;
     FFrame: Integer;
     FMultiplyHandle: NativeInt;
     FDivideHandle: NativeInt;
@@ -79,7 +82,9 @@ type
     function VariableOf(const Name: string; out Boxed: PValue; out Direct: PDouble): Boolean;
     function EmitJump(const Conditional: Boolean): Integer;
     procedure PatchJump(const Position: Integer);
+    procedure PatchJumpTo(const Position, Target: Integer);
     procedure EmitTestZero;
+    procedure EmitLoopGuard(const Kind: NativeInt);
     procedure Reject(const AReason: string);
     procedure Release;
   public
@@ -159,6 +164,52 @@ function JitSetBoxed(P: PValue; V: Double): Double;
 begin
   AssignDouble(P^, V);
   Result := -1;
+end;
+
+threadvar
+  JitLoopStop: NativeInt;
+
+const
+  JitLoopNames: array[0..1] of string = ('While', 'Repeat');
+
+function JitLoopStep(Kind: NativeInt): NativeInt;
+begin
+  if (Kind < Low(JitLoopNames)) or (Kind > High(JitLoopNames)) then
+    Kind := Low(JitLoopNames);
+  if Assigned(ParseBreak) and ParseBreak^ then
+  begin
+    JitLoopStop := 3 + Kind;
+    Exit(0);
+  end;
+  if ParseLoopLeft > 0 then
+  begin
+    Dec(ParseLoopLeft);
+    if ParseLoopLeft = 0 then
+    begin
+      ParseLoopLeft := -1;
+      JitLoopStop := 1 + Kind;
+      Exit(0);
+    end;
+  end
+  else if ParseLoopLeft < 0 then
+  begin
+    JitLoopStop := 1 + Kind;
+    Exit(0);
+  end;
+  Result := 1;
+end;
+
+procedure RaiseJitLoopStop;
+var
+  Stop: NativeInt;
+begin
+  Stop := JitLoopStop;
+  if Stop = 0 then Exit;
+  JitLoopStop := 0;
+  if Stop <= 2 then
+    raise ParseErrors.Error(LoopLimitError, [JitLoopNames[Stop - 1]])
+  else
+    raise ParseErrors.Error(LoopBreakError, [JitLoopNames[Stop - 3]]);
 end;
 
 function JitSin(X: Double): Double;
@@ -449,16 +500,35 @@ begin
   EmitInt32(0);
 end;
 
-procedure TJitCode.PatchJump(const Position: Integer);
+procedure TJitCode.PatchJumpTo(const Position, Target: Integer);
 begin
   if (Position >= 0) and (Position + SizeOf(Integer) <= FCapacity) then
-    PInteger(FBuffer + Position)^ := FSize - (Position + SizeOf(Integer));
+    PInteger(FBuffer + Position)^ := Target - (Position + SizeOf(Integer));
+end;
+
+procedure TJitCode.PatchJump(const Position: Integer);
+begin
+  PatchJumpTo(Position, FSize);
 end;
 
 procedure TJitCode.EmitTestZero;
 begin
   Emit([$66, $0F, $57, $C9]);
   Emit([$66, $0F, $2E, $C1]);
+end;
+
+procedure TJitCode.EmitLoopGuard(const Kind: NativeInt);
+begin
+  if FGuardCount > High(FGuardJumps) then
+  begin
+    Reject('too many loop guards in one script');
+    Exit;
+  end;
+  EmitLoadArgument(Pointer(Kind));
+  EmitCall(@JitLoopStep);
+  Emit([$48, $85, $C0]);
+  FGuardJumps[FGuardCount] := EmitJump(True);
+  Inc(FGuardCount);
 end;
 
 function TJitCode.EmitCompare(const Handle: NativeInt; const Slot: Integer): Boolean;
@@ -608,6 +678,7 @@ begin
       if not EmitParameterTerm(Index) then Exit(False);
       EmitTestZero;
       EndJump := EmitJump(True);
+      EmitLoopGuard(0);
       if not EmitParameterTerm(Index) then Exit(False);
       EmitTestZero;
       ElseJump := EmitJump(True);
@@ -629,6 +700,7 @@ begin
       EmitLoadDouble(0);
       EmitStoreSlot(Slot);
       LoopStart := FSize;
+      EmitLoopGuard(1);
       if not EmitParameterTerm(Index) then Exit(False);
       EmitTestZero;
       ElseJump := EmitJump(True);
@@ -860,6 +932,8 @@ var
   Index: Integer;
   Prologue, Epilogue: Integer;
   PrologBytes: Integer;
+  AbortAt, I: Integer;
+  SkipAbort, EpilogueStart: Integer;
 begin
   Release;
   FReason := '';
@@ -869,6 +943,8 @@ begin
   {$ENDIF}
   FSlot := 0;
   FMaxSlot := 0;
+  FGuardCount := 0;
+  FHasGuard := False;
   FOverflow := False;
   if not FDecoder.Decode(Script) then
   begin
@@ -887,18 +963,32 @@ begin
   end;
   FFrame := 0;
   Epilogue := 0;
+  SkipAbort := -1;
   Emit([$48, $81, $EC]);
   Prologue := FSize;
   EmitInt32(0);
   PrologBytes := FSize;
   Index := 0;
   Result := EmitScript(Index);
+  if Result and (FGuardCount > 0) then
+  begin
+    SkipAbort := EmitJump(False);
+    AbortAt := FSize;
+    EmitLoadDouble(0);
+    for I := 0 to FGuardCount - 1 do
+      PatchJumpTo(FGuardJumps[I], AbortAt);
+    FGuardCount := 0;
+    FHasGuard := True;
+  end;
   if Result then
   begin
+    EpilogueStart := FSize;
     Emit([$48, $81, $C4]);
     Epilogue := FSize;
     EmitInt32(0);
     Emit([$C3]);
+    if SkipAbort >= 0 then
+      PatchJumpTo(SkipAbort, EpilogueStart);
     Result := not FOverflow;
     if not Result then FReason := 'code buffer overflow';
   end;
@@ -947,7 +1037,14 @@ function TJitCode.Execute: Double;
 begin
   if not FReady then
     raise Exception.Create('jit code is not ready: ' + FReason);
-  Result := FCode();
+  if FHasGuard then
+  begin
+    JitLoopStop := 0;
+    Result := FCode();
+    RaiseJitLoopStop;
+  end
+  else
+    Result := FCode();
 end;
 
 end.

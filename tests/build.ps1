@@ -104,9 +104,15 @@ $Counts = @{}
 # ExecuteScript happened to return the right number, on win32 it gave an AV. One run
 # of one word size does not see such a thing. On win32 there is no machine code,
 # while the IR stage works, so the whole path is checked.
-foreach ($Target in @('win32', 'win64')) {
-
 # Leaving the tree OUTWARDS, one rule for all the scripts, see tests/parser/runroot.ps1.
+#
+# Initialized ONCE, before the loop, and not inside it. Inside the loop every
+# target got a root of its own: win32 landed in one temporary folder and win64
+# in another, and $RunRoot was left pointing at the last one. The run loop then
+# found no win32 executable at all - which is how the run of one word size
+# passed for a run of both. Measured 04.10.2026: the build wrote
+# ...\Temp\fw4gcy20.svk\win32\ParserBugTests.exe while the run looked for it in
+# ...\Temp\2p5lf1ks.xen\win32\.
 $RunRootRule = Join-Path $PSScriptRoot 'runroot.ps1'
 if (-not (Test-Path -LiteralPath $RunRootRule -PathType Leaf)) {
     Write-Host "REFUSED: run root rule not found: $RunRootRule"
@@ -115,6 +121,8 @@ if (-not (Test-Path -LiteralPath $RunRootRule -PathType Leaf)) {
 . $RunRootRule
 $RunRoot = Initialize-RunRoot (Join-Path $PSScriptRoot '..\..')
 if ($null -eq $RunRoot) { exit 1 }
+
+foreach ($Target in @('win32', 'win64')) {
     $Out = Join-Path $RunRoot "$Target"
     New-Item -ItemType Directory -Force (Join-Path $Out 'dcu') | Out-Null
     $Dcc = if ($Target -eq 'win32') { Join-Path $Bin 'dcc32.exe' } else { Join-Path $Bin 'dcc64.exe' }
@@ -128,6 +136,13 @@ if ($null -eq $RunRoot) { exit 1 }
 }
 
 foreach ($Target in @('win32', 'win64')) {
+    # The output folder is taken from the target AGAIN, and not left over from
+    # the build loop above. It was left over, and the run loop then started the
+    # win64 executable twice, once under each label: four runs of one binary
+    # instead of two per word size, with the log still printing "win32". The
+    # claim that both word sizes run was therefore not backed by the run. Found
+    # by the review round of release 1.3.8, 04.10.2026.
+    $Out = Join-Path $RunRoot "$Target"
     foreach ($Test in @('ParserBugTests', 'JitRedirectTest')) {
         Write-Host "=== RUN $Test $Target ==="
         $Output = & (Join-Path $Out "$Test.exe") 2>&1

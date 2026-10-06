@@ -82,16 +82,35 @@ end;
 `Compiled.Execute` returns a Double. If the script is not supported, the reason
 is in `Compiled.Reason` (or `FParser.ScriptReason(Script)`).
 
-Measurements for this scenario (Win64, Integer variables, as in the demo):
+Preparing the script (`StringToScript` and `OptimizeScript`) runs UNDER THE
+CALLER'S FPU mask: the promise of numbers instead of exceptions begins with the
+evaluation, not with the parse. Measured on 5 October 2026: in an application
+that narrowed the coprocessor mask for its own arithmetic (a long-standing habit
+of VCL applications), `OptimizeScript('1 / 0')` raises, because the constant
+folder divides on the spot - and it raises for both parsers, the ordinary one
+and the accelerator. The same formula through `AsDouble` returns infinity: that
+entry arms the mask over its whole path, the folding included. The control for
+the measurement: with every exception masked the preparation goes through
+cleanly, so it is the caller's mask and not a parse error. In practice, prepare
+a script either with the coprocessor masked or inside a `try..except`. The
+behaviour is recorded by a check in `tests/FpuMaskTest.dpr`, in the section on
+the preparation running under the host mask.
+
+Measurements for this scenario - the output of `tests/DemoSpeed.dpr` of
+05.10.2026 (dcc64, x86_64-win64, Integer variables as in the demo). The table
+that stood here named neither the program nor the date, so there was nothing to
+identify its measurement with: a fresh run of the same six formulas gave other
+numbers - `X + Y`, for one, came out 154.5 / 18.9 ns instead of 176 / 9.7 ns.
+The table was re-measured and signed.
 
 | Formula | interpreter | machine code | speedup |
 |---|---:|---:|---:|
-| `X + Y` | 176 ns | 9.7 ns | **18x** |
-| `X * 2 + Y * 3` | 328 ns | 14.1 ns | **23x** |
-| `(X + Y) * (X - Y) / 2` | 518 ns | 24.6 ns | **21x** |
-| `X*X*X*3 + X*X*2 + X*7 + 11` | 758 ns | 28.2 ns | **27x** |
-| `sin(X)*cos(Y) + sqrt(X*X + Y*Y)` | 943 ns | 92.7 ns | **10x** |
-| `if(X > Y, X * 2, Y * 2)` | 2139 ns | 38.1 ns | **56x** |
+| `X + Y` | 154.5 ns | 18.9 ns | **8x** |
+| `X * 2 + Y * 3` | 292.7 ns | 20.0 ns | **15x** |
+| `(X + Y) * (X - Y) / 2` | 473.8 ns | 26.0 ns | **18x** |
+| `X*X*X*3 + X*X*2 + X*7 + 11` | 743.4 ns | 31.1 ns | **24x** |
+| `sin(X)*cos(Y) + sqrt(X*X + Y*Y)` | 864.1 ns | 97.3 ns | **9x** |
+| `if(X > Y, X * 2, Y * 2)` | 1946.4 ns | 44.2 ns | **44x** |
 
 ## Scenario 3. One formula over an array of values
 
@@ -111,10 +130,12 @@ begin
 end;
 ```
 
-That gives 116x to 167x over the ordinary path: those are what bulk mode gives in
-the canonical measurement - 116x on `x * 2 + 1` and 167x on a polynomial. The
+That gives 93x to 132x over the ordinary path: those are what bulk mode gives in
+the canonical measurement - 93x on `x * 2 + 1` and 132x on a polynomial. The
 numbers come from `bench.tsv`, which the benchmark programs write themselves;
-nobody types them.
+nobody types them. This place used to say 116x to 167x: the canon was
+re-measured on 05.10.2026, after the turn limit appeared in the compiled loop and
+after bulk mode stopped arming the FPU mask at every element.
 
 **Check the result.** `ExecuteMany` is the one call that reports a refusal to
 the caller. On `False` everything it could have written holds "not a number", so
@@ -176,7 +197,8 @@ formula the cache does not hold yet will both compile it and both append to the
 list.
 
 The plain `TMathParser` does not suffer from this: once everything is
-registered, evaluating a ready script is thread-safe.
+registered, evaluating a ready script does not write to the parser. The script
+buffer is another matter, and the accelerator changes nothing about it.
 
 To evaluate in parallel:
 
@@ -185,6 +207,12 @@ To evaluate in parallel:
   several threads at once. But only as far as everything it reaches allows that:
   the variables it reads have to be safe to read concurrently, and so does every
   function it calls. Both are yours, not the library's.
+- THE BYTE BUFFER OF THE SCRIPT ITSELF CANNOT BE SHARED. `ExecuteScript` writes
+  the accumulator of the evaluation into the header of the buffer it was given,
+  so two threads handed one and the same buffer share one mutable word, however
+  long ago everything was registered. Each thread needs its own byte copy of the
+  script; the main README states the same requirement for the ordinary
+  interpreter, and the accelerator does not cancel it.
 
 The wording is deliberately narrow. "Run it from as many threads as you like" is
 not true of the library as a whole: what evaluation leaves unchanged is the

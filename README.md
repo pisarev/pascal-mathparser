@@ -24,9 +24,12 @@ Each line is a link to the thing that proves it, not a claim standing alone.
   WebAssembly that is the only way out at all.
 - **`parse` and `deriv`.** A formula can compile another formula while it runs,
   and differentiate one symbolically.
-- **One source, six compilers.** Delphi 10.2 through 13, Free Pascal 3.2.2 and
-  3.3.1, Windows and Linux - and the same sources, compiled to WebAssembly, run
-  the [live demo][demo] in your browser.
+- **One source, eight compilers.** Six Delphi installations - 10.2 Tokyo through
+  13 - and Free Pascal 3.2.2 and 3.2.3 on x86_64-win64, with Lazarus 3.0 through
+  4.8 building both packages on each. The same sources, compiled to WebAssembly,
+  run the [live demo][demo] in your browser. Free Pascal 3.3.1 and Linux are NOT
+  claimed in this release: neither can be re-measured on the machine that cuts
+  it, and the compatibility table below withdraws both rows in the same words.
 - **The documentation is executed.** Every listing on this page is a file the
   build matrix compiles and runs, and every claim about the language is asserted
   by a test. A sentence here is either checked there or it is not published.
@@ -66,7 +69,7 @@ to a contiguous byte array and runs a linear pass with no allocations. On top of
 that it caches by *shape*: once `2 + 3` has been compiled, `5 + 7` reuses the
 same script and only writes the numbers into a copy.
 
-With the optional accelerator on top, the same formulas run 9x to 167x faster,
+With the optional accelerator on top, the same formulas run 9x to 132x faster,
 depending on what they do - the ends of that range are the slowest and the
 fastest row of the measured table, not a guess. The
 [measured table](https://pisarev.github.io/mathparser-live/accelerator.html) says
@@ -126,12 +129,15 @@ to 5.
 If a single answer is all you need, `CalcUtils` has the same calls as plain
 functions over a parser it owns, which is what the program at the top uses.
 
-This works on every target, console programs on Linux included. It did not always:
-the owned `TCalculator` uses a synchronising timer, and under FPC that timer was
-built from the widgetset, so a console program refused to link. The timer now runs
-on a plain thread, and the core compiles against the RTL alone. All eight samples
-under `samples/docs` are compiled and run by both matrices, on Windows and Linux -
-console programs, no widgetset anywhere.
+This works on every target this release measures, console programs included. It
+did not always: the owned `TCalculator` uses a synchronising timer, and under FPC
+that timer was built from the widgetset, so a console program refused to link.
+The timer now runs on a plain thread, and the core compiles against the RTL
+alone. All eight samples under `samples/docs` are compiled and run by both
+matrices on x86_64-win64 - console programs, no widgetset anywhere. Linux is NOT
+claimed in this release: the machine that cuts it has no FPC on Linux, only WSL,
+which has none, and the compatibility table below withdraws that row instead of
+carrying a number nobody can recheck.
 
 Two units ask for more when you leave them at their defaults: `Thread` routes an
 exception raised in a worker through `Application.HandleException`, and
@@ -379,9 +385,24 @@ to that hand-off.
 | | |
 |---|---|
 | Delphi 10.2 Tokyo through 13 | win32, win64 |
-| Free Pascal 3.2.2 | win32, win64, linux64 |
-| Free Pascal 3.3.1 | win64 |
+| Free Pascal 3.2.2 | win32, win64 |
+| Lazarus 3.0 through 4.8 | ten installations, both packages on each |
 | Accelerator | machine code on x86-64; elsewhere the intermediate stage walks it, with the interpreter behind both |
+
+TWO ROWS THAT USED TO BE HERE ARE GONE. This table also claimed Free Pascal
+3.3.1 on win64 and Free Pascal 3.2.2 on linux64. Neither can be re-measured on
+the machine that cuts the release: FPC 3.3.1 is not installed - 3.2.2 and 3.2.3
+are - and Linux is available only as WSL, which has no FPC. A line nobody can
+recheck is a promise without a subject, so both are gone; they come back when
+the runs are made on those compilers and on that platform. What was measured for
+this release, on 5 October 2026: 767 checks in 21 programs under FPC 3.2.2 on
+x86_64-win64; under Delphi (Studio 37) 856 checks in 26 programs on win64, and
+the win32 stage of the same matrix ran two of those targets again -
+`ParserBugTests` with 75 checks and `JitRedirectTest` with 47 - so 28 runs and
+978 checks in all, no failures in any of them. Under a standalone FPC 3.2.3 the
+suite gave 686 checks in 19 programs with no failures, and two programs did not
+build for want of the `Interfaces` unit, which that installation has no Lazarus
+units to supply.
 
 Every line of that table is a matrix that runs before a release, not a guess.
 The Delphi row is six installations - 10.2 Tokyo, 10.3 Rio, 10.4 Sydney, 11
@@ -391,6 +412,13 @@ a time: 50 of the 51 build. The one that does not is `WinMem`, which carries a
 beside the sources declares that, and both the build script and the release
 check read the table rather than a list of their own. Anything older than 10.2
 is untested and not claimed.
+
+The Lazarus row is measured the same way. Measured on Lazarus 3.0, 3.2, 3.4,
+3.6, 3.8, 4.0, 4.2, 4.4, 4.6 and 4.8: on each of them `lazbuild` builds both
+packages from a clean `--pcp` configuration of its own. Trunk is not among them
+and is not claimed. Widget sets are not a row here at all - the packages set
+`NOFORMS` and `NOGRAPHICS` themselves and install without the LCL, so there is
+no widget set to measure.
 
 On Free Pascal 3.2.2 one thing is narrower. Function references - `reference to
 function` - arrived in 3.3.1, so on 3.2.2 the iterator callbacks in `MemoryUtils`
