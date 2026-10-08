@@ -7,11 +7,8 @@
   if a unit appeared in or vanished from MANIFEST.md while the .dpk was not
   regenerated, the build falls here.
 
-  All three build for both platforms. The design-time one was 32-bit only until
-  1.3.5: it required designide, which has no 64-bit build. The requirement came
-  from a single call - ForceDemandLoadState - and measurement showed the call
-  changed nothing, so the package now needs nothing beyond rtl and vcl. The .bpl
-  the IDE loads is still the 32-bit one, because the IDE itself is 32-bit.
+  All three packages build for Win32 and Win64 and declare both target
+  platforms. Install the design-time BPL matching the IDE bitness.
 
   Run: powershell -ExecutionPolicy Bypass -File build.ps1
   The exit code is the number of packages that did not build.
@@ -149,11 +146,7 @@ if ($null -eq $RunRoot) { exit 1 }
     $Out = Join-Path $RunRoot "$Target"
     New-Item -ItemType Directory -Force $Out | Out-Null
 
-    # All three packages build for both platforms. The palette package used to be
-    # 32-bit only because it required designide, which has no 64-bit build. That
-    # requirement existed for one call - ForceDemandLoadState - and measurement on
-    # 30.08.2026 showed the call changed nothing. Without it the package needs
-    # nothing beyond rtl and vcl, so it builds wherever they do.
+    # Build the runtime packages before the design-time package.
     $Packages = @('crosspascal_parser', 'crosspascal_parserjit', 'crosspascal_parser_dsgn')
 
     foreach ($Pkg in $Packages) {

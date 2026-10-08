@@ -13,7 +13,8 @@ program ThreadShareTest;
 
 uses
   {$IFDEF UNIX}{$IFDEF FPC}cthreads, cwstring,{$ENDIF}{$ENDIF}
-  SysUtils, Math, Parser, ParseTypes, ValueTypes, ValueUtils, Thread, TestKit in 'TestKit.pas';
+  SysUtils, Math, Classes, ParseJit.Parser, ParseJit.Executor, Parser, ParseTypes,
+  ValueTypes, ValueUtils, Thread, TestKit in 'TestKit.pas';
 
 {
   What this file guards: one parser, many threads.
@@ -105,8 +106,136 @@ begin
   FEnded := True;
 end;
 
+type
+  TLocalValue = class
+    function Read(const Header: PScriptHeader; const AFunction: PFunction;
+      const AType: PType): TValue;
+  end;
+
+  TSharedJitWorker = class(Classes.TThread)
+  public
+    Compiled: TJitScript;
+    Number, Wrong: Integer;
+    NativePath: Boolean;
+    Note: string;
+    procedure Execute; override;
+  end;
+
+threadvar
+  LocalInput: Double;
+
+function TLocalValue.Read(const Header: PScriptHeader; const AFunction: PFunction;
+  const AType: PType): TValue;
+begin
+  AssignDouble(Result, LocalInput);
+end;
+
+procedure TSharedJitWorker.Execute;
+var
+  Step: Integer;
+  Expected, Actual: Double;
 begin
   try
+    for Step := 1 to 10000 do
+    begin
+      if NativePath then
+        LocalInput := 2.25
+      else
+        LocalInput := Number + (Step mod 17) / 7;
+      Expected := Sin(LocalInput) * LocalInput +
+        Cos(LocalInput * 2) / (1 + LocalInput * LocalInput);
+      Actual := Compiled.Execute;
+      if IsNan(Actual) or (Abs(Actual - Expected) > 1E-9) then Inc(Wrong);
+      if Step mod 64 = 0 then Sleep(0);
+    end;
+  except
+    on E: Exception do Note := E.ClassName + ': ' + E.Message;
+  end;
+end;
+
+procedure SharedJitScriptIsReadOnly;
+var
+  J: TJitParser;
+  Callback: TLocalValue;
+  Handle: TFunctionHandle;
+  Script, Original: TScript;
+  Compiled: TJitScript;
+  Team: array[0..3] of TSharedJitWorker;
+  Mode, W, B: Integer;
+  Unchanged: Boolean;
+  SharedInput: Double;
+begin
+  BeginSection('one compiled script shared by four threads');
+  J := TJitParser.Create(nil);
+  Callback := TLocalValue.Create;
+  try
+    J.AddFunction('tlsvalue', Handle, fkMethod, MakeFunctionMethod(Callback.Read), False);
+    SharedInput := 2.25;
+    J.AddVariable('sharedinput', SharedInput);
+    for Mode := 0 to 1 do
+    begin
+      Script := nil;
+      if Mode = 0 then
+        J.StringToScript('Sin(sharedinput) * sharedinput + Cos(sharedinput * 2) / ' +
+          '(1 + sharedinput * sharedinput)', Script)
+      else
+        J.StringToScript('Sin(tlsvalue) * tlsvalue + Cos(tlsvalue * 2) / ' +
+          '(1 + tlsvalue * tlsvalue)', Script);
+      Compiled := J.CompileScript(Script);
+      try
+        if Mode = 1 then
+        begin
+          { Exercise the portable path on x64 as well as on 32-bit builds. }
+          FreeAndNil(Compiled.Code);
+          if not Assigned(Compiled.Executor) then
+            Compiled.Executor := TJitExecutor.Create(J);
+          Compiled.Executor.Prepare(Script);
+        end;
+        Check('shared compiled script ready', Compiled.Ready, Compiled.Reason);
+        {$IFDEF CPUX64}
+        if Mode = 0 then
+          Check('shared native path selected', Assigned(Compiled.Code) and Compiled.Code.Ready,
+            Compiled.Reason);
+        {$ENDIF}
+        if not Compiled.Ready then Continue;
+        Original := Copy(Script);
+        for W := 0 to High(Team) do
+        begin
+          Team[W] := TSharedJitWorker.Create(True);
+          Team[W].Compiled := Compiled;
+          Team[W].Number := W;
+          Team[W].NativePath := Mode = 0;
+        end;
+        try
+          for W := 0 to High(Team) do Team[W].Start;
+          for W := 0 to High(Team) do Team[W].WaitFor;
+          for W := 0 to High(Team) do
+          begin
+            Check(Format('shared mode %d worker %d no exception', [Mode, W]),
+              Team[W].Note = '', Team[W].Note);
+            Check(Format('shared mode %d worker %d keeps thread-local values', [Mode, W]),
+              Team[W].Wrong = 0, IntToStr(Team[W].Wrong));
+          end;
+        finally
+          for W := 0 to High(Team) do Team[W].Free;
+        end;
+        Unchanged := Length(Script) = Length(Original);
+        for B := 0 to High(Script) do
+          if Script[B] <> Original[B] then Unchanged := False;
+        Check('compiled execution leaves source script bytes unchanged', Unchanged, '');
+      finally
+        Compiled.Free;
+      end;
+    end;
+  finally
+    J.Free;
+    Callback.Free;
+  end;
+end;
+
+begin
+  try
+    SharedJitScriptIsReadOnly;
     P := TMathParser.Create(nil);
     try
       BeginSection('one parser, four threads, a copy of the script each');

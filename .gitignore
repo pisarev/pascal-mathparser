@@ -19,3 +19,5 @@ lib/
 bin/
 __history/
 __recovery/
+
+!packages/delphi/CrossPascalPlatforms.res

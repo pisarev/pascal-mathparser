@@ -310,7 +310,12 @@ PowerShell 7. `-ExecutionPolicy Bypass` is what lets a downloaded script run
 under the default policy, and it holds for that one run only.
 
 It ends with `Delphi packages: did not build 0`. All three build for both
-platforms, win32 and win64.
+platforms, win32 and win64. The packages include the platform metadata needed
+to enable their components in the IDE palette.
+
+Install `crosspascal_parser_dsgn.bpl` built for the IDE itself: Win32 for the
+32-bit IDE or Win64 for the 64-bit IDE. Keep the matching runtime packages
+`crosspascal_parser.bpl` and `crosspascal_parserjit.bpl` on the IDE search path.
 
 ### With Lazarus, by hand
 
@@ -394,15 +399,12 @@ TWO ROWS THAT USED TO BE HERE ARE GONE. This table also claimed Free Pascal
 the machine that cuts the release: FPC 3.3.1 is not installed - 3.2.2 and 3.2.3
 are - and Linux is available only as WSL, which has no FPC. A line nobody can
 recheck is a promise without a subject, so both are gone; they come back when
-the runs are made on those compilers and on that platform. What was measured for
-this release, on 5 October 2026: 767 checks in 21 programs under FPC 3.2.2 on
-x86_64-win64; under Delphi (Studio 37) 856 checks in 26 programs on win64, and
-the win32 stage of the same matrix ran two of those targets again -
-`ParserBugTests` with 75 checks and `JitRedirectTest` with 47 - so 28 runs and
-978 checks in all, no failures in any of them. Under a standalone FPC 3.2.3 the
-suite gave 686 checks in 19 programs with no failures, and two programs did not
-build for want of the `Interfaces` unit, which that installation has no Lazarus
-units to supply.
+the runs are made on those compilers and on that platform. On 8 October 2026, FPC 3.2.2 on
+x86_64-win64 completed 1016 checks in 21 counted programs, with no failed or
+skipped runs. Delphi 13.2 completed 1105 checks in 26 programs on Win64 and
+122 checks in two additional Win32 runs (`ParserBugTests` and
+`JitRedirectTest`), for 1227 checks in total. The console component example
+also ran successfully in both environments.
 
 Every line of that table is a matrix that runs before a release, not a guess.
 The Delphi row is six installations - 10.2 Tokyo, 10.3 Rio, 10.4 Sydney, 11

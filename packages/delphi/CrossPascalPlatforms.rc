@@ -1,0 +1,2 @@
+// Supported IDE target platforms: Win32 (1) and Win64 (2).
+PLATFORMTARGETS RCDATA { 3L }

@@ -362,6 +362,108 @@ begin
   SameValueFromBothExecutors(LoopInSum, 0);
 end;
 
+procedure GuardCapacityBoundary;
+var
+  N, Shape, Mode, Path, I: Integer;
+  Formula, LabelText, SlowError, ActualError: string;
+  Script: TScript;
+  Compiled: TJitScript;
+  Stopped: Boolean;
+  SlowCount, SlowMark, SlowValue, ActualValue, Dummy: Double;
+  Inputs, Outputs: array[0..0] of Double;
+begin
+  BeginSection('guard capacity: scalar, compiled and bulk evaluation');
+  Compiled := nil;
+  Inputs[0] := 0;
+  Dummy := 0;
+  try
+    for N := 63 to 65 do
+      for Shape := 0 to 1 do
+      begin
+        Formula := '';
+        for I := 1 to N - 1 - 2 * Shape do
+          Formula := Formula + 'While(cnt < 0, Set("cnt", cnt + 1)) + ';
+        if Shape = 1 then
+          Formula := Formula + 'While(cnt < 0, While(cnt < 0, 1)) + ';
+        Formula := 'Set("mark", ' + Formula + 'Repeat(Set("cnt", cnt + 1), cnt >= 5))';
+        Script := nil;
+        J.StringToScript(Formula, Script);
+        Compiled := J.CompileScript(Script);
+        {$IFDEF CPUX64}
+        if N <= 64 then
+          Check('within guard capacity uses machine code',
+            Assigned(Compiled.Code) and Compiled.Code.Ready, Compiled.Reason)
+        else
+          Check('over guard capacity refuses incomplete machine code',
+            Assigned(Compiled.Code) and not Compiled.Code.Ready and
+            (Pos('too many loop guards in one script', Compiled.Reason) > 0),
+            Compiled.Reason);
+        {$ENDIF}
+        for Mode := 0 to 2 do
+        begin
+          SlowError := '';
+          SlowValue := 0;
+          for Path := 0 to 3 do
+          begin
+            AssignDouble(Cnt, 0);
+            AssignDouble(Mark, 123);
+            Stopped := Mode = 2;
+            ParseBreak := @Stopped;
+            if Mode = 1 then
+              ParseLoopLeft := 2
+            else
+              ParseLoopLeft := 0;
+            ActualError := '';
+            ActualValue := 0;
+            try
+              case Path of
+                0: ActualValue := P.AsDouble(Formula);
+                1: if Compiled.Ready then ActualValue := Compiled.Execute
+                   else
+                     ActualValue := GetDouble(J.ExecuteScript(Script)^);
+                2: ActualValue := J.AsDouble(Formula);
+                3:
+                begin
+                  Check('bulk boundary formula accepted',
+                    J.ExecuteMany(Formula, Dummy, Inputs, Outputs), '');
+                  ActualValue := Outputs[0];
+                end;
+              end;
+            except
+              on E: Exception do ActualError := E.ClassName + ': ' + E.Message;
+            end;
+            LabelText := Format('guards=%d nested=%d mode=%d path=%d', [N, Shape, Mode, Path]);
+            if Path = 0 then
+            begin
+              SlowError := ActualError;
+              SlowCount := GetDouble(Cnt);
+              SlowMark := GetDouble(Mark);
+              SlowValue := ActualValue;
+              Check(LabelText + ' interpreter guard', (Mode = 0) = (SlowError = ''), SlowError);
+              if Mode = 0 then
+                CheckDouble(LabelText + ' finite count', SlowCount, 5)
+              else
+                CheckDouble(LabelText + ' outer assignment not executed', SlowMark, 123);
+            end
+            else begin
+              Check(LabelText + ' exception matches', ActualError = SlowError,
+                ActualError + ' / ' + SlowError);
+              CheckDouble(LabelText + ' counter matches', GetDouble(Cnt), SlowCount);
+              CheckDouble(LabelText + ' outer assignment matches', GetDouble(Mark), SlowMark);
+              if SlowError = '' then
+                CheckDouble(LabelText + ' result matches', ActualValue, SlowValue);
+            end;
+          end;
+        end;
+        FreeAndNil(Compiled);
+      end;
+  finally
+    Compiled.Free;
+    ParseBreak := nil;
+    ParseLoopLeft := 0;
+  end;
+end;
+
 procedure MeasureTurnRate;
 var
   Note: string;
@@ -396,6 +498,7 @@ begin
       AcceleratorHonoursTheGuard;
       AbortStopsTheWholeEvaluation;
       ArmedGuardChangesNothing;
+      GuardCapacityBoundary;
       MeasureTurnRate;
       if not Killed then
         for ThreadCount := ThreadCount - 1 downto 0 do Threads[ThreadCount].Free;

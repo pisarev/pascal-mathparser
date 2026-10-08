@@ -8,6 +8,7 @@
 
 package crosspascal_parser_dsgn;
 
+{$R CrossPascalPlatforms.res}
 {$ALIGN 8}
 {$ASSERTIONS ON}
 {$BOOLEVAL OFF}

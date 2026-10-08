@@ -84,7 +84,7 @@ type
     procedure PatchJump(const Position: Integer);
     procedure PatchJumpTo(const Position, Target: Integer);
     procedure EmitTestZero;
-    procedure EmitLoopGuard(const Kind: NativeInt);
+    function EmitLoopGuard(const Kind: NativeInt): Boolean;
     procedure Reject(const AReason: string);
     procedure Release;
   public
@@ -517,8 +517,9 @@ begin
   Emit([$66, $0F, $2E, $C1]);
 end;
 
-procedure TJitCode.EmitLoopGuard(const Kind: NativeInt);
+function TJitCode.EmitLoopGuard(const Kind: NativeInt): Boolean;
 begin
+  Result := False;
   if FGuardCount > High(FGuardJumps) then
   begin
     Reject('too many loop guards in one script');
@@ -529,6 +530,7 @@ begin
   Emit([$48, $85, $C0]);
   FGuardJumps[FGuardCount] := EmitJump(True);
   Inc(FGuardCount);
+  Result := True;
 end;
 
 function TJitCode.EmitCompare(const Handle: NativeInt; const Slot: Integer): Boolean;
@@ -678,7 +680,7 @@ begin
       if not EmitParameterTerm(Index) then Exit(False);
       EmitTestZero;
       EndJump := EmitJump(True);
-      EmitLoopGuard(0);
+      if not EmitLoopGuard(0) then Exit(False);
       if not EmitParameterTerm(Index) then Exit(False);
       EmitTestZero;
       ElseJump := EmitJump(True);
@@ -700,7 +702,7 @@ begin
       EmitLoadDouble(0);
       EmitStoreSlot(Slot);
       LoopStart := FSize;
-      EmitLoopGuard(1);
+      if not EmitLoopGuard(1) then Exit(False);
       if not EmitParameterTerm(Index) then Exit(False);
       EmitTestZero;
       ElseJump := EmitJump(True);
